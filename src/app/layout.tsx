@@ -10,8 +10,8 @@ import "./globals.css";
 import "./ui-overrides.css"; // 데스크톱 레이아웃/표지 선반/설정 2단 — globals.css 다음에 로드되어야 함
 
 export const metadata: Metadata = {
-  title: "참 잘했어요 — 혼자 견디지 말자",
-  description: "오늘의 일기를 읽고, 판단하지 않는 짧은 답글을 남기는 감정 일기장.",
+  title: "참 잘했어요",
+  description: "꾸준한 기록을 돕는 일기장",
   manifest: "/manifest.json",
   icons: {
     icon: [{ url: "/favicon.ico" }],
@@ -23,8 +23,8 @@ export const metadata: Metadata = {
     title: "참 잘했어요",
   },
   openGraph: {
-    title: "참 잘했어요 — 감정 일기장",
-    description: "어쭙잖은 위로 대신, 내 하루를 읽은 존재가 짧은 답글을 남겨요.",
+    title: "참 잘했어요 — 그때 그 시절, 일기장",
+    description: "내 하루를 읽은 존재가 짧은 답글을 남겨요.",
     type: "website",
     locale: "ko_KR",
   },
