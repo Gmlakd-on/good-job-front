@@ -221,9 +221,20 @@ export interface ExchangeReportRequest {
 
 // ─── 핸들 유효성 검사 ─────────────────
 
-export const HANDLE_REGEX = /^[a-zA-Z0-9_]{3,20}$/;
-export const MAX_HANDLE_LENGTH = 20;
-export const MIN_HANDLE_LENGTH = 3;
+export const HANDLE_WORDS = [
+  "lucky",
+  "love",
+  "hope",
+  "smile",
+  "good",
+  "food",
+  "mood",
+  "moon",
+  "star",
+] as const;
+export const HANDLE_REGEX = /^(lucky|love|hope|smile|good|food|mood|moon|star)_([1-9]|[1-9][0-9])$/;
+export const MIN_HANDLE_LENGTH = 6;
+export const MAX_HANDLE_LENGTH = 8;
 export const MAX_EXCHANGE_DISPLAY_NAME_LENGTH = 20;
 export const MAX_PREVIEW_TEXT_LENGTH = 500;
 export const MAX_EXCHANGE_ENTRY_LENGTH = 3000;
@@ -231,5 +242,5 @@ export const MAX_INVITE_MESSAGE_LENGTH = 200;
 export const MAX_EXCHANGE_REPORT_DETAIL_LENGTH = 1000;
 
 export function isValidHandle(handle: string): boolean {
-  return HANDLE_REGEX.test(handle);
+  return HANDLE_REGEX.test(handle.trim().toLowerCase());
 }

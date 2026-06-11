@@ -13,6 +13,28 @@ type InviteWithProfile = {
   to_profile?: ExchangeProfileSearchResult | null;
 };
 
+const FRIENDLY_HANDLE_WORDS = [
+  "lucky",
+  "love",
+  "hope",
+  "smile",
+  "good",
+  "food",
+  "mood",
+  "moon",
+  "star",
+] as const;
+
+function generateFriendlyHandle() {
+  const word =
+    FRIENDLY_HANDLE_WORDS[
+      Math.floor(Math.random() * FRIENDLY_HANDLE_WORDS.length)
+    ];
+  const number = Math.floor(Math.random() * 99) + 1;
+
+  return `${word}_${number}`;
+}
+
 export default function ExchangeFriendsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -71,6 +93,8 @@ export default function ExchangeFriendsPage() {
     const data = await res.json();
     if (res.ok) {
       setProfile(data.profile);
+      setHandle(data.profile.handle);
+      setDisplayName(data.profile.display_name);
       setStatusText("교환 프로필을 저장했어요.");
     } else {
       setStatusText(data.error || "저장에 실패했어요.");
@@ -152,15 +176,30 @@ export default function ExchangeFriendsPage() {
 
       <section className="diary-card p-5 mb-4">
         <p className="text-sm font-medium mb-1" style={{ color: "var(--deep-gray)" }}>내 교환 프로필</p>
-        <p className="text-xs opacity-45 mb-4">친구가 나를 찾을 때 쓰는 아이디예요.</p>
+        <p className="text-xs opacity-45 mb-4">
+          친구가 나를 찾을 때 쓰는 아이디예요. 처음 들어오면 자동으로 만들어져요.
+        </p>
         <div className="grid gap-3">
-          <input
-            value={handle}
-            onChange={(e) => setHandle(e.target.value.toLowerCase())}
-            placeholder="아이디 예: seori_123"
-            className="w-full px-4 py-3 text-sm outline-none"
-            style={{ borderRadius: "var(--radius-md)", background: "var(--cream-deep)", color: "var(--text-primary)" }}
-          />
+          <div className="flex gap-2">
+            <input
+              value={handle}
+              onChange={(e) => setHandle(e.target.value.toLowerCase())}
+              placeholder="예: lucky_7, moon_23, star_99"
+              className="flex-1 px-4 py-3 text-sm outline-none"
+              style={{ borderRadius: "var(--radius-md)", background: "var(--cream-deep)", color: "var(--text-primary)" }}
+            />
+            <button
+              type="button"
+              onClick={() => setHandle(generateFriendlyHandle())}
+              className="px-4 py-3 text-xs rounded-full"
+              style={{ background: "var(--warm-bg)", color: "var(--deep-gray)" }}
+            >
+              랜덤
+            </button>
+          </div>
+          <p className="text-[11px] opacity-45 leading-relaxed">
+            아이디는 lucky, love, hope, smile, good, food, mood, moon, star 중 하나와 1~99 숫자로 만들 수 있어요.
+          </p>
           <input
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
@@ -176,11 +215,12 @@ export default function ExchangeFriendsPage() {
 
       <section className="diary-card p-5 mb-4">
         <p className="text-sm font-medium mb-1" style={{ color: "var(--deep-gray)" }}>친구 찾기</p>
+        <p className="text-xs opacity-45 mb-3">친구에게 받은 아이디를 입력해 찾아보세요.</p>
         <div className="flex gap-2 mb-3">
           <input
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="친구 아이디"
+            onChange={(e) => setSearch(e.target.value.toLowerCase())}
+            placeholder="친구 아이디 예: moon_23"
             className="flex-1 px-4 py-3 text-sm outline-none"
             style={{ borderRadius: "var(--radius-md)", background: "var(--cream-deep)", color: "var(--text-primary)" }}
           />
