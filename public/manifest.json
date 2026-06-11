@@ -4,8 +4,8 @@
   "description": "혼자 견디지 말자, 애들아. 오늘의 일기를 읽고 짧은 답글을 남기는 감정 일기장.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#eee1cc",
-  "theme_color": "#31483e",
+  "background_color": "#fff8ec",
+  "theme_color": "#C4553A",
   "orientation": "portrait",
   "icons": [
     {

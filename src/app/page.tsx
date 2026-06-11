@@ -13,23 +13,12 @@ interface Quote {
   author: string;
 }
 
-function useFullBleed() {
-  useEffect(() => {
-    const main = document.getElementById("site-main");
-    if (!main) return;
-
-    main.classList.add("site-main--full");
-    return () => main.classList.remove("site-main--full");
-  }, []);
-}
 
 export default function HomePage() {
-  useFullBleed();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [quote, setQuote] = useState<Quote | null>(null);
-  const [quoteAuthorVisible, setQuoteAuthorVisible] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -102,20 +91,19 @@ export default function HomePage() {
         <section className="home-hero" aria-label="오늘의 명언">
           <div className="home-hero__inner">
             <div className="home-hero__quote-zone">
-              <button
-                type="button"
+              <figure
                 className="home-quote-card"
-                onMouseEnter={() => setQuoteAuthorVisible(true)}
-                onMouseLeave={() => setQuoteAuthorVisible(false)}
-                onClick={() => setQuoteAuthorVisible((visible) => !visible)}
-                aria-label="오늘의 명언. 누르면 저자를 볼 수 있어요."
+                tabIndex={0}
+                aria-label={`오늘의 명언. ${quoteText} — ${quoteAuthor}`}
               >
-                <p className="home-quote-card__text">{quoteText}</p>
-                <div className="home-quote-card__meta">
-                  <span>{quoteAuthorVisible ? `— ${quoteAuthor}` : "커서를 올리거나 탭하면 저자 표시"}</span>
+                <blockquote className="home-quote-card__quote">
+                  <p className="home-quote-card__text">{quoteText}</p>
+                </blockquote>
+                <figcaption className="home-quote-card__author">— {quoteAuthor}</figcaption>
+                <div className="home-quote-card__meta" aria-hidden="true">
                   <span>오늘의 명언</span>
                 </div>
-              </button>
+              </figure>
 
               <div className="home-hero__ctas" aria-label="빠른 이동">
                 <button type="button" className="home-hero__cta home-hero__cta--primary" onClick={enterWrite}>

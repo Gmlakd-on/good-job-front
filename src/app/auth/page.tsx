@@ -9,6 +9,15 @@ type OAuthProvider = "google" | "kakao" | `custom:${string}`;
 
 const KAKAO_AUTH_PROVIDER = (process.env.NEXT_PUBLIC_KAKAO_AUTH_PROVIDER || "kakao") as OAuthProvider;
 
+const getSiteUrl = () => {
+  const envUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
+
+  if (envUrl) return envUrl;
+  if (typeof window !== "undefined") return window.location.origin;
+
+  return "";
+};
+
 /**
  * useSearchParams를 쓰는 본문은 Suspense 경계 안에서 렌더링해야
  * 정적 프리렌더 시 CSR bailout 경고가 발생하지 않는다.
@@ -59,7 +68,7 @@ function AuthPageContent() {
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/books`,
+          redirectTo: `${getSiteUrl()}/auth/callback?next=/books`,
         },
       });
 
@@ -89,7 +98,7 @@ function AuthPageContent() {
           email: email.trim(),
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            emailRedirectTo: `${getSiteUrl()}/auth/callback`,
           },
         });
         if (signUpError) {
@@ -132,7 +141,7 @@ function AuthPageContent() {
     const supabase = createClient();
 
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset-password`,
+      redirectTo: `${getSiteUrl()}/auth/callback?next=/auth/reset-password`,
     });
 
     if (resetError) {

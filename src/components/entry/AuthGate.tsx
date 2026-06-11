@@ -3,6 +3,15 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+const getSiteUrl = () => {
+  const envUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
+
+  if (envUrl) return envUrl;
+  if (typeof window !== "undefined") return window.location.origin;
+
+  return "";
+};
+
 interface AuthGateProps {
   open: boolean;
   onClose: () => void;
@@ -27,7 +36,7 @@ export default function AuthGate({ open, onClose, onSuccess }: AuthGateProps) {
       const supabase = createClient();
       const { error: err } = await supabase.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: `${window.location.origin}/auth/callback?next=/` },
+        options: { redirectTo: `${getSiteUrl()}/auth/callback?next=/` },
       });
       if (err) {
         setError(err.message);
@@ -47,7 +56,13 @@ export default function AuthGate({ open, onClose, onSuccess }: AuthGateProps) {
       const supabase = createClient();
 
       if (mode === "signup") {
-        const { error: err } = await supabase.auth.signUp({ email, password });
+        const { error: err } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${getSiteUrl()}/auth/callback`,
+          },
+        });
         if (err) { setError(err.message); setLoading(false); return; }
         setSignupDone(true);
         setLoading(false);
