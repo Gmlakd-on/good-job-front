@@ -12,6 +12,16 @@
 const PREFIX = "diary_draft:";
 const SAVE_INTERVAL = 3000; // 3초마다 저장
 
+function hasSavedEditorState(editorState: unknown): boolean {
+  if (!editorState || typeof editorState !== "object") return false;
+  const strokes = (editorState as { strokes?: unknown }).strokes;
+  return Array.isArray(strokes) && strokes.length > 0;
+}
+
+function hasDraftContent(data: Omit<DraftData, "updatedAt">): boolean {
+  return data.content.trim().length > 0 || hasSavedEditorState(data.editorState);
+}
+
 export interface DraftData {
   content: string;
   emotions: string[];
@@ -66,7 +76,7 @@ export function startDraftTimer(
 ): () => void {
   const timer = setInterval(() => {
     const data = getData();
-    if (data.content.trim()) {
+    if (hasDraftContent(data)) {
       saveDraft(bookId, data);
       onSave?.(Date.now());
     }

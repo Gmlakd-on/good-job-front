@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import type { User } from "@supabase/supabase-js";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -17,8 +17,8 @@ import ReminderTimePicker from "@/components/ReminderTimePicker";
 import AIInsightBadge from "@/components/AIInsightBadge";
 import AITransparencyNote from "@/components/AITransparencyNote";
 import ImmersiveEditor from "@/components/editor/ImmersiveEditor";
+import type { EditorSavePayload } from "@/lib/editor/serializer";
 import BookCover from "@/components/book-ui/BookCover";
-import BookProgress from "@/components/book-ui/BookProgress";
 import { canWriteBook, type DiaryBook } from "@/components/book-ui/bookTypes";
 import { EMOTIONS, type AiInsight } from "@/types";
 import LoadingStep from "./_components/LoadingStep";
@@ -45,15 +45,21 @@ export default function WritePage() {
   const [error, setError] = useState("");
   const [draftRestored, setDraftRestored] = useState(false);
   const [activeBooks, setActiveBooks] = useState<DiaryBook[]>([]);
+  const [initialEditorState, setInitialEditorState] = useState<EditorSavePayload | null>(null);
 
   // Refs for draft timer access to current state
   const contentRef = useRef(diaryContent);
   const emotionsRef = useRef(selectedEmotions);
   const personaRef = useRef(selectedPersona);
+  const editorStateRef = useRef<EditorSavePayload | null>(null);
 
   useEffect(() => { contentRef.current = diaryContent; }, [diaryContent]);
   useEffect(() => { emotionsRef.current = selectedEmotions; }, [selectedEmotions]);
   useEffect(() => { personaRef.current = selectedPersona; }, [selectedPersona]);
+
+  const handleEditorStateChange = useCallback((editorState: EditorSavePayload) => {
+    editorStateRef.current = editorState;
+  }, []);
 
   // ── Auth check ──
   useEffect(() => {
@@ -91,14 +97,23 @@ export default function WritePage() {
   useEffect(() => {
     if (!bookId || draftRestored) return;
     const draft = loadDraft(bookId);
-    if (draft && draft.content.trim()) {
+    const draftEditorState = draft?.editorState as EditorSavePayload | undefined;
+    const hasDraftEditorState = Array.isArray(draftEditorState?.strokes) && draftEditorState.strokes.length > 0;
+
+    if (draft && (draft.content.trim() || hasDraftEditorState)) {
       // Batch updates in microtask to avoid synchronous setState in effect
       queueMicrotask(() => {
         setDiaryContent(draft.content);
         if (draft.emotions.length > 0) setSelectedEmotions(draft.emotions);
         if (draft.persona) setSelectedPersona(draft.persona);
+        if (hasDraftEditorState) {
+          setInitialEditorState(draftEditorState);
+          editorStateRef.current = draftEditorState;
+        }
         setDraftRestored(true);
       });
+    } else if (draft) {
+      queueMicrotask(() => setDraftRestored(true));
     }
   }, [bookId, draftRestored]);
 
@@ -109,6 +124,7 @@ export default function WritePage() {
       content: contentRef.current,
       emotions: emotionsRef.current,
       persona: personaRef.current,
+      editorState: editorStateRef.current,
     }));
     return stop;
   }, [bookId, step]);
@@ -143,7 +159,18 @@ export default function WritePage() {
       const res = await fetch("/api/diaries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ diary_book_id: book.id, content: diaryContent, emotions, persona: selectedPersona }),
+        body: JSON.stringify({
+          diary_book_id: book.id,
+          content: diaryContent,
+          emotions,
+          persona: selectedPersona,
+          editor_state: editorStateRef.current
+            ? {
+                version: editorStateRef.current.version,
+                strokes: editorStateRef.current.strokes,
+              }
+            : undefined,
+        }),
       });
       const data = await res.json();
 
@@ -228,22 +255,19 @@ export default function WritePage() {
     <div className={`write-page write-page--${book.cover_style_id}`}>
       <div className="write-page__topbar">
         <Link href={`/books/${book.id}`} className="write-page__back">← {book.title}</Link>
-        <div className="flex items-center gap-2">
-          {/* 본문 작성 전(emotion/persona)에만 일기장 전환 허용 — 작성 중 전환으로 글이 섞이는 혼란 방지 */}
-          {(step === "emotion" || step === "persona") && activeBooks.length > 1 && (
-            <select
-              className="write-book-switch"
-              value={book.id}
-              aria-label="일기장 바꾸기"
-              onChange={(e) => router.replace(`/write?bookId=${e.target.value}`)}
-            >
-              {activeBooks.map((b) => (
-                <option key={b.id} value={b.id}>{b.title}</option>
-              ))}
-            </select>
-          )}
-          <BookProgress book={book} />
-        </div>
+        {/* 본문 작성 전(emotion/persona)에만 일기장 전환 허용 — 작성 중 전환으로 글이 섞이는 혼란 방지 */}
+        {(step === "emotion" || step === "persona") && activeBooks.length > 1 && (
+          <select
+            className="write-book-switch"
+            value={book.id}
+            aria-label="일기장 바꾸기"
+            onChange={(e) => router.replace(`/write?bookId=${e.target.value}`)}
+          >
+            {activeBooks.map((b) => (
+              <option key={b.id} value={b.id}>{b.title}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       {step === "emotion" && (
@@ -275,7 +299,14 @@ export default function WritePage() {
             <button onClick={() => setStep("persona")} className="btn-ghost text-sm">← 뒤로</button>
             <SelectedTags emotions={selectedEmotions} persona={selectedPersona} compact />
           </div>
-          <ImmersiveEditor coverStyle={book.cover_style_id} value={diaryContent} onChange={setDiaryContent} onSubmit={handleSubmit} />
+          <ImmersiveEditor
+            coverStyle={book.cover_style_id}
+            value={diaryContent}
+            initialEditorState={initialEditorState}
+            onChange={setDiaryContent}
+            onEditorStateChange={handleEditorStateChange}
+            onSubmit={handleSubmit}
+          />
           <button onClick={handleSubmit} disabled={diaryContent.trim().length === 0} className="btn-primary w-full mt-4" style={{ opacity: diaryContent.trim().length === 0 ? 0.5 : 1 }}>
             답장 받기
           </button>

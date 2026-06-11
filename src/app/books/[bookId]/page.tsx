@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import BookCompleteModal from "@/components/book-ui/BookCompleteModal";
 import BookCover from "@/components/book-ui/BookCover";
 import BookProgress from "@/components/book-ui/BookProgress";
+import BookReader from "@/components/book-ui/BookReader";
 import {
   canCompleteBook,
   canWriteBook,
@@ -16,8 +17,10 @@ import {
 
 interface DiaryEntry {
   id: string;
+  content: string;
   created_at: string;
-  diary_emotions: { emotion_label: string }[];
+  diary_emotions: { emotion_code?: string; emotion_label: string }[];
+  replies?: { content?: string; persona?: string }[];
 }
 
 export default function BookDetailPage({ params }: { params: Promise<{ bookId: string }> }) {
@@ -97,11 +100,6 @@ export default function BookDetailPage({ params }: { params: Promise<{ bookId: s
   const canWrite = canWriteBook(book);
   const canComplete = canCompleteBook(book);
 
-  function formatDate(iso: string) {
-    const d = new Date(iso);
-    return `${d.getMonth() + 1}/${d.getDate()}`;
-  }
-
   return (
     <div className="pt-4">
       <div className="mb-5 flex items-center justify-between">
@@ -138,17 +136,14 @@ export default function BookDetailPage({ params }: { params: Promise<{ bookId: s
       </section>
 
       <section className="mt-4 diary-card p-5">
-        <h3 className="font-serif text-lg">최근 기록</h3>
-        <div className="mt-3 grid gap-2">
-          {entries.length > 0 ? entries.slice(0, 10).map((entry) => (
-            <Link key={entry.id} href={`/diary/${entry.id}`}
-              className="rounded-2xl border border-[rgba(122,86,56,0.14)] bg-[rgba(255,248,232,0.58)] p-3 text-sm transition-opacity hover:opacity-80">
-              {formatDate(entry.created_at)} · {entry.diary_emotions?.map((e) => e.emotion_label).join(", ") || "기록"}
-            </Link>
-          )) : (
-            <p className="text-sm opacity-45">아직 기록이 없어요.</p>
-          )}
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <h3 className="font-serif text-lg">일기장 넘겨보기</h3>
+            <p className="mt-1 text-xs opacity-45">한 장씩 넘기면서 기록과 답장을 같이 읽을 수 있어요.</p>
+          </div>
+          <span className="text-xs opacity-35">{entries.length}장</span>
         </div>
+        <BookReader entries={entries} />
       </section>
 
       <BookCompleteModal open={completeOpen} onClose={() => setCompleteOpen(false)} onSelect={completeBook} />

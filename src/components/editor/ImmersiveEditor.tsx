@@ -16,6 +16,7 @@ import type {
 } from "@/lib/editor/worldInterface";
 import { useEditorStore } from "@/lib/editor/editorStore";
 import { playSound, setMuted } from "@/lib/editor/audioEngine";
+import { createSavePayload, restoreFromPayload, type EditorSavePayload } from "@/lib/editor/serializer";
 import { useDrawingPointer } from "./useDrawingPointer";
 import EditorHeader from "./EditorHeader";
 import EditorToolbar from "./EditorToolbar";
@@ -62,6 +63,8 @@ interface ImmersiveEditorProps {
   onChange: (text: string) => void;
   onSubmit?: () => void;
   diaryId?: string;
+  initialEditorState?: EditorSavePayload | null;
+  onEditorStateChange?: (editorState: EditorSavePayload) => void;
 }
 
 // ─── Component ───
@@ -71,6 +74,8 @@ export default function ImmersiveEditor({
   onChange,
   onSubmit,
   diaryId,
+  initialEditorState = null,
+  onEditorStateChange,
 }: ImmersiveEditorProps) {
   const world = WORLDS[coverStyle];
 
@@ -93,6 +98,7 @@ export default function ImmersiveEditor({
   const wrapRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLTextAreaElement>(null);
   const worldRef = useRef<WorldComponentHandle>(null);
+  const restoredEditorStateRef = useRef(false);
   const [canvasSize, setCanvasSize] = useState({ w: 800, h: 600 });
   const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
 
@@ -112,9 +118,20 @@ export default function ImmersiveEditor({
         setCanvasSize({ w: Math.round(rect.width), h: Math.round(Math.max(rect.height, 400)) });
       }
     }
-    measure();
+
+    const frameId = window.requestAnimationFrame(measure);
+    const observer = typeof ResizeObserver !== "undefined" && wrapRef.current
+      ? new ResizeObserver(measure)
+      : null;
+
+    if (wrapRef.current) observer?.observe(wrapRef.current);
     window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      observer?.disconnect();
+      window.removeEventListener("resize", measure);
+    };
   }, []);
 
   // ── Text auto-resize ──
@@ -131,6 +148,26 @@ export default function ImmersiveEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
+  // ── Restore saved drawing layer once ──
+  useEffect(() => {
+    if (!initialEditorState || restoredEditorStateRef.current) return;
+
+    restoredEditorStateRef.current = true;
+    queueMicrotask(() => {
+      try {
+        const restored = restoreFromPayload(initialEditorState);
+        actions.loadStrokes(restored.strokes);
+      } catch {
+        // Ignore malformed local draft/editor state. Text content is restored separately.
+      }
+    });
+  }, [actions, initialEditorState]);
+
+  // ── Notify parent so draft submit can persist drawings too ──
+  useEffect(() => {
+    onEditorStateChange?.(createSavePayload(value, state.strokes));
+  }, [onEditorStateChange, state.strokes, value]);
+
   // ── Sound mute sync ──
   useEffect(() => { setMuted(!state.soundEnabled); }, [state.soundEnabled]);
 
@@ -138,6 +175,17 @@ export default function ImmersiveEditor({
   useEffect(() => {
     worldRef.current?.renderer?.renderAll(state.strokes);
   }, [state.strokes]);
+
+  // ── Re-render when the lazy canvas renderer becomes available/resized ──
+  useEffect(() => {
+    if (!WorldComp) return;
+
+    const frameId = window.requestAnimationFrame(() => {
+      worldRef.current?.renderer?.renderAll(state.strokes);
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [WorldComp, canvasSize.h, canvasSize.w, state.strokes]);
 
   // ── Tool selection ──
   const handleSelectTool = useCallback(
@@ -200,25 +248,8 @@ export default function ImmersiveEditor({
         canvasEnabled={world.canvasEnabled}
       />
 
-      <div ref={wrapRef} className="immersive-editor__body">
-        <div className="immersive-editor__text-layer" style={{ display: state.editorMode === "text" ? "block" : "none" }}>
-          <textarea
-            ref={textRef}
-            value={value}
-            onChange={handleTextChange}
-            placeholder={world.textStyle.placeholder}
-            className="immersive-editor__textarea"
-            style={{
-              fontFamily: world.textStyle.fontFamily,
-              fontSize: world.textStyle.fontSize,
-              lineHeight: world.textStyle.lineHeight,
-              color: world.textStyle.color,
-            }}
-            rows={8}
-          />
-        </div>
-
-        {world.canvasEnabled && state.editorMode === "draw" && (
+      <div ref={wrapRef} className={`immersive-editor__body immersive-editor__body--${state.editorMode}`}>
+        {world.canvasEnabled && (
           <div
             className="immersive-editor__canvas-layer"
             onPointerDown={handlePointerDown}
@@ -234,6 +265,23 @@ export default function ImmersiveEditor({
             )}
           </div>
         )}
+
+        <div className="immersive-editor__text-layer">
+          <textarea
+            ref={textRef}
+            value={value}
+            onChange={handleTextChange}
+            placeholder={world.textStyle.placeholder}
+            className="immersive-editor__textarea"
+            style={{
+              fontFamily: world.textStyle.fontFamily,
+              fontSize: world.textStyle.fontSize,
+              lineHeight: world.textStyle.lineHeight,
+              color: world.textStyle.color,
+            }}
+            rows={8}
+          />
+        </div>
       </div>
 
       <EditorToolbar
