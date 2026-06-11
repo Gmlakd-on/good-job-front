@@ -5,7 +5,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import AuthModal from "@/components/auth/AuthModal";
 import type { User } from "@supabase/supabase-js";
+
+type AuthMode = "login" | "signup";
 
 export default function Header() {
   const router = useRouter();
@@ -15,6 +18,8 @@ export default function Header() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<AuthMode>("login");
 
   const fetchUnread = useCallback(async () => {
     try {
@@ -56,6 +61,11 @@ export default function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const openAuthModal = (mode: AuthMode) => {
+    setAuthModalMode(mode);
+    setAuthModalOpen(true);
+  };
+
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -82,7 +92,6 @@ export default function Header() {
           <span className="font-bold text-base" style={{ color: "var(--stamp-vermilion)", fontFamily: "Noto Serif KR, serif", letterSpacing: "-0.02em" }}>
             참 잘했어요
           </span>
-          <span className="text-base">✨</span>
         </Link>
 
         {/* 로그인 상태 - 내비 링크 */}
@@ -157,18 +166,33 @@ export default function Header() {
             </>
           ) : (
             <>
-              <Link href="/auth" className="px-3 py-1.5 text-sm font-medium rounded-full transition-all"
-                style={{ color: "var(--text-secondary)", border: "1px solid var(--border-subtle)" }}>
+              <button
+                type="button"
+                onClick={() => openAuthModal("login")}
+                className="px-3 py-1.5 text-sm font-medium rounded-full transition-all"
+                style={{ color: "var(--text-secondary)", background: "transparent", border: "1px solid var(--border-subtle)" }}
+              >
                 {t("nav.login")}
-              </Link>
-              <Link href="/auth?mode=signup" className="px-3 py-1.5 text-sm font-medium rounded-full text-white transition-all"
-                style={{ background: "var(--stamp-vermilion)" }}>
+              </button>
+              <button
+                type="button"
+                onClick={() => openAuthModal("signup")}
+                className="px-3 py-1.5 text-sm font-medium rounded-full text-white transition-all"
+                style={{ background: "var(--stamp-vermilion)", border: "1px solid var(--stamp-vermilion)" }}
+              >
                 {t("nav.signup")}
-              </Link>
+              </button>
             </>
           )}
         </div>
       </div>
+      <AuthModal
+        open={authModalOpen}
+        mode={authModalMode}
+        next="/books"
+        onClose={() => setAuthModalOpen(false)}
+        onModeChange={setAuthModalMode}
+      />
     </header>
   );
 }

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import MascotHero from "@/components/home/MascotHero";
 import TryItDemo from "@/components/home/TryItDemo";
+import AuthModal from "@/components/auth/AuthModal";
 import type { User } from "@supabase/supabase-js";
 
 interface Quote {
@@ -14,12 +15,16 @@ interface Quote {
   author: string;
 }
 
+type AuthMode = "login" | "signup";
 
 export default function HomePage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [quote, setQuote] = useState<Quote | null>(null);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<AuthMode>("login");
+  const [authNext, setAuthNext] = useState("/books");
 
   useEffect(() => {
     const supabase = createClient();
@@ -48,13 +53,29 @@ export default function HomePage() {
       );
   }, []);
 
+  const openAuthModal = useCallback((mode: AuthMode, next = "/books") => {
+    setAuthModalMode(mode);
+    setAuthNext(next);
+    setAuthModalOpen(true);
+  }, []);
+
   const enterBooks = useCallback(() => {
-    router.push(user ? "/books" : "/auth");
-  }, [router, user]);
+    if (user) {
+      router.push("/books");
+      return;
+    }
+
+    openAuthModal("login", "/books");
+  }, [openAuthModal, router, user]);
 
   const enterWrite = useCallback(() => {
-    router.push(user ? "/write" : "/auth?mode=signup");
-  }, [router, user]);
+    if (user) {
+      router.push("/write");
+      return;
+    }
+
+    openAuthModal("signup", "/write");
+  }, [openAuthModal, router, user]);
 
   const quoteText = quote ? `“${quote.quote_text}”` : "오늘의 명언을 불러오는 중이에요.";
   const quoteAuthor = quote?.author?.trim() || "참 잘했어요";
@@ -64,19 +85,27 @@ export default function HomePage() {
       <header className="home-nav">
         <div className="home-nav__inner">
           <Link href="/" className="home-nav__logo" aria-label="참 잘했어요 홈">
-            참 잘했어요 <span aria-hidden="true">✨</span>
+            참 잘했어요
           </Link>
 
           {authChecked && (
             <div className="home-nav__actions">
               {!user ? (
                 <>
-                  <Link href="/auth" className="home-nav__button home-nav__button--ghost">
+                  <button
+                    type="button"
+                    className="home-nav__button home-nav__button--ghost"
+                    onClick={() => openAuthModal("login", "/books")}
+                  >
                     로그인
-                  </Link>
-                  <Link href="/auth?mode=signup" className="home-nav__button home-nav__button--solid">
+                  </button>
+                  <button
+                    type="button"
+                    className="home-nav__button home-nav__button--solid"
+                    onClick={() => openAuthModal("signup", "/books")}
+                  >
                     회원가입
-                  </Link>
+                  </button>
                 </>
               ) : (
                 <Link href="/books" className="home-nav__button home-nav__button--solid">
@@ -133,7 +162,7 @@ export default function HomePage() {
               title="교환일기"
               description="친구 또는 모르는 누군가와 안전하게 일기를 주고받아요."
               badges={["친구 교환", "랜덤 교환"]}
-              onClick={() => router.push(user ? "/exchange" : "/auth")}
+              onClick={() => user ? router.push("/exchange") : openAuthModal("login", "/exchange")}
             />
             <FeatureCard
               icon="📔"
@@ -147,11 +176,18 @@ export default function HomePage() {
               title="감정 리포트"
               description="내가 자주 느끼는 감정의 흐름을 조용히 돌아봐요."
               badges={["패턴", "회복"]}
-              onClick={() => router.push(user ? "/report" : "/auth")}
+              onClick={() => user ? router.push("/report") : openAuthModal("login", "/report")}
             />
           </div>
         </section>
       </main>
+      <AuthModal
+        open={authModalOpen}
+        mode={authModalMode}
+        next={authNext}
+        onClose={() => setAuthModalOpen(false)}
+        onModeChange={setAuthModalMode}
+      />
     </div>
   );
 }
