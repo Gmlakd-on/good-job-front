@@ -32,11 +32,6 @@ export default function WriteStatusBar({
     return () => clearInterval(t);
   }, []);
 
-  // 저장 직후엔 즉시 "방금 저장됨"이 보이도록 동기화
-  useEffect(() => {
-    if (lastSavedAt) setNow(Date.now());
-  }, [lastSavedAt]);
-
   const savedLabel = formatSavedAt(lastSavedAt, now);
   const nearLimit = length >= CONTENT_LIMIT * 0.9;
 

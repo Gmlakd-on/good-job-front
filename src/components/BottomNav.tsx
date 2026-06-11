@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -67,6 +68,29 @@ export default function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { t } = useI18n();
+  const [navHidden, setNavHidden] = useState(false);
+
+  useEffect(() => {
+    let lastY = window.scrollY;
+
+    const onScroll = () => {
+      const currentY = window.scrollY;
+
+      if (currentY < 24) {
+        setNavHidden(false);
+      } else if (currentY > lastY + 6) {
+        setNavHidden(true);
+      } else if (currentY < lastY - 6) {
+        setNavHidden(false);
+      }
+
+      lastY = currentY;
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   // "쓰기"는 마지막으로 쓰던 일기장으로 바로 진입 (없으면 기존 흐름)
   const goWrite = () => {
@@ -79,7 +103,7 @@ export default function BottomNav() {
   if (hideOn.some((p) => pathname.startsWith(p))) return null;
 
   return (
-    <nav className="bottom-nav" aria-label={t("nav.mainMenu")}>
+    <nav className={`bottom-nav ${navHidden ? "bottom-nav--hidden" : ""}`} aria-label={t("nav.mainMenu")}>
       {NAV_ITEMS.map((item) => {
         const isActive = item.href === "/"
           ? pathname === "/"

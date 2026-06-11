@@ -18,6 +18,7 @@ export default function Header() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [navHidden, setNavHidden] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<AuthMode>("login");
 
@@ -56,7 +57,24 @@ export default function Header() {
   }, [fetchUnread, user]);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
+    let lastY = window.scrollY;
+
+    const onScroll = () => {
+      const currentY = window.scrollY;
+      setScrolled(currentY > 12);
+
+      if (currentY < 24) {
+        setNavHidden(false);
+      } else if (currentY > lastY + 6) {
+        setNavHidden(true);
+      } else if (currentY < lastY - 6) {
+        setNavHidden(false);
+      }
+
+      lastY = currentY;
+    };
+
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -80,7 +98,7 @@ export default function Header() {
 
   return (
     <header
-      className="site-header"
+      className={`site-header ${navHidden ? "site-header--hidden" : ""}`}
       style={{
         background: scrolled ? "rgba(254,252,248,0.92)" : "transparent",
         backdropFilter: scrolled ? "blur(16px)" : "none",

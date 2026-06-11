@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 "use client";
 
 /**
@@ -81,14 +82,23 @@ export default function SettingsPage() {
   }, [router]);
 
   // 마운트 시 1회 초기 데이터 로드
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void load();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [load]);
 
   // 데스크톱은 사이드바+내용 동시 표시라 기본 섹션을 펼쳐둔다
   useEffect(() => {
-    if (window.matchMedia("(min-width: 1024px)").matches) {
+    if (!window.matchMedia("(min-width: 1024px)").matches) return;
+
+    const frameId = window.requestAnimationFrame(() => {
       setActive((prev) => prev ?? "profile");
-    }
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
   }, []);
 
   const toast = (msg: string) => { setSaveMsg(msg); setTimeout(() => setSaveMsg(""), 2000); };

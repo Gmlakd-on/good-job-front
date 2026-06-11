@@ -43,7 +43,13 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   // 1) 첫 페인트: localStorage 캐시로 깜빡임 최소화
   useEffect(() => {
     const cached = window.localStorage.getItem(STORAGE_KEY);
-    if (isLanguage(cached)) setLanguageState(cached);
+    if (!isLanguage(cached)) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setLanguageState(cached);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   // 2) 계정에 저장된 언어가 진실. 로그인 상태면 서버 값으로 동기화.

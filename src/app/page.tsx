@@ -24,6 +24,7 @@ export default function HomePage() {
   const [quote, setQuote] = useState<Quote | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<AuthMode>("login");
+  const [navHidden, setNavHidden] = useState(false);
   const [authNext, setAuthNext] = useState("/books");
 
   useEffect(() => {
@@ -42,6 +43,29 @@ export default function HomePage() {
     });
 
     return () => subscription.unsubscribe();
+  }, []);
+
+
+  useEffect(() => {
+    let lastY = window.scrollY;
+
+    const onScroll = () => {
+      const currentY = window.scrollY;
+
+      if (currentY < 24) {
+        setNavHidden(false);
+      } else if (currentY > lastY + 6) {
+        setNavHidden(true);
+      } else if (currentY < lastY - 6) {
+        setNavHidden(false);
+      }
+
+      lastY = currentY;
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
@@ -82,7 +106,7 @@ export default function HomePage() {
 
   return (
     <div className="home-shell">
-      <header className="home-nav">
+      <header className={`home-nav ${navHidden ? "home-nav--hidden" : ""}`}>
         <div className="home-nav__inner">
           <Link href="/" className="home-nav__logo" aria-label="참 잘했어요 홈">
             참 잘했어요
