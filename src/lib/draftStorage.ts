@@ -61,12 +61,14 @@ export function clearDraft(bookId: string) {
 /** 주기적 자동저장 타이머 */
 export function startDraftTimer(
   bookId: string,
-  getData: () => Omit<DraftData, "updatedAt">
+  getData: () => Omit<DraftData, "updatedAt">,
+  onSave?: (savedAt: number) => void // 저장 완료 시점을 UI(상태바)에 알린다
 ): () => void {
   const timer = setInterval(() => {
     const data = getData();
     if (data.content.trim()) {
       saveDraft(bookId, data);
+      onSave?.(Date.now());
     }
   }, SAVE_INTERVAL);
 

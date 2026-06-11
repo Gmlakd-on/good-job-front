@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import BookCreateForm from "@/components/book-ui/BookCreateForm";
 import type { CoverStyleId, CoverVariant } from "@/components/book-ui/bookTypes";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 type ApiErrorResponse = {
   error?: string;
@@ -23,6 +24,7 @@ function formatDetails(details: unknown) {
 
 export default function NewBookPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [errorDetails, setErrorDetails] = useState("");
@@ -75,9 +77,9 @@ export default function NewBookPage() {
     <div className="pt-4">
       <div className="mb-5 flex items-center justify-between">
         <Link href="/books" className="text-sm opacity-40 hover:opacity-70">
-          ← 책장
+          {t("book.new.backToShelf")}
         </Link>
-        <h1 className="font-serif text-xl">새 일기장</h1>
+        <h1 className="font-serif text-xl">{t("book.new.title")}</h1>
         <span className="w-10" />
       </div>
 

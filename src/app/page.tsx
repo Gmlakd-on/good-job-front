@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import MascotHero from "@/components/home/MascotHero";
+import TryItDemo from "@/components/home/TryItDemo";
 import type { User } from "@supabase/supabase-js";
 
 interface Quote {
@@ -121,6 +122,9 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* 로그인 전: 가입 없이 표지 고르기 → 적기 → 답장 체험 */}
+        {authChecked && !user && <TryItDemo />}
 
         <section className="home-feature-section" aria-label="주요 기능">
           <div className="home-feature-grid">

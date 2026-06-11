@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import BookShelf from "@/components/book-ui/BookShelf";
 import type { DiaryBook } from "@/components/book-ui/bookTypes";
+import { getLastBookId } from "@/lib/lastBook";
 
 export default function BooksPage() {
   const router = useRouter();
@@ -36,7 +37,11 @@ export default function BooksPage() {
 
         // action=write일 때 활성 일기장이 있으면 바로 쓰기로
         if (searchParams.get("action") === "write") {
-          const activeBook = bookList.find((b) => b.status === "active");
+          // 마지막으로 쓰던 일기장 우선, 없으면 첫 활성 일기장
+          const lastId = getLastBookId();
+          const activeBook =
+            bookList.find((b) => b.status === "active" && b.id === lastId) ||
+            bookList.find((b) => b.status === "active");
           if (activeBook) {
             router.replace(`/write?bookId=${activeBook.id}`);
             return;
@@ -80,11 +85,23 @@ export default function BooksPage() {
           <p className="text-sm text-[var(--warm-red)]">{error}</p>
         </div>
       ) : books.length === 0 ? (
-        <div className="diary-card p-8 text-center">
-          <p className="font-serif text-lg mb-2">아직 일기장이 없어요</p>
-          <p className="text-sm opacity-55 mb-4">첫 번째 일기장을 만들어볼까요?</p>
-          <Link href="/books/new" className="stamp-button inline-block rounded-full px-6 py-2 text-sm">
-            새 일기장 만들기
+        <div className="empty-shelf">
+          {/* 빈 선반 + 점선 유령 책: "여기에 첫 권이 꽂힐 자리"를 보여준다 */}
+          <svg className="empty-shelf__art" width="180" height="120" viewBox="0 0 180 120" fill="none" aria-hidden="true">
+            <g className="empty-shelf__ghost">
+              <rect x="70" y="22" width="40" height="74" rx="5"
+                stroke="rgba(196,85,58,0.55)" strokeWidth="2" strokeDasharray="5 5" fill="rgba(255,247,237,0.6)" />
+              <path d="M90 50v18M81 59h18" stroke="rgba(196,85,58,0.55)" strokeWidth="2" strokeLinecap="round" />
+            </g>
+            <rect x="14" y="98" width="152" height="10" rx="3" fill="#a07c56" />
+            <rect x="14" y="98" width="152" height="4" rx="2" fill="#b8946a" />
+            <path d="M30 14l2.2 5 5 2.2-5 2.2-2.2 5-2.2-5-5-2.2 5-2.2 2.2-5z" fill="rgba(217,164,86,0.7)" />
+            <circle cx="150" cy="36" r="2.5" fill="rgba(217,164,86,0.55)" />
+          </svg>
+          <p className="empty-shelf__title">책장이 비어 있어요</p>
+          <p className="empty-shelf__sub">표지를 고르고 첫 권을 꽂아볼까요?<br />30개의 일기가 모이면 한 권이 완성돼요.</p>
+          <Link href="/books/new" className="empty-shelf__cta">
+            첫 일기장 만들기
           </Link>
         </div>
       ) : (

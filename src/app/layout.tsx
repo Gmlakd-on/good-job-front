@@ -5,7 +5,9 @@ import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
 import SiteMainMode from "@/components/SiteMainMode";
 import Providers from "./providers";
+import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import "./globals.css";
+import "./ui-overrides.css"; // 데스크톱 레이아웃/표지 선반/설정 2단 — globals.css 다음에 로드되어야 함
 
 export const metadata: Metadata = {
   title: "참 잘했어요 — 혼자 견디지 말자",
@@ -55,15 +57,18 @@ export default function RootLayout({
       </head>
       <body>
         <Providers>
-          <SiteMainMode />
-          <div className="site-layout">
-            <Header />
-            <main id="site-main" className="site-main">
-              {children}
-            </main>
-            <Footer />
-            <BottomNav />
-          </div>
+          {/* 언어 컨텍스트: /api/settings의 language를 화면 전체에 적용 */}
+          <I18nProvider>
+            <SiteMainMode />
+            <div className="site-layout">
+              <Header />
+              <main id="site-main" className="site-main">
+                {children}
+              </main>
+              <Footer />
+              <BottomNav />
+            </div>
+          </I18nProvider>
         </Providers>
       </body>
     </html>

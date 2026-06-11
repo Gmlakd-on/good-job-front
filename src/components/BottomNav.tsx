@@ -1,11 +1,19 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { getLastBookId } from "@/lib/lastBook";
+import type { DictKey } from "@/lib/i18n/dictionary";
 
-const NAV_ITEMS = [
+const NAV_ITEMS: {
+  labelKey: DictKey;
+  href: string;
+  isAction?: boolean;
+  icon: (active: boolean) => React.ReactNode;
+}[] = [
   {
-    label: "홈",
+    labelKey: "nav.home",
     href: "/",
     icon: (active: boolean) => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "var(--ink-dark)" : "var(--ink-ghost)"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -15,7 +23,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    label: "책장",
+    labelKey: "nav.bookshelfShort",
     href: "/books",
     icon: (active: boolean) => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "var(--ink-dark)" : "var(--ink-ghost)"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -25,7 +33,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    label: "쓰기",
+    labelKey: "nav.write",
     href: "/write",
     isAction: true,
     icon: (_active: boolean) => (
@@ -35,7 +43,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    label: "리포트",
+    labelKey: "nav.reportShort",
     href: "/report",
     icon: (active: boolean) => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "var(--ink-dark)" : "var(--ink-ghost)"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -44,7 +52,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    label: "설정",
+    labelKey: "nav.settings",
     href: "/settings",
     icon: (active: boolean) => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "var(--ink-dark)" : "var(--ink-ghost)"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -57,13 +65,21 @@ const NAV_ITEMS = [
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { t } = useI18n();
+
+  // "쓰기"는 마지막으로 쓰던 일기장으로 바로 진입 (없으면 기존 흐름)
+  const goWrite = () => {
+    const last = getLastBookId();
+    router.push(last ? `/write?bookId=${last}` : "/books?action=write");
+  };
   if (pathname === "/") return null;
 
   const hideOn = ["/write", "/onboarding", "/auth"];
   if (hideOn.some((p) => pathname.startsWith(p))) return null;
 
   return (
-    <nav className="bottom-nav" aria-label="주요 메뉴">
+    <nav className="bottom-nav" aria-label={t("nav.mainMenu")}>
       {NAV_ITEMS.map((item) => {
         const isActive = item.href === "/"
           ? pathname === "/"
@@ -71,9 +87,10 @@ export default function BottomNav() {
 
         if (item.isAction) {
           return (
-            <Link
+            <button
               key={item.href}
-              href="/books?action=write"
+              type="button"
+              onClick={goWrite}
               className="flex flex-col items-center justify-center -mt-3"
             >
               <div
@@ -92,9 +109,9 @@ export default function BottomNav() {
                 className="text-[10px] mt-1 font-medium"
                 style={{ color: "var(--text-muted)" }}
               >
-                {item.label}
+                {t(item.labelKey)}
               </span>
-            </Link>
+            </button>
           );
         }
 
@@ -109,7 +126,7 @@ export default function BottomNav() {
               className="text-[10px] font-medium"
               style={{ color: isActive ? "var(--ink-dark)" : "var(--text-muted)" }}
             >
-              {item.label}
+              {t(item.labelKey)}
             </span>
           </Link>
         );

@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { loadDraft, clearDraft, startDraftTimer } from "@/lib/draftStorage";
+import { saveLastBookId, clearLastBookId } from "@/lib/lastBook";
 import EmotionSelector from "@/components/EmotionSelector";
 import PersonaSelector from "@/components/PersonaSelector";
 import ReplyCard from "@/components/ReplyCard";
@@ -43,6 +44,7 @@ export default function WritePage() {
   const [aiInsight, setAiInsight] = useState<AiInsight | null>(null);
   const [error, setError] = useState("");
   const [draftRestored, setDraftRestored] = useState(false);
+  const [activeBooks, setActiveBooks] = useState<DiaryBook[]>([]);
 
   // Refs for draft timer access to current state
   const contentRef = useRef(diaryContent);
@@ -61,6 +63,11 @@ export default function WritePage() {
       fetch("/api/profile").then((res) => res.json()).then((data) => {
         if (data.profile?.preferred_persona) setSelectedPersona(data.profile.preferred_persona);
       }).catch(() => {});
+      // 일기장 전환 셀렉트용 — 활성 일기장 목록
+      fetch("/api/diary-books").then((res) => res.json()).then((data) => {
+        const list: DiaryBook[] = (data.books || []).filter((b: DiaryBook) => b.status === "active");
+        setActiveBooks(list);
+      }).catch(() => {});
     });
   }, [router]);
 
@@ -72,8 +79,9 @@ export default function WritePage() {
         const res = await fetch(`/api/diary-books/${bookId}`);
         const data = await res.json().catch(() => ({}));
         if (res.status === 401) { router.replace("/auth"); return; }
-        if (!res.ok || !data.book) { router.replace("/books"); return; }
+        if (!res.ok || !data.book) { clearLastBookId(); router.replace("/books"); return; }
         setBook(data.book);
+        saveLastBookId(data.book.id); // 다음 "쓰기"는 이 일기장으로 바로 진입
       } catch { router.replace("/books"); }
     }
     loadBook();
@@ -202,10 +210,16 @@ export default function WritePage() {
         <p className="mt-4 text-lg" style={{ color: "var(--text-primary)" }}>
           이 일기장은 더 이상 작성할 수 없어요.
         </p>
-        <Link href="/books" className="mt-4 inline-flex font-medium text-sm text-white"
-          style={{ padding: "12px 24px", borderRadius: "var(--radius-full)", background: "var(--accent)", boxShadow: "0 4px 12px rgba(201, 123, 90, 0.3)" }}>
-          책장으로
-        </Link>
+        <div className="mt-4 flex gap-3">
+          <Link href="/books/new" className="inline-flex font-medium text-sm text-white"
+            style={{ padding: "12px 24px", borderRadius: "var(--radius-full)", background: "var(--accent)", boxShadow: "0 4px 12px rgba(201, 123, 90, 0.3)" }}>
+            새 일기장 만들기
+          </Link>
+          <Link href="/books" className="inline-flex font-medium text-sm"
+            style={{ padding: "12px 24px", borderRadius: "var(--radius-full)", background: "var(--cream-deep)", color: "var(--text-primary)", border: "1px solid var(--border-subtle)" }}>
+            책장으로
+          </Link>
+        </div>
       </div>
     );
   }
@@ -214,7 +228,22 @@ export default function WritePage() {
     <div className={`write-page write-page--${book.cover_style_id}`}>
       <div className="write-page__topbar">
         <Link href={`/books/${book.id}`} className="write-page__back">← {book.title}</Link>
-        <BookProgress book={book} />
+        <div className="flex items-center gap-2">
+          {/* 본문 작성 전(emotion/persona)에만 일기장 전환 허용 — 작성 중 전환으로 글이 섞이는 혼란 방지 */}
+          {(step === "emotion" || step === "persona") && activeBooks.length > 1 && (
+            <select
+              className="write-book-switch"
+              value={book.id}
+              aria-label="일기장 바꾸기"
+              onChange={(e) => router.replace(`/write?bookId=${e.target.value}`)}
+            >
+              {activeBooks.map((b) => (
+                <option key={b.id} value={b.id}>{b.title}</option>
+              ))}
+            </select>
+          )}
+          <BookProgress book={book} />
+        </div>
       </div>
 
       {step === "emotion" && (
@@ -254,7 +283,7 @@ export default function WritePage() {
         </div>
       )}
 
-      {step === "loading" && <LoadingStep />}
+      {step === "loading" && <LoadingStep persona={selectedPersona} />}
 
       {step === "crisis" && (
         <div className="write-page__step animate-fade-in-scale">
