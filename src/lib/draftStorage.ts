@@ -1,0 +1,90 @@
+"use client";
+
+/**
+ * 작성 중 임시저장 관리.
+ * 일기 작성 시 localStorage에 주기적으로 백업하고, 페이지 재진입 시 복구한다.
+ * 서버 autosave(diaryId 기반)와는 별개로 동작한다.
+ *
+ * 저장 구조:
+ *   diary_draft:{bookId} → { content, emotions, persona, editorState, updatedAt }
+ */
+
+const PREFIX = "diary_draft:";
+const SAVE_INTERVAL = 3000; // 3초마다 저장
+
+export interface DraftData {
+  content: string;
+  emotions: string[];
+  persona: string;
+  editorState?: unknown;
+  updatedAt: number;
+}
+
+/** 임시저장 데이터 조회 */
+export function loadDraft(bookId: string): DraftData | null {
+  try {
+    const raw = localStorage.getItem(PREFIX + bookId);
+    if (!raw) return null;
+    const data = JSON.parse(raw) as DraftData;
+    // 24시간 이상 지난 초안은 무시
+    if (Date.now() - data.updatedAt > 24 * 60 * 60 * 1000) {
+      localStorage.removeItem(PREFIX + bookId);
+      return null;
+    }
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+/** 임시저장 */
+export function saveDraft(bookId: string, data: Omit<DraftData, "updatedAt">) {
+  try {
+    localStorage.setItem(
+      PREFIX + bookId,
+      JSON.stringify({ ...data, updatedAt: Date.now() })
+    );
+  } catch {
+    // localStorage full or unavailable — silent fail
+  }
+}
+
+/** 임시저장 삭제 (제출 완료 후) */
+export function clearDraft(bookId: string) {
+  try {
+    localStorage.removeItem(PREFIX + bookId);
+  } catch {
+    // silent
+  }
+}
+
+/** 주기적 자동저장 타이머 */
+export function startDraftTimer(
+  bookId: string,
+  getData: () => Omit<DraftData, "updatedAt">
+): () => void {
+  const timer = setInterval(() => {
+    const data = getData();
+    if (data.content.trim()) {
+      saveDraft(bookId, data);
+    }
+  }, SAVE_INTERVAL);
+
+  return () => clearInterval(timer);
+}
+
+/** 모든 임시저장 삭제 (로그아웃 시 호출) */
+export function clearAllDrafts() {
+  try {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith(PREFIX)) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
+  } catch {
+    // silent
+  }
+}
