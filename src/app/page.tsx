@@ -126,6 +126,7 @@ export default function HomePage() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<AuthMode>("login");
   const [navHidden, setNavHidden] = useState(false);
+  const [showScrollCue, setShowScrollCue] = useState(true);
   const [authNext, setAuthNext] = useState("/");
   const [profile, setProfile] = useState<Profile | null>(null);
   const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
@@ -168,6 +169,10 @@ export default function HomePage() {
 
     const onScroll = () => {
       const currentY = window.scrollY;
+
+      if (currentY > 8) {
+        setShowScrollCue(false);
+      }
 
       if (currentY < 24) {
         setNavHidden(false);
@@ -222,6 +227,14 @@ export default function HomePage() {
 
     openAuthModal("signup", "/write");
   }, [openAuthModal, router, user]);
+
+  const scrollToPreview = useCallback(() => {
+    setShowScrollCue(false);
+    window.scrollTo({
+      top: Math.max(window.innerHeight * 0.86, 520),
+      behavior: "smooth",
+    });
+  }, []);
 
   const localizedQuote = useMemo(() => {
     if (!quote) {
@@ -739,6 +752,18 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {authChecked && !user && showScrollCue && (
+          <button
+            type="button"
+            className="home-scroll-cue"
+            onClick={scrollToPreview}
+            aria-label="아래 콘텐츠로 스크롤"
+          >
+            <span className="home-scroll-cue__label">아래로 살짝 내려보세요</span>
+            <span className="home-scroll-cue__arrow" aria-hidden="true">↷</span>
+          </button>
+        )}
 
         {authChecked && !user && <TryItDemo />}
 
