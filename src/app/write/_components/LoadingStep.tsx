@@ -11,9 +11,9 @@ import { useEffect, useState } from "react";
 
 const PERSONA_MESSAGES: Record<string, string[]> = {
   operator_voice: [
-    "참이가 조용히 읽고 있어요…",
-    "함부로 말하지 않으려 단어를 고르는 중…",
-    "당신 마음 옆에 잠시 앉는 중…",
+    "참이에게 일기를 안전하게 전해두는 중…",
+    "주인장 답글함에 조심스럽게 올려두는 중…",
+    "하루 뒤 도착할 답글 자리를 마련하는 중…",
   ],
   warm_teacher: [
     "선생님이 안경을 고쳐 쓰는 중…",

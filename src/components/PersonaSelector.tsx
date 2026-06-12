@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { PERSONAS, type PersonaOption } from "@/types";
 
 interface PersonaSelectorProps {
@@ -17,7 +18,7 @@ export default function PersonaSelector({ selected, onChange }: PersonaSelectorP
         className="font-serif text-lg mb-1"
         style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}
       >
-        누가 내 일기를 읽어줄까요?
+        어떤 존재가 내 일기를 읽어줄까요?
       </p>
       <p className="text-sm mb-5" style={{ color: "var(--text-muted)" }}>
         오늘 하루를 읽고 짧게 답글을 남길 존재를 고르는 거예요
@@ -103,19 +104,26 @@ function PersonaCard({
         cursor: locked ? "not-allowed" : "pointer",
       }}
     >
-      {/* Persona avatar with theme tint */}
       <span
-        className="flex-shrink-0 text-2xl flex items-center justify-center"
+        className="relative flex-shrink-0 overflow-hidden flex items-center justify-center"
         style={{
-          width: 42,
-          height: 42,
-          borderRadius: "var(--radius-sm)",
+          width: 46,
+          height: 46,
+          borderRadius: "50%",
           background: isSelected
             ? `${theme.replyAccent}22`
             : "var(--cream-deep)",
+          boxShadow: `0 0 0 1px ${theme.replyAccent}24`,
         }}
       >
-        {persona.emoji}
+        <Image
+          src={persona.imageSrc}
+          alt={`${persona.name} 아이콘`}
+          width={46}
+          height={46}
+          className="h-full w-full object-cover"
+          sizes="46px"
+        />
       </span>
 
       <div className="min-w-0 flex-1">
@@ -141,7 +149,6 @@ function PersonaCard({
         </p>
       </div>
 
-      {/* Theme color preview dot */}
       {!locked && (
         <div className="flex items-center gap-1 ml-auto flex-shrink-0">
           <div

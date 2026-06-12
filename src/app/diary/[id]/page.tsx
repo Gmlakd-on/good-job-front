@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -25,6 +26,7 @@ interface DiaryDetail {
   created_at: string;
   diary_emotions: { emotion_code: string; emotion_label: string }[];
   replies: { id: string; content: string; persona: string; risk_level: string }[];
+  owner_comment_requests?: { id: string; status: string; source?: string | null; reply_due_at?: string | null; created_at: string }[];
   ai_insight?: AiInsight | null;
 }
 
@@ -104,6 +106,13 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
     setSaving(false);
   };
 
+  function formatOwnerDueAt(value?: string | null) {
+    if (!value) return "보통 하루 뒤까지";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "보통 하루 뒤까지";
+    return date.toLocaleString("ko-KR", { month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  }
+
   if (loading) {
     return (
       <div className="pt-2">
@@ -126,6 +135,9 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
 
   const dateStr = formatFullDate(diary.created_at);
   const reply = diary.replies?.[0];
+  const pendingOwnerRequest = diary.owner_comment_requests?.find(
+    (request) => request.source === "persona_chami" && request.status !== "completed"
+  );
   const weather = diary.weather_code
     ? WEATHER_OPTIONS.find((item) => item.code === diary.weather_code)
     : null;
@@ -155,12 +167,28 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
             </span>
           );
         })}
-        {reply && (
-          <span className="text-sm px-3 py-1 rounded-full" style={{ background: "var(--warm-blue)", color: "white" }}>
-            {PERSONAS.find((p) => p.code === reply.persona)?.emoji}{" "}
-            {PERSONAS.find((p) => p.code === reply.persona)?.name || reply.persona}
-          </span>
-        )}
+        {reply && (() => {
+          const replyPersona = PERSONAS.find((p) => p.code === reply.persona);
+          return (
+            <span
+              className="inline-flex items-center gap-1.5 text-sm px-3 py-1 rounded-full"
+              style={{ background: "var(--warm-blue)", color: "white" }}
+            >
+              {replyPersona?.imageSrc && (
+                <Image
+                  src={replyPersona.imageSrc}
+                  alt=""
+                  width={20}
+                  height={20}
+                  className="rounded-full object-cover"
+                  sizes="20px"
+                  aria-hidden="true"
+                />
+              )}
+              {replyPersona?.name || reply.persona}
+            </span>
+          );
+        })()}
       </div>
 
       {/* 일기 본문 */}
@@ -257,7 +285,7 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
             content={reply.content}
             persona={reply.persona}
           />
-          <AIInsightBadge insight={diary.ai_insight} />
+          <AIInsightBadge insight={reply.persona === "operator_voice" ? null : diary.ai_insight} />
           <div className="mt-4">
             <FeedbackButtons replyId={reply.id} onSubmit={handleFeedback} />
           </div>
@@ -265,6 +293,16 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
             <ReportButton targetType="REPLY" targetId={reply.id} />
           </div>
         </>
+      )}
+
+      {!reply && pendingOwnerRequest && (
+        <div className="diary-card p-5 text-center">
+          <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>참이가 직접 읽는 중이에요 💌</p>
+          <p className="text-xs mt-2 leading-relaxed" style={{ color: "var(--text-muted)" }}>
+            AI 답글이 아니라 운영자가 직접 남기는 답글이에요.
+            <span className="block mt-1">도착 예정: {formatOwnerDueAt(pendingOwnerRequest.reply_due_at)}</span>
+          </p>
+        </div>
       )}
     </div>
   );

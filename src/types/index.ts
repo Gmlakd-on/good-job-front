@@ -119,7 +119,7 @@ export interface DiaryEmotion {
 export interface Reply {
   id: string;
   diary_id: string;
-  reply_type: "AI";
+  reply_type: "AI" | "OWNER";
   persona: string;
   content: string;
   moderation_status: ModerationStatus;
@@ -253,7 +253,7 @@ export const PERSONAS: PersonaOption[] = [
     name: "참이",
     emoji: "🫂",
     imageSrc: "/personas/operator_voice.png",
-    description: "이 서비스를 처음 만든 사람. 고통에 의미를 강요하지 않고, 조심스럽게 곁에 남아요.",
+    description: "이 공간을 만든 주인장. 기계 아니고 사람입니다! (일기 답글 만렙 ✍️)",
     tone: "부드러운 해요체, 조심스러운 바람, 열린 문장",
     tier: "free",
     theme: {
@@ -272,7 +272,7 @@ export const PERSONAS: PersonaOption[] = [
     name: "순자 할머니",
     emoji: "👵",
     imageSrc: "/personas/soonja_grandma.png",
-    description: "교문 앞 분식집처럼 따뜻하게 받아주는 사람",
+    description: "교문 앞 분식집처럼 따뜻하게 받아주는 존재",
     tone: "구수함, 다정함, 품어주는 말투",
     tier: "free",
     theme: {
@@ -310,7 +310,7 @@ export const PERSONAS: PersonaOption[] = [
     name: "옛 담임 선생님",
     emoji: "🧑‍🏫",
     imageSrc: "/personas/warm_teacher.png",
-    description: "칠판 앞에서 짧고 차분하게 확인해주는 사람",
+    description: "칠판 앞에서 짧고 차분하게 확인해주는 존재",
     tone: "정중한 존댓말, 관찰자적 시점, 짧고 담백한 문장",
     tier: "pro",
     theme: {
@@ -329,7 +329,7 @@ export const PERSONAS: PersonaOption[] = [
     name: "건너말 할아버지",
     emoji: "👴",
     imageSrc: "/personas/geonneomal_grandpa.png",
-    description: "말은 적지만 운동장 끝 벤치처럼 곁에 있는 사람",
+    description: "말은 적지만 운동장 끝 벤치처럼 곁에 있는 존재",
     tone: "투박하지만 깊은 다정함, 기다려주는 말투",
     tier: "pro",
     theme: {
@@ -348,7 +348,7 @@ export const PERSONAS: PersonaOption[] = [
     name: "미용실 원장님 샤론",
     emoji: "💇‍♀️",
     imageSrc: "/personas/sharon_director.png",
-    description: "하교길 동네 미용실처럼 생활감 있게 들어주는 사람",
+    description: "하교길 동네 미용실처럼 생활감 있게 들어주는 존재",
     tone: "현실적, 생활감, 따뜻한 수다",
     tier: "pro",
     theme: {
@@ -396,6 +396,6 @@ export interface AiInsight {
   riskLevel?: RiskLevel | string;
   emotionWeight?: string;
   primaryCareMode?: string;
-  provider?: "external" | "fallback" | string;
+  provider?: "gemini" | "owner" | "fallback" | string;
   error?: string;
 }

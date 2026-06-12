@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Image from "next/image";
 import { PERSONAS } from "@/types";
 import type { DoodleType, DoodleIntensity } from "@/types";
 import GoodJobStamp from "./GoodJobStamp";
@@ -52,6 +53,7 @@ export default function ReplyCard({
   };
 
   const readingMessages: Record<string, string> = {
+    operator_voice: "참이가 직접 읽고 남긴 답글",
     soonja_grandma: "순자 할머니가 읽고 남긴 흔적",
     nabi_cat: "나비가 발자국을 남겼다냥",
     warm_teacher: "선생님이 읽고 남긴 메모",
@@ -93,10 +95,19 @@ export default function ReplyCard({
               {readingMsg}
             </p>
             <p
-              className="mt-1 text-xs"
+              className="mt-1 inline-flex items-center gap-1.5 text-xs"
               style={{ color: `${theme.replyInk}70` }}
             >
-              {personaData.emoji} {personaData.name}
+              <Image
+                src={personaData.imageSrc}
+                alt=""
+                width={20}
+                height={20}
+                className="rounded-full object-cover"
+                sizes="20px"
+                aria-hidden="true"
+              />
+              {personaData.name}
             </p>
           </div>
           {typingDone && (

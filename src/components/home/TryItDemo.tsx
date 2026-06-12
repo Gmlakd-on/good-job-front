@@ -12,16 +12,17 @@
  * - 체험 내용은 어디에도 저장하지 않는다.
  */
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import CoverShelf from "@/components/book-ui/CoverShelf";
 import type { CoverStyleId } from "@/components/book-ui/bookTypes";
 
 type DemoPersona = "soonja_grandma" | "nabi_cat" | "sharon_director";
 
-const PERSONAS: { id: DemoPersona; emoji: string; name: string; tagline: string }[] = [
-  { id: "soonja_grandma", emoji: "👵", name: "순자 할머니", tagline: "구수하고 다정한" },
-  { id: "nabi_cat", emoji: "🐈", name: "고양이 나비", tagline: "인생 2회차, 은근 어른" },
-  { id: "sharon_director", emoji: "💇", name: "원장님 샤론", tagline: "동네 미용실 수다" },
+const PERSONAS: { id: DemoPersona; imageSrc: string; name: string; tagline: string }[] = [
+  { id: "soonja_grandma", imageSrc: "/personas/soonja_grandma.png", name: "순자 할머니", tagline: "구수하고 다정한" },
+  { id: "nabi_cat", imageSrc: "/personas/nabi_cat.png", name: "고양이 나비", tagline: "인생 2회차, 은근 어른" },
+  { id: "sharon_director", imageSrc: "/personas/sharon_director.png", name: "원장님 샤론", tagline: "동네 미용실 수다" },
 ];
 
 // 안전 필터 — 백엔드와 동일한 위험 패턴 (체험에서도 가벼운 위로로 넘기지 않는다)
@@ -106,9 +107,9 @@ export default function TryItDemo() {
           <CoverShelf selected={cover} onSelect={setCover} />
         </div>
 
-        {/* 2. 답장해줄 사람 + 한 줄 일기 */}
+        {/* 2. 답장해줄 존재 + 한 줄 일기 */}
         <div className="try-demo__step">
-          <span className="try-demo__step-label">② 답장해줄 친구를 고르고, 오늘 마음을 한 줄 적어보세요</span>
+          <span className="try-demo__step-label">② 답장해줄 존재를 고르고, 오늘 마음을 한 줄 적어보세요</span>
           <div className="try-demo__personas" role="radiogroup" aria-label="답장 페르소나 선택">
             {PERSONAS.map((p) => (
               <button
@@ -119,7 +120,17 @@ export default function TryItDemo() {
                 className={`try-demo__persona ${persona === p.id ? "try-demo__persona--active" : ""}`}
                 onClick={() => setPersona(p.id)}
               >
-                <span className="try-demo__persona-emoji">{p.emoji}</span>
+                <span className="try-demo__persona-icon">
+                  <Image
+                    src={p.imageSrc}
+                    alt=""
+                    width={44}
+                    height={44}
+                    className="rounded-full object-cover"
+                    sizes="44px"
+                    aria-hidden="true"
+                  />
+                </span>
                 <span className="try-demo__persona-name">{p.name}</span>
                 <span className="try-demo__persona-tag">{p.tagline}</span>
               </button>
@@ -152,7 +163,16 @@ export default function TryItDemo() {
           >
             {!reply.isSafety && (
               <p className="try-demo__reply-from">
-                {personaInfo.emoji} {personaInfo.name}의 답장
+                <Image
+                  src={personaInfo.imageSrc}
+                  alt=""
+                  width={20}
+                  height={20}
+                  className="rounded-full object-cover"
+                  sizes="20px"
+                  aria-hidden="true"
+                />
+                {personaInfo.name}의 답장
               </p>
             )}
             <p className="try-demo__reply-text">{reply.content}</p>

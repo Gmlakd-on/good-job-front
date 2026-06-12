@@ -20,6 +20,9 @@ function labelProvider(insight: AiInsight) {
   if (insight.provider === "fallback" || insight.model === "fallback") {
     return "기본 답장 모드";
   }
+  if (insight.provider === "gemini") {
+    return "Gemini 답장 모드";
+  }
   return "AI 답장 모드";
 }
 

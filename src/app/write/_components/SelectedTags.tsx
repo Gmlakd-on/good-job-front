@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { EMOTIONS, PERSONAS, WEATHER_OPTIONS } from "@/types";
 
 interface SelectedTagsProps {
@@ -43,12 +44,22 @@ export default function SelectedTags({ emotions, weather, persona, compact = fal
       })}
       {persona && (() => {
         const p = PERSONAS.find((item) => item.code === persona);
+        if (!p) return null;
         return (
           <span
-            className="px-3 py-1 text-xs font-medium text-white"
+            className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-white"
             style={{ borderRadius: "var(--radius-full)", background: "var(--soft-sky)" }}
           >
-            {p?.emoji} {p?.name}
+            <Image
+              src={p.imageSrc}
+              alt=""
+              width={18}
+              height={18}
+              className="rounded-full object-cover"
+              sizes="18px"
+              aria-hidden="true"
+            />
+            {p.name}
           </span>
         );
       })()}

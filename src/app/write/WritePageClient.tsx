@@ -46,6 +46,9 @@ export default function WritePage() {
   const [safetyMessage, setSafetyMessage] = useState("");
   const [riskLevel, setRiskLevel] = useState("");
   const [aiInsight, setAiInsight] = useState<AiInsight | null>(null);
+  const [ownerReplyPending, setOwnerReplyPending] = useState(false);
+  const [ownerReplyDueAt, setOwnerReplyDueAt] = useState("");
+  const [ownerReplyError, setOwnerReplyError] = useState("");
   const [error, setError] = useState("");
   const [draftRestored, setDraftRestored] = useState(false);
   const [activeBooks, setActiveBooks] = useState<DiaryBook[]>([]);
@@ -156,6 +159,9 @@ export default function WritePage() {
 
     setError("");
     setAiInsight(null);
+    setOwnerReplyPending(false);
+    setOwnerReplyDueAt("");
+    setOwnerReplyError("");
     setStep("loading");
 
     try {
@@ -196,6 +202,14 @@ export default function WritePage() {
       if (data.diary?.id) setDiaryId(data.diary.id);
       if (data.safetyMessage && data.riskLevel === "CRITICAL") { setSafetyMessage(data.safetyMessage); setStep("crisis"); return; }
       if (data.reply) { setReplyContent(data.reply.content); setReplyId(data.reply.id); }
+      if (data.ownerReplyPending) {
+        setOwnerReplyPending(true);
+        setOwnerReplyDueAt(data.ownerReplyDueAt || data.ownerReplyRequest?.reply_due_at || "");
+        setReplyContent("");
+        setReplyId("");
+        setAiInsight(null);
+      }
+      if (data.ownerReplyError) setOwnerReplyError(data.ownerReplyError);
       if (data.safetyMessage) setSafetyMessage(data.safetyMessage);
 
       // 제출 성공 → 임시저장 삭제
@@ -222,6 +236,15 @@ export default function WritePage() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || t("w.replyFail")); setStep("reply"); return; }
+      if (data.ownerReplyPending) {
+        setOwnerReplyPending(true);
+        setOwnerReplyDueAt(data.ownerReplyDueAt || data.ownerReplyRequest?.reply_due_at || "");
+        setReplyContent("");
+        setReplyId("");
+        setAiInsight(null);
+        setStep("reply");
+        return;
+      }
       if (data.reply) { setReplyContent(data.reply.content); setReplyId(data.reply.id); }
       setAiInsight(data.ai || null);
       setStep("reply");
@@ -234,6 +257,13 @@ export default function WritePage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ reply_id: targetReplyId, is_helpful: isHelpful }),
     });
+  }
+
+  function formatOwnerDueAt(value: string) {
+    if (!value) return "보통 하루 뒤까지";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "보통 하루 뒤까지";
+    return date.toLocaleString("ko-KR", { month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
   }
 
   // ── Book loading ──
@@ -304,7 +334,7 @@ export default function WritePage() {
           <button onClick={() => setStep("emotion")} className="btn-ghost text-sm mb-4 -ml-1">{t("w.backEmotion")}</button>
           <SelectedTags emotions={selectedEmotions} weather={selectedWeather} />
           <PersonaSelector selected={selectedPersona} onChange={setSelectedPersona} />
-          <div className="mt-4"><AITransparencyNote /></div>
+          <div className="mt-4"><AITransparencyNote persona={selectedPersona} /></div>
           <button onClick={() => setStep("write")} className="btn-primary w-full mt-5">{t("w.startWrite")}</button>
         </div>
       )}
@@ -357,8 +387,20 @@ export default function WritePage() {
             <ReplyCard content={replyContent} animate persona={selectedPersona} />
           )}
 
+          {/* 참이 답글 대기 — 운영자가 직접 쓰는 답글 */}
+          {ownerReplyPending && !replyContent && (
+            <div className="mb-4 p-5 text-center" style={{ borderRadius: "var(--radius-lg)", background: "var(--cream-deep)", border: "1px solid var(--border-subtle)" }}>
+              <p className="text-sm mb-1" style={{ color: "var(--text-primary)" }}>참이에게 일기가 전해졌어요 💌</p>
+              <p className="text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                이 답글은 AI가 아니라 운영자가 직접 남겨요.
+                <span className="block mt-1">도착 예정: {formatOwnerDueAt(ownerReplyDueAt)}</span>
+                {ownerReplyError ? <span className="block mt-1" style={{ color: "var(--chami-heart)" }}>{ownerReplyError}</span> : null}
+              </p>
+            </div>
+          )}
+
           {/* AI 답장 실패 — 재시도 UI */}
-          {!replyContent && !safetyMessage && (
+          {!replyContent && !safetyMessage && !ownerReplyPending && (
             <div className="mb-4 p-5 text-center" style={{ borderRadius: "var(--radius-lg)", background: "var(--cream-deep)", border: "1px solid var(--border-subtle)" }}>
               <p className="text-sm mb-1" style={{ color: "var(--text-primary)" }}>{t("w.savedSafe")}</p>
               <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>
@@ -375,7 +417,7 @@ export default function WritePage() {
               </button>
             </div>
           )}
-          <AIInsightBadge insight={aiInsight} />
+          <AIInsightBadge insight={ownerReplyPending ? null : aiInsight} />
           {replyId && (
             <div className="mt-4">
               <FeedbackButtons replyId={replyId} onSubmit={handleFeedback} />
