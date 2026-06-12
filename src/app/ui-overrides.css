@@ -1457,3 +1457,241 @@
 @media (min-width: 1024px) {
   .home-feature-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
 }
+
+/* ── 10. 페르소나 선택 — 원형 프로필 + 가로 카드형 ───────── */
+.persona-selector__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 12px;
+}
+
+.persona-card {
+  position: relative;
+  display: flex;
+  min-height: 178px;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  padding: 14px 12px 13px;
+  border: 1.5px solid var(--border-subtle, rgba(74, 52, 40, 0.12));
+  border-radius: 22px;
+  background: rgba(255, 252, 248, 0.92);
+  color: var(--text-primary, #3c3630);
+  text-align: center;
+  box-shadow: var(--shadow-card, 0 2px 8px rgba(42, 36, 32, 0.06));
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease,
+    opacity 180ms ease;
+}
+
+.persona-card:hover:not(:disabled) {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--persona-accent) 42%, transparent);
+  background: rgba(255, 248, 238, 0.98);
+}
+
+.persona-card:focus-visible {
+  outline: 2px solid var(--persona-accent);
+  outline-offset: 3px;
+}
+
+.persona-card--selected {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--persona-accent) 62%, transparent);
+  background: var(--persona-gradient);
+  box-shadow: var(--persona-selected-shadow);
+  color: var(--persona-ink);
+}
+
+.persona-card--locked {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.persona-card__avatar {
+  display: grid;
+  width: 86px;
+  height: 86px;
+  place-items: center;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.78);
+  border-radius: 50%;
+  background: rgba(255, 248, 232, 0.42);
+  box-shadow:
+    0 8px 18px rgba(42, 36, 32, 0.09),
+    0 0 0 1px color-mix(in srgb, var(--persona-accent) 18%, transparent);
+}
+
+.persona-card__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.persona-card__body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.persona-card__name {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.persona-card__description {
+  display: -webkit-box;
+  overflow: hidden;
+  color: currentColor;
+  font-size: 11px;
+  line-height: 1.35;
+  opacity: 0.58;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.persona-card__tier {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  border-radius: 999px;
+  background: rgba(255, 248, 232, 0.92);
+  color: var(--text-muted, #a49a8e);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 5px 7px;
+}
+
+.persona-card__check {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--persona-accent);
+  opacity: 0;
+  transform: scale(0.78);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.persona-card--selected .persona-card__check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@media (min-width: 768px) {
+  .persona-selector__grid {
+    grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  }
+
+  .persona-card {
+    min-height: 188px;
+  }
+
+  .persona-card__avatar {
+    width: 94px;
+    height: 94px;
+  }
+}
+
+/* ── 11. 내 책장 — 세로 목록 대신 가로로 펼쳐지는 카드 그리드 ───── */
+.book-shelf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+.book-card {
+  height: 100%;
+}
+
+.book-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(42, 36, 32, 0.08) !important;
+}
+
+@media (min-width: 1024px) {
+  .book-shelf-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
+/* ── 12. 일기장 상세 — 정보와 넘겨보기를 한 화면의 좌우 흐름으로 ─── */
+.book-detail-layout {
+  display: grid;
+  gap: 16px;
+}
+
+.book-detail-reader {
+  min-width: 0;
+}
+
+@media (min-width: 900px) {
+  .book-detail-layout {
+    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .book-detail-summary {
+    position: sticky;
+    top: 88px;
+  }
+
+  .book-detail-summary > .flex {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .book-detail-summary .book-progress-inline {
+    width: 100%;
+  }
+
+  .book-detail-reader .book-reader__frame {
+    min-height: 420px;
+  }
+
+  .book-detail-reader .book-reader__content,
+  .book-detail-reader .book-reader__reply {
+    max-height: min(44vh, 360px);
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+}
+
+/* ── 13. 일기장 설정 — 입력 영역을 좌우로 나눠 한 화면에서 조정 ─── */
+.book-settings-form {
+  display: grid;
+  gap: 16px;
+}
+
+.book-settings-form__submit {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .book-settings-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .book-settings-form > .diary-card:first-child,
+  .book-settings-form__submit {
+    grid-column: 1 / -1;
+  }
+}

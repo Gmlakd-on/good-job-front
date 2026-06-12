@@ -40,7 +40,7 @@ export default function BookShelf({ books }: BookShelfProps) {
   }
 
   return (
-    <div className="grid gap-3">
+    <div className="book-shelf-grid">
       {books.map((book) => (
         <BookCard key={book.id} book={book} />
       ))}

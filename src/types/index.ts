@@ -207,6 +207,7 @@ export interface PersonaOption {
   code: string;
   name: string;
   emoji: string;
+  imageSrc: string;
   description: string;
   tone: string;
   tier: "free" | "pro";
@@ -218,6 +219,7 @@ export const PERSONAS: PersonaOption[] = [
     code: "operator_voice",
     name: "참이",
     emoji: "🫂",
+    imageSrc: "/personas/operator_voice.png",
     description: "이 서비스를 처음 만든 사람. 고통에 의미를 강요하지 않고, 조심스럽게 곁에 남아요.",
     tone: "부드러운 해요체, 조심스러운 바람, 열린 문장",
     tier: "free",
@@ -236,6 +238,7 @@ export const PERSONAS: PersonaOption[] = [
     code: "soonja_grandma",
     name: "순자 할머니",
     emoji: "👵",
+    imageSrc: "/personas/soonja_grandma.png",
     description: "교문 앞 분식집처럼 따뜻하게 받아주는 사람",
     tone: "구수함, 다정함, 품어주는 말투",
     tier: "free",
@@ -254,6 +257,7 @@ export const PERSONAS: PersonaOption[] = [
     code: "nabi_cat",
     name: "교실 뒤 고양이 나비",
     emoji: "🐱",
+    imageSrc: "/personas/nabi_cat.png",
     description: "장난스럽지만 일기는 끝까지 읽는 고양이",
     tone: "귀여움, 가벼운 유머, 은근한 어른스러움",
     tier: "free",
@@ -272,6 +276,7 @@ export const PERSONAS: PersonaOption[] = [
     code: "warm_teacher",
     name: "옛 담임 선생님",
     emoji: "🧑‍🏫",
+    imageSrc: "/personas/warm_teacher.png",
     description: "칠판 앞에서 짧고 차분하게 확인해주는 사람",
     tone: "정중한 존댓말, 관찰자적 시점, 짧고 담백한 문장",
     tier: "pro",
@@ -290,6 +295,7 @@ export const PERSONAS: PersonaOption[] = [
     code: "geonneomal_grandpa",
     name: "건너말 할아버지",
     emoji: "👴",
+    imageSrc: "/personas/geonneomal_grandpa.png",
     description: "말은 적지만 운동장 끝 벤치처럼 곁에 있는 사람",
     tone: "투박하지만 깊은 다정함, 기다려주는 말투",
     tier: "pro",
@@ -308,6 +314,7 @@ export const PERSONAS: PersonaOption[] = [
     code: "sharon_director",
     name: "미용실 원장님 샤론",
     emoji: "💇‍♀️",
+    imageSrc: "/personas/sharon_director.png",
     description: "하교길 동네 미용실처럼 생활감 있게 들어주는 사람",
     tone: "현실적, 생활감, 따뜻한 수다",
     tier: "pro",
@@ -357,4 +364,5 @@ export interface AiInsight {
   emotionWeight?: string;
   primaryCareMode?: string;
   provider?: "external" | "fallback" | string;
+  error?: string;
 }

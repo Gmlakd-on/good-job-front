@@ -20,7 +20,7 @@ export default function BookSettingsForm({ book, loading = false, onSubmit }: Bo
 
   return (
     <form
-      className="grid gap-5"
+      className="book-settings-form"
       onSubmit={(event) => {
         event.preventDefault();
         onSubmit({
@@ -79,7 +79,7 @@ export default function BookSettingsForm({ book, loading = false, onSubmit }: Bo
       <button
         type="submit"
         disabled={loading || !title.trim()}
-        className="rounded-full bg-[var(--soft-accent)] py-3 text-sm font-medium text-white disabled:opacity-40"
+        className="book-settings-form__submit rounded-full bg-[var(--soft-accent)] py-3 text-sm font-medium text-white disabled:opacity-40"
       >
         {loading ? "저장 중…" : "설정 저장"}
       </button>

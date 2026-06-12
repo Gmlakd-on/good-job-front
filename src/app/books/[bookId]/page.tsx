@@ -101,14 +101,15 @@ export default function BookDetailPage({ params }: { params: Promise<{ bookId: s
   const canComplete = canCompleteBook(book);
 
   return (
-    <div className="pt-4">
+    <div className="book-detail-page pt-4">
       <div className="mb-5 flex items-center justify-between">
         <Link href="/books" className="text-sm opacity-40 hover:opacity-70">← 책장</Link>
         <h1 className="font-serif text-xl">일기장 상세</h1>
         <Link href={`/books/${book.id}/settings`} className="text-sm opacity-50 hover:opacity-80">설정</Link>
       </div>
 
-      <section className="diary-card p-5">
+      <div className="book-detail-layout">
+        <section className="diary-card book-detail-summary p-5">
         <div className="flex gap-5">
           <BookCover title={book.title} coverStyleId={book.cover_style_id} coverVariant={book.cover_variant} size="md" />
           <div className="min-w-0 flex-1">
@@ -133,9 +134,9 @@ export default function BookDetailPage({ params }: { params: Promise<{ bookId: s
             {canComplete ? "일기장 완결하기" : `완결까지 ${30 - book.entry_count}개 남음`}
           </button>
         </div>
-      </section>
+        </section>
 
-      <section className="mt-4 diary-card p-5">
+        <section className="diary-card book-detail-reader p-5">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
             <h3 className="font-serif text-lg">일기장 넘겨보기</h3>
@@ -144,7 +145,8 @@ export default function BookDetailPage({ params }: { params: Promise<{ bookId: s
           <span className="text-xs opacity-35">{entries.length}장</span>
         </div>
         <BookReader entries={entries} />
-      </section>
+        </section>
+      </div>
 
       <BookCompleteModal open={completeOpen} onClose={() => setCompleteOpen(false)} onSelect={completeBook} />
     </div>

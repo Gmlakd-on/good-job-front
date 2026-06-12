@@ -12,7 +12,7 @@ export default function BookCard({ book }: BookCardProps) {
 
   return (
     <article
-      className="transition-all"
+      className="book-card transition-all"
       style={{
         padding: "16px",
         borderRadius: "var(--radius-sm)",

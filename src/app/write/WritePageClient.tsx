@@ -347,7 +347,10 @@ export default function WritePage() {
           {!replyContent && !safetyMessage && (
             <div className="mb-4 p-5 text-center" style={{ borderRadius: "var(--radius-lg)", background: "var(--cream-deep)", border: "1px solid var(--border-subtle)" }}>
               <p className="text-sm mb-1" style={{ color: "var(--text-primary)" }}>{t("w.savedSafe")}</p>
-              <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>{t("w.replyHiccup")}</p>
+              <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>
+                {t("w.replyHiccup")}
+                {aiInsight?.error ? <span className="block opacity-60 mt-1">({String(aiInsight.error)})</span> : null}
+              </p>
               <button
                 type="button"
                 onClick={handleRetryReply}
