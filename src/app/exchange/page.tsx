@@ -1,16 +1,5 @@
 "use client";
 
-/**
- * 교환일기 허브 = 한 화면 대시보드.
- *
- * 설계 원칙 (1인 1교환 정책 반영):
- * ① 슬롯 카드 — "지금의 교환" 1자리. 차 있으면 파트너+Day 진행+오늘 쓰기 CTA,
- *    비어 있으면 빈 슬롯 상태로 아래 연결 패널을 안내.
- * ② 새 연결 패널 — 같은 화면에서 [친구 초대|랜덤 매칭] 탭으로 검색→초대→대기를
- *    바로 진행. 받은 초대·보낸 초대 대기·랜덤 대기 상태가 전부 칩/행으로 동시에 보임.
- *    슬롯이 차 있으면 패널은 잠금(1인 제한 안내) — 백엔드 가드와 동일 정책.
- * ③ 보관함 — 단일 아카이브 진입점. 진행/지난 권수만 보여주고 상세는 /exchange/archive.
- */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -28,12 +17,6 @@ import {
 const ACTIVE_STATUSES: ExchangeSessionStatus[] = ["active_7day", "extension_pending", "extended"];
 const MIN_DAYS_BEFORE_TERMINATE = 3;
 
-const inputStyle = {
-  borderRadius: "var(--radius-md)",
-  background: "var(--cream-deep)",
-  color: "var(--text-primary)",
-} as const;
-
 type InviteRow = {
   id: string;
   message: string | null;
@@ -41,22 +24,26 @@ type InviteRow = {
   to_profile?: ExchangeProfileSearchResult | null;
 };
 
+type ConnectMode = "friend" | "random" | "code";
+
 function dayIndexNow(startedAt: string): number {
   return Math.floor((Date.now() - new Date(startedAt).getTime()) / 86400000) + 1;
 }
 
-function expiresShort(iso: string, t: (k: DictKey, v?: Record<string, string | number>) => string): string {
+function expiresShort(iso: string, t: (key: DictKey, values?: Record<string, string | number>) => string): string {
   const ms = new Date(iso).getTime() - Date.now();
   if (ms <= 0) return t("xch.rd.expiresSoon");
+
   const totalMin = Math.floor(ms / 60000);
   const h = Math.floor(totalMin / 60);
   const m = totalMin % 60;
+
   return h > 0 ? t("xch.rd.expiresHM", { h, m }) : t("xch.rd.expiresM", { m });
 }
 
 export default function ExchangeHubPage() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { language, t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [sessions, setSessions] = useState<ExchangeSessionWithPartner[]>([]);
   const [hasOffer, setHasOffer] = useState(false);
@@ -64,7 +51,7 @@ export default function ExchangeHubPage() {
   const [profile, setProfile] = useState<ExchangeProfile | null>(null);
   const [received, setReceived] = useState<InviteRow[]>([]);
   const [sent, setSent] = useState<InviteRow[]>([]);
-  const [tab, setTab] = useState<"friend" | "random">("friend");
+  const [mode, setMode] = useState<ConnectMode>("friend");
   const [search, setSearch] = useState("");
   const [searching, setSearching] = useState(false);
   const [searched, setSearched] = useState(false);
@@ -74,10 +61,92 @@ export default function ExchangeHubPage() {
   const [busy, setBusy] = useState(false);
   const [statusText, setStatusText] = useState("");
 
+  const copy = language === "en"
+    ? {
+      back: "← Home",
+      title: "Exchange Diary",
+      addFriend: "+ Add friend",
+      writeToday: "Write today’s exchange diary",
+      myTurn: "It’s my turn today",
+      waiting: "Waiting for your partner’s entry",
+      safe: "Exchange safely for 3 days.",
+      safeDesc: "If you finish within 3 days including today, the connection remains safe.",
+      cancelLocked: "You can end this connection after {days} more day(s).",
+      cancelOpen: "You can end this connection now. A reason is optional.",
+      emptyTitle: "No current exchange diary yet",
+      emptyDesc: "Start with a friend, a random match, or an invite code.",
+      newConnection: "Create a new connection",
+      friendTitle: "Exchange with a friend",
+      friendDesc: "Invite someone you know and write one-on-one.",
+      randomTitle: "Random exchange",
+      randomDesc: "Quietly exchange with someone new.",
+      codeTitle: "Enter invite code",
+      codeDesc: "Enter the code your friend sent and begin.",
+      lockTitle: "Only one exchange can be active at a time",
+      lockDesc: "After this exchange ends, you can make a new connection. Random matching can be delayed when there is no special reason to stop.",
+      archive: "Archive",
+      archiveEmpty: "No saved exchanges yet",
+      archiveDesc: "Active {active} · Past {past}",
+      archiveAll: "View full archive",
+      guideTitle: "AI exchange guide ✨",
+      guideDesc: "We suggest small ideas for today’s conversation and replies.",
+      guideQuestion: "What was the warmest moment of your day?",
+      guideButton: "View AI reply tone ideas",
+      pendingSent: "Pending invites: {count}",
+      receivedTitle: "Received invitation",
+      profileNeeded: "Set up your exchange profile before inviting friends.",
+      profileGo: "Go to friend settings",
+      randomWaiting: "Waiting for a random match",
+      randomGo: "Go to random exchange",
+      codeGuide: "Invite-code entry is managed from the friend page.",
+    }
+    : {
+      back: "← 홈으로",
+      title: "교환일기",
+      addFriend: "+ 친구 추가",
+      writeToday: "오늘의 교환일기 쓰기",
+      myTurn: "오늘 내 차례예요",
+      waiting: "상대의 기록을 기다리는 중이에요",
+      safe: "교환은 3일 동안 이어져요.",
+      safeDesc: "오늘을 포함해 3일 내에 마무리하면 안전해요.",
+      cancelLocked: "마무리는 {days}일 뒤부터 가능해요.",
+      cancelOpen: "마무리는 지금 가능해요. 안전 사유는 언제든 남길 수 있어요.",
+      emptyTitle: "진행 중인 교환일기가 없어요",
+      emptyDesc: "친구 초대, 랜덤 교환, 초대 코드로 새로운 연결을 만들어보세요.",
+      newConnection: "새 연결 만들기",
+      friendTitle: "친구와 교환하기",
+      friendDesc: "아는 사람을 초대해서 1:1로 교환해요.",
+      randomTitle: "랜덤 교환하기",
+      randomDesc: "새로운 한 사람과 조용히 교환해요.",
+      codeTitle: "초대 코드 입력",
+      codeDesc: "친구가 보낸 코드를 입력하고 교환을 시작해요.",
+      lockTitle: "교환은 한 번에 한 명과만 가능해요",
+      lockDesc: "현재 진행 중인 교환이 끝나야 새로운 연결을 만들 수 있어요. 특별한 이유 없는 중단은 매칭 페널티가 생길 수 있어요.",
+      archive: "보관함",
+      archiveEmpty: "아직 보관된 교환일기가 없어요",
+      archiveDesc: "진행 {active}권 · 지난 {past}권",
+      archiveAll: "보관함 전체 보기",
+      guideTitle: "AI 교환 가이드 ✨",
+      guideDesc: "오늘의 대화와 응답의 톤 아이디어를 제안해요.",
+      guideQuestion: "오늘 하루 중 가장 따뜻했던 순간은 언제였나요?",
+      guideButton: "AI 추천 답장 톤 보기",
+      pendingSent: "보낸 초대 대기 {count}건",
+      receivedTitle: "받은 초대",
+      profileNeeded: "친구를 초대하려면 교환 프로필을 먼저 설정해주세요.",
+      profileGo: "친구 설정으로 이동",
+      randomWaiting: "랜덤 매칭을 기다리는 중이에요",
+      randomGo: "랜덤 교환으로 이동",
+      codeGuide: "초대 코드 입력은 친구 관리 페이지에서 진행할 수 있어요.",
+    };
+
   const load = useCallback(async () => {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { router.push("/auth"); return; }
+
+    if (!user) {
+      router.push("/auth");
+      return;
+    }
 
     const [sessionsRes, offerRes, subRes, profileRes, invitesRes] = await Promise.all([
       fetch("/api/exchange/sessions", { cache: "no-store" }),
@@ -86,6 +155,7 @@ export default function ExchangeHubPage() {
       fetch("/api/exchange/profile", { cache: "no-store" }),
       fetch("/api/exchange/friend-invites", { cache: "no-store" }),
     ]);
+
     if (sessionsRes.ok) setSessions((await sessionsRes.json()).sessions || []);
     if (offerRes.ok) setHasOffer(Boolean((await offerRes.json()).offer));
     if (subRes.ok) setSubmission((await subRes.json()).submission ?? null);
@@ -95,64 +165,95 @@ export default function ExchangeHubPage() {
       setReceived(data.received || []);
       setSent(data.sent || []);
     }
+
     setLoading(false);
   }, [router]);
 
   useEffect(() => {
-    // 마운트 시 1회 초기 로드
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]);
 
   const { active, past } = useMemo(() => ({
-    active: sessions.filter((s) => ACTIVE_STATUSES.includes(s.status)),
-    past: sessions.filter((s) => !ACTIVE_STATUSES.includes(s.status)),
+    active: sessions.filter((session) => ACTIVE_STATUSES.includes(session.status)),
+    past: sessions.filter((session) => !ACTIVE_STATUSES.includes(session.status)),
   }), [sessions]);
 
   const slot = active[0] ?? null;
   const slotDay = slot ? Math.min(Math.max(dayIndexNow(slot.started_at), 1), 7) : 0;
   const slotRawDay = slot ? dayIndexNow(slot.started_at) : 0;
   const cancelRemain = slot ? Math.max(MIN_DAYS_BEFORE_TERMINATE - slotRawDay + 1, 0) : 0;
+  const partnerName = slot?.partner_display_name || t("xch.fr.anon");
+  const archiveDescription = sessions.length === 0
+    ? copy.archiveEmpty
+    : copy.archiveDesc.replace("{active}", String(active.length)).replace("{past}", String(past.length));
 
   const searchUsers = async () => {
     setStatusText("");
-    const q = search.trim().toLowerCase();
-    if (q.length < 2) { setStatusText(t("xch.fr.searchMin")); return; }
+    const query = search.trim().toLowerCase();
+
+    if (query.length < 2) {
+      setStatusText(t("xch.fr.searchMin"));
+      return;
+    }
+
     setSearching(true);
-    const res = await fetch(`/api/exchange/users?handle=${encodeURIComponent(q)}`, { cache: "no-store" });
-    const data = await res.json();
-    if (res.ok) { setResults(data.users || []); setSearched(true); }
-    else setStatusText(data.error || t("xch.fr.searchFail"));
+    const response = await fetch(`/api/exchange/users?handle=${encodeURIComponent(query)}`, { cache: "no-store" });
+    const data = await response.json();
+
+    if (response.ok) {
+      setResults(data.users || []);
+      setSearched(true);
+    } else {
+      setStatusText(data.error || t("xch.fr.searchFail"));
+    }
+
     setSearching(false);
   };
 
   const sendInvite = async (toHandle: string) => {
     setStatusText("");
     setInvitingHandle(toHandle);
-    const res = await fetch("/api/exchange/friend-invites", {
+
+    const response = await fetch("/api/exchange/friend-invites", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ to_handle: toHandle, message }),
     });
-    const data = await res.json();
-    if (res.ok) {
+    const data = await response.json();
+
+    if (response.ok) {
       setStatusText(t("xch.fr.invited"));
-      setMessage(""); setResults([]); setSearched(false); setSearch("");
+      setMessage("");
+      setResults([]);
+      setSearched(false);
+      setSearch("");
       await load();
-    } else setStatusText(data.error || t("xch.fr.inviteFail"));
+    } else {
+      setStatusText(data.error || t("xch.fr.inviteFail"));
+    }
+
     setInvitingHandle(null);
   };
 
   const respondInvite = async (inviteId: string, action: "accept" | "decline") => {
     setBusy(true);
     setStatusText("");
-    const res = await fetch(`/api/exchange/friend-invites/${inviteId}/${action}`, { method: "POST" });
-    const data = await res.json();
-    if (res.ok) {
-      if (data.session?.id) { router.push(`/exchange/${data.session.id}`); return; }
+
+    const response = await fetch(`/api/exchange/friend-invites/${inviteId}/${action}`, { method: "POST" });
+    const data = await response.json();
+
+    if (response.ok) {
+      if (data.session?.id) {
+        router.push(`/exchange/${data.session.id}`);
+        return;
+      }
+
       setStatusText(action === "accept" ? t("xch.fr.accepted") : t("xch.fr.declined"));
       await load();
-    } else setStatusText(data.error || t("xch.manage.fallbackFail"));
+    } else {
+      setStatusText(data.error || t("xch.manage.fallbackFail"));
+    }
+
     setBusy(false);
   };
 
@@ -165,210 +266,227 @@ export default function ExchangeHubPage() {
   }
 
   return (
-    <div className="exchange-hub-page pt-2 pb-8">
-      <div className="exchange-hub-page__header flex items-center justify-between mb-5">
-        <button onClick={() => router.push("/")} className="text-sm opacity-40 hover:opacity-70">
-          ← {t("xch.back.home")}
+    <main className="exchange-hub-page exchange-hub-page--reference">
+      <header className="exchange-reference-header">
+        <button type="button" onClick={() => router.push("/")} className="exchange-reference-header__back">
+          {copy.back}
         </button>
-        <h1 className="font-serif text-xl" style={{ color: "var(--deep-gray)" }}>{t("xch.title")}</h1>
-        <Link href="/exchange/friends" className="text-sm opacity-60 hover:opacity-90"><span aria-hidden="true">＋</span> 친구 추가</Link>
-      </div>
+        <h1>{copy.title}</h1>
+        <Link href="/exchange/friends" className="exchange-reference-header__add">
+          {copy.addFriend}
+        </Link>
+      </header>
 
-      {hasOffer && (
-        <Link href="/exchange/random" className="diary-card xch-offer-banner mb-4">
+      {hasOffer && !slot && (
+        <Link href="/exchange/random" className="exchange-offer-banner">
           <span aria-hidden="true">🎲</span>
-          <span className="flex-1">
-            <span className="text-sm font-medium block" style={{ color: "var(--deep-gray)" }}>{t("xch.hub.offerBanner")}</span>
-            <span className="text-xs opacity-50">{t("xch.hub.offerBannerDesc")}</span>
+          <span>
+            <strong>{language === "ko" ? "새로운 랜덤 교환 제안이 도착했어요" : "A new random exchange offer arrived"}</strong>
+            <em>{language === "ko" ? "놓치기 전에 확인해보세요." : "Check it before it expires."}</em>
           </span>
-          <span className="xch-card__arrow" aria-hidden="true">→</span>
+          <b aria-hidden="true">→</b>
         </Link>
       )}
 
-      {statusText && (
-        <div className="diary-card p-3 mb-4 text-sm" role="status" style={{ color: "var(--deep-gray)" }}>{statusText}</div>
-      )}
+      {statusText && <p className="exchange-status" role="status">{statusText}</p>}
 
-      {/* ① 슬롯: 지금의 교환 */}
-      <section className="diary-card p-5 mb-4 hub-slot exchange-hub-page__slot">
-        <p className="hub-slot__eyebrow">{t("hub.slotTitle")}</p>
-        {slot ? (
-          <>
-            <div className="flex items-center gap-3 mt-2">
-              <span className="xch-card__avatar" aria-hidden="true">
-                {(slot.partner_display_name || "?").slice(0, 1)}
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate" style={{ color: "var(--deep-gray)" }}>
-                  {t("xch.card.with", { name: slot.partner_display_name || t("xch.fr.anon") })}
-                </p>
-                <span className="xch-card__days" aria-label={t("xch.card.dayAria", { n: slotDay })}>
-                  {Array.from({ length: 7 }, (_, i) => (
-                    <span key={i} className={`xch-card__dot ${i < slotDay ? "xch-card__dot--past" : ""} ${i === slotDay - 1 ? "xch-card__dot--today" : ""}`} />
-                  ))}
-                  <span className="xch-card__day-label">{t("xch.card.day", { n: slotDay })}</span>
-                </span>
-              </div>
+      <section className="exchange-current-card">
+        <div className="exchange-current-card__profile">
+          <span className="exchange-current-card__avatar" aria-hidden="true">
+            {slot ? partnerName.slice(0, 1) : "?"}
+          </span>
+          <div>
+            <div className="exchange-current-card__title-row">
+              <h2>{slot ? `${partnerName}${language === "ko" ? "님과의 교환일기" : "’s exchange diary"}` : copy.emptyTitle}</h2>
+              {slot && <span>Day {slotDay}</span>}
             </div>
-            <Link href={`/exchange/${slot.id}`} className="btn-primary w-full py-3 text-sm text-center block mt-4">
-              {t("hub.writeToday")}
-            </Link>
-            <p className="text-[11px] opacity-40 mt-2 text-center">
-              {cancelRemain > 0 ? t("hub.cancelLockD", { d: cancelRemain }) : t("hub.cancelOpen")}
-            </p>
-          </>
-        ) : (
-          <div className="hub-slot__empty">
-            <span className="hub-slot__ring" aria-hidden="true">💌</span>
-            <p className="text-sm font-medium mt-3" style={{ color: "var(--deep-gray)" }}>{t("hub.slotEmpty")}</p>
-            <p className="text-xs opacity-45 mt-1 leading-relaxed">{t("hub.slotEmptyDesc")}</p>
-          </div>
-        )}
-      </section>
-
-      {/* ② 새 연결 패널 */}
-      <section className="diary-card p-5 mb-4 exchange-hub-page__connect">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-sm font-medium" style={{ color: "var(--deep-gray)" }}>{t("hub.newConn")}</p>
-          {/* 동시 진행 상태 칩 — 항상 보임 */}
-          <div className="hub-chips">
-            {sent.length > 0 && <span className="hub-chip">{t("hub.sentPending", { n: sent.length })}</span>}
-            {submission && <span className="hub-chip hub-chip--live">{t("hub.randomWaiting", { time: expiresShort(submission.expires_at, t) })}</span>}
+            <p className="exchange-current-card__turn">⏱ {slot ? copy.myTurn : copy.emptyDesc}</p>
+            <p className="exchange-current-card__safe">🛡 {copy.safe}</p>
+            <p className="exchange-current-card__safe-desc">{slot ? copy.safeDesc : copy.lockDesc}</p>
           </div>
         </div>
 
+        <div className="exchange-current-card__cta">
+          {slot ? (
+            <Link href={`/exchange/${slot.id}`}>{copy.writeToday} <span aria-hidden="true">›</span></Link>
+          ) : (
+            <button type="button" onClick={() => setMode("friend")}>{copy.friendTitle} <span aria-hidden="true">›</span></button>
+          )}
+          <p>{slot && cancelRemain > 0 ? copy.cancelLocked.replace("{days}", String(cancelRemain)) : slot ? copy.cancelOpen : copy.waiting}</p>
+        </div>
+
+        <div className="exchange-current-card__art" aria-hidden="true">
+          <span className="exchange-art-book">📖</span>
+          <span className="exchange-art-envelope">💌</span>
+          <span className="exchange-art-pencil">✎</span>
+          <span className="exchange-art-sparkle exchange-art-sparkle--one">✦</span>
+          <span className="exchange-art-sparkle exchange-art-sparkle--two">✣</span>
+        </div>
+      </section>
+
+      <section className="exchange-connect-section" aria-label={copy.newConnection}>
+        <h2>{copy.newConnection}</h2>
+        <div className="exchange-connect-grid">
+          <button type="button" onClick={() => setMode("friend")} className={`exchange-connect-card ${mode === "friend" ? "exchange-connect-card--active" : ""}`}>
+            <span className="exchange-connect-card__icon" aria-hidden="true">👭</span>
+            <span>
+              <strong>{copy.friendTitle}</strong>
+              <em>{copy.friendDesc}</em>
+            </span>
+            <b aria-hidden="true">→</b>
+          </button>
+          <button type="button" onClick={() => setMode("random")} className={`exchange-connect-card exchange-connect-card--green ${mode === "random" ? "exchange-connect-card--active" : ""}`}>
+            <span className="exchange-connect-card__icon" aria-hidden="true">🌱</span>
+            <span>
+              <strong>{copy.randomTitle}</strong>
+              <em>{copy.randomDesc}</em>
+            </span>
+            <b aria-hidden="true">→</b>
+          </button>
+          <button type="button" onClick={() => setMode("code")} className={`exchange-connect-card exchange-connect-card--gold ${mode === "code" ? "exchange-connect-card--active" : ""}`}>
+            <span className="exchange-connect-card__icon" aria-hidden="true">&lt;/&gt;</span>
+            <span>
+              <strong>{copy.codeTitle}</strong>
+              <em>{copy.codeDesc}</em>
+            </span>
+            <b aria-hidden="true">→</b>
+          </button>
+        </div>
+      </section>
+
+      <section className="exchange-action-panel">
         {slot ? (
-          <div className="hub-locked" role="note">
-            <p className="text-sm" style={{ color: "var(--deep-gray)" }}>🔒 {t("hub.locked")}</p>
-            <p className="text-xs opacity-50 mt-1 leading-relaxed">{t("hub.lockedDesc")}</p>
+          <div className="exchange-lock-note">
+            <span aria-hidden="true">🔒</span>
+            <div>
+              <strong>{copy.lockTitle}</strong>
+              <p>{copy.lockDesc}</p>
+            </div>
+            <Link href="/exchange/archive">{language === "ko" ? "자세히 보기" : "Learn more"} ›</Link>
           </div>
-        ) : (
-          <>
-            <div className="hub-tabs" role="tablist" aria-label={t("hub.newConn")}>
-              <button role="tab" aria-selected={tab === "friend"} onClick={() => setTab("friend")}
-                className={`hub-tab ${tab === "friend" ? "hub-tab--active" : ""}`}>
-                {t("hub.tabFriend")}
-                {received.length > 0 && <span className="xch-received__badge">{received.length}</span>}
-              </button>
-              <button role="tab" aria-selected={tab === "random"} onClick={() => setTab("random")}
-                className={`hub-tab ${tab === "random" ? "hub-tab--active" : ""}`}>
-                {t("hub.tabRandom")}
-                {(submission || hasOffer) && <span className="hub-tab__dot" aria-hidden="true" />}
-              </button>
+        ) : mode === "friend" ? (
+          <div className="exchange-friend-panel">
+            <div className="exchange-panel-head">
+              <h3>{copy.friendTitle}</h3>
+              <div className="exchange-pending-chips">
+                {received.length > 0 && <span>{copy.receivedTitle} {received.length}</span>}
+                {sent.length > 0 && <span>{copy.pendingSent.replace("{count}", String(sent.length))}</span>}
+              </div>
             </div>
 
-            {tab === "friend" && (
-              <div className="mt-4">
-                {/* 받은 초대 — 가장 즉시 행동 가능 */}
-                {received.map((invite) => (
-                  <div key={invite.id} className="p-3 rounded-xl mb-2" style={{ background: "var(--warm-bg)" }}>
-                    <p className="text-sm" style={{ color: "var(--deep-gray)" }}>
-                      {t("xch.fr.inviteFrom", { name: invite.from_profile?.display_name || t("xch.fr.anon") })}
-                    </p>
-                    {invite.message && <p className="text-xs opacity-50 mt-1">{invite.message}</p>}
-                    <div className="flex gap-2 mt-3">
-                      <button onClick={() => respondInvite(invite.id, "accept")} disabled={busy} className="btn-primary px-4 py-2 text-xs disabled:opacity-40">{t("xch.fr.accept")}</button>
-                      <button onClick={() => respondInvite(invite.id, "decline")} disabled={busy} className="px-4 py-2 text-xs rounded-full disabled:opacity-40" style={{ background: "var(--paper-white)", color: "var(--deep-gray)" }}>{t("xch.fr.decline")}</button>
-                    </div>
-                  </div>
-                ))}
+            {received.map((invite) => (
+              <article key={invite.id} className="exchange-invite-card">
+                <p>{t("xch.fr.inviteFrom", { name: invite.from_profile?.display_name || t("xch.fr.anon") })}</p>
+                {invite.message && <span>{invite.message}</span>}
+                <div>
+                  <button type="button" onClick={() => respondInvite(invite.id, "accept")} disabled={busy}>{t("xch.fr.accept")}</button>
+                  <button type="button" onClick={() => respondInvite(invite.id, "decline")} disabled={busy}>{t("xch.fr.decline")}</button>
+                </div>
+              </article>
+            ))}
 
-                {!profile ? (
-                  <p className="text-xs opacity-55 leading-relaxed">
-                    {t("hub.profileNeeded")}{" "}
-                    <Link href="/exchange/friends" className="underline opacity-80 hover:opacity-100">{t("hub.profileGo")}</Link>
-                  </p>
-                ) : (
-                  <>
-                    <div className="flex gap-2">
-                      <input
-                        value={search}
-                        onChange={(e) => { setSearch(e.target.value.toLowerCase()); setSearched(false); }}
-                        onKeyDown={(e) => { if (e.key === "Enter") searchUsers(); }}
-                        placeholder={t("xch.fr.searchPlaceholder")}
-                        className="flex-1 px-4 py-3 text-sm outline-none"
-                        style={inputStyle}
-                      />
-                      <button onClick={searchUsers} disabled={searching} className="px-4 py-3 text-sm rounded-full disabled:opacity-40" style={{ background: "var(--warm-bg)", color: "var(--deep-gray)" }}>
-                        {searching ? t("xch.fr.searching") : t("xch.fr.search")}
-                      </button>
-                    </div>
-                    {searched && results.length === 0 && (
-                      <p className="text-xs opacity-45 mt-3">{t("xch.fr.notFound")}</p>
-                    )}
-                    {results.length > 0 && (
-                      <div className="mt-3">
-                        <textarea
-                          value={message}
-                          onChange={(e) => setMessage(e.target.value)}
-                          placeholder={t("xch.fr.messagePlaceholder")}
-                          rows={2}
-                          className="w-full px-4 py-3 text-sm outline-none resize-none mb-2"
-                          style={inputStyle}
-                        />
-                        {results.map((user) => (
-                          <div key={user.handle} className="flex items-center justify-between gap-3 p-3 rounded-xl mb-2" style={{ background: "var(--warm-bg)" }}>
-                            <div>
-                              <p className="text-sm font-medium" style={{ color: "var(--deep-gray)" }}>{user.display_name}</p>
-                              <p className="text-xs opacity-45">@{user.handle}</p>
-                            </div>
-                            <button onClick={() => sendInvite(user.handle)} disabled={invitingHandle !== null} className="text-xs px-3 py-1.5 rounded-full text-white disabled:opacity-40" style={{ background: "var(--deep-gray)" }}>
-                              {invitingHandle === user.handle ? t("xch.fr.inviting") : t("xch.fr.invite")}
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    {sent.length > 0 && (
-                      <p className="text-[11px] opacity-40 mt-2">
-                        {t("hub.sentPending", { n: sent.length })} — {sent.map((i) => i.to_profile?.display_name || t("xch.fr.anon")).join(", ")}
-                      </p>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-
-            {tab === "random" && (
-              <div className="mt-4">
-                {submission ? (
-                  <div className="p-3 rounded-xl" style={{ background: "var(--warm-bg)" }}>
-                    <div className="xch-wait__head">
-                      <span className="xch-wait__pulse" aria-hidden="true" />
-                      <p className="text-sm" style={{ color: "var(--deep-gray)" }}>{t("xch.rd.waitingTitle")}</p>
-                    </div>
-                    <p className="text-xs opacity-50 mt-1">{expiresShort(submission.expires_at, t)}</p>
-                    <Link href="/exchange/random" className="text-xs underline opacity-60 hover:opacity-90 mt-2 inline-block">
-                      {t("hub.detailLink")}
-                    </Link>
+            {!profile ? (
+              <p className="exchange-profile-needed">
+                {copy.profileNeeded} <Link href="/exchange/friends">{copy.profileGo}</Link>
+              </p>
+            ) : (
+              <>
+                <div className="exchange-search-row">
+                  <input
+                    value={search}
+                    onChange={(event) => {
+                      setSearch(event.target.value.toLowerCase());
+                      setSearched(false);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") searchUsers();
+                    }}
+                    placeholder={t("xch.fr.searchPlaceholder")}
+                  />
+                  <button type="button" onClick={searchUsers} disabled={searching}>
+                    {searching ? t("xch.fr.searching") : t("xch.fr.search")}
+                  </button>
+                </div>
+                {searched && results.length === 0 && <p className="exchange-empty-result">{t("xch.fr.notFound")}</p>}
+                {results.length > 0 && (
+                  <div className="exchange-result-list">
+                    <textarea
+                      value={message}
+                      onChange={(event) => setMessage(event.target.value)}
+                      placeholder={t("xch.fr.messagePlaceholder")}
+                      rows={2}
+                    />
+                    {results.map((user) => (
+                      <article key={user.handle}>
+                        <div>
+                          <strong>{user.display_name}</strong>
+                          <span>@{user.handle}</span>
+                        </div>
+                        <button type="button" onClick={() => sendInvite(user.handle)} disabled={invitingHandle !== null}>
+                          {invitingHandle === user.handle ? t("xch.fr.inviting") : t("xch.fr.invite")}
+                        </button>
+                      </article>
+                    ))}
                   </div>
-                ) : (
-                  <Link href="/exchange/random" className="hub-random-cta">
-                    <span aria-hidden="true">🎲</span>
-                    <span className="flex-1">
-                      <span className="text-sm font-medium block" style={{ color: "var(--deep-gray)" }}>{t("hub.randomGo")}</span>
-                      <span className="text-xs opacity-50">{t("hub.randomGoDesc")}</span>
-                    </span>
-                    <span className="xch-card__arrow" aria-hidden="true">→</span>
-                  </Link>
                 )}
-              </div>
+              </>
             )}
-          </>
+          </div>
+        ) : mode === "random" ? (
+          <div className="exchange-random-panel">
+            {submission ? (
+              <>
+                <span className="exchange-random-panel__pulse" aria-hidden="true" />
+                <div>
+                  <strong>{copy.randomWaiting}</strong>
+                  <p>{expiresShort(submission.expires_at, t)}</p>
+                </div>
+                <Link href="/exchange/random">{copy.randomGo} ›</Link>
+              </>
+            ) : (
+              <>
+                <span aria-hidden="true">🎲</span>
+                <div>
+                  <strong>{copy.randomTitle}</strong>
+                  <p>{copy.randomDesc}</p>
+                </div>
+                <Link href="/exchange/random">{copy.randomGo} ›</Link>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="exchange-code-panel">
+            <span aria-hidden="true">📮</span>
+            <div>
+              <strong>{copy.codeTitle}</strong>
+              <p>{copy.codeGuide}</p>
+            </div>
+            <Link href="/exchange/friends">{copy.codeTitle} ›</Link>
+          </div>
         )}
       </section>
 
-      {/* ③ 보관함 */}
-      <Link href="/exchange/archive" className="diary-card hub-archive">
-        <span className="hub-archive__icon" aria-hidden="true">🗂️</span>
-        <span className="flex-1">
-          <span className="text-sm font-medium block" style={{ color: "var(--deep-gray)" }}>{t("hub.archive")}</span>
-          <span className="text-xs opacity-50">
-            {sessions.length === 0 ? t("hub.archiveEmpty") : t("hub.archiveDesc", { active: active.length, past: past.length })}
-          </span>
-        </span>
-        <span className="xch-card__arrow" aria-hidden="true">→</span>
-      </Link>
-    </div>
+      <section className="exchange-bottom-grid">
+        <Link href="/exchange/archive" className="exchange-archive-card">
+          <span aria-hidden="true">🗂️</span>
+          <div>
+            <h2>{copy.archive}</h2>
+            <p>{archiveDescription}</p>
+            {slot && <em>{partnerName} · Day {slotDay}</em>}
+          </div>
+          <strong>{copy.archiveAll} ›</strong>
+        </Link>
+
+        <article className="exchange-guide-card">
+          <div>
+            <h2>{copy.guideTitle}</h2>
+            <p>{copy.guideDesc}</p>
+            <blockquote>“{copy.guideQuestion}”</blockquote>
+            <Link href={slot ? `/exchange/${slot.id}` : "/exchange/random"}>{copy.guideButton} →</Link>
+          </div>
+          <span aria-hidden="true">🌱</span>
+        </article>
+      </section>
+    </main>
   );
 }
