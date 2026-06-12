@@ -102,51 +102,49 @@ export default function BookDetailPage({ params }: { params: Promise<{ bookId: s
   const canComplete = canCompleteBook(book);
 
   return (
-    <div className="book-detail-page pt-4">
-      <div className="mb-5 flex items-center justify-between">
-        <Link href="/books" className="text-sm opacity-40 hover:opacity-70">← 책장</Link>
-        <h1 className="font-serif text-xl">일기장 상세</h1>
-        <Link href={`/books/${book.id}/settings`} className="text-sm opacity-50 hover:opacity-80">설정</Link>
+    <div className="book-detail-page book-detail-page--reference">
+      <div className="book-detail-topbar">
+        <Link href="/books">← 책장</Link>
+        <h1>일기장 상세</h1>
+        <Link href={`/books/${book.id}/settings`}>설정</Link>
       </div>
 
-      <div className="book-detail-layout">
-        <section className="diary-card book-detail-summary p-5">
-        <div className="flex gap-5">
+      <div className="book-detail-grid">
+        {/* 왼쪽: 표지와 다음 행동만 — 진행률은 표시하지 않는다 */}
+        <section className="book-detail-side">
           <BookCover title={book.title} coverStyleId={book.cover_style_id} coverVariant={book.cover_variant} size="md" />
-          <div className="min-w-0 flex-1">
-            <p className="text-xs opacity-45">{getBookStatusLabel(book.status)}</p>
-            <h2 className="mt-1 font-serif text-2xl leading-tight">{book.title}</h2>
-            <p className="mt-2 text-sm opacity-55">
-              {book.status === "locked" ? "잠긴 일기장은 읽기만 가능해요." : "이 책 안에서 일기 작성과 답글 확인이 이어집니다."}
-            </p>
-          </div>
-        </div>
-        <div className="mt-5 grid gap-2">
+          <span className="book-detail-side__status">{getBookStatusLabel(book.status)}</span>
+          <h2>{book.title}</h2>
+          <p>
+            {book.status === "locked"
+              ? "잠긴 일기장은 읽기만 가능해요."
+              : "이 책 안에서 일기 작성과 답글 확인이 이어집니다."}
+          </p>
+
           {canWrite ? (
-            <Link href={`/write?bookId=${book.id}`} className="rounded-full bg-[var(--soft-accent)] py-3 text-center text-sm text-white">이어 쓰기</Link>
+            <Link href={`/write?bookId=${book.id}`} className="book-detail-side__write">이어 쓰기</Link>
           ) : (
-            <p className="rounded-2xl bg-[rgba(255,248,232,0.72)] p-3 text-center text-sm opacity-60">
+            <p className="book-detail-side__locked">
               {book.status === "locked" ? "잠긴 일기장은 더 이상 작성할 수 없어요." : "이 일기장은 가득 찼어요."}
             </p>
           )}
           {canComplete && (
-            <button type="button" onClick={() => setCompleteOpen(true)}
-              className="rounded-full bg-[var(--warm-bg-deep)] py-3 text-sm">
+            <button type="button" onClick={() => setCompleteOpen(true)} className="book-detail-side__complete">
               일기장 완결하기
             </button>
           )}
-        </div>
         </section>
 
-        <section className="diary-card book-detail-reader p-5">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <div>
-            <h3 className="font-serif text-lg">일기장 넘겨보기</h3>
-            <p className="mt-1 text-xs opacity-45">한 장씩 넘기면서 기록과 답장을 같이 읽을 수 있어요.</p>
+        {/* 오른쪽: 표지에 맞는 속지 위에서 기록과 답장을 한 장씩 넘겨 읽는다 */}
+        <section className="book-detail-reader-panel">
+          <div className="book-detail-reader-panel__head">
+            <div>
+              <h3>일기장 넘겨보기</h3>
+              <p>한 장씩 넘기면서 기록과 답장을 같이 읽을 수 있어요.</p>
+            </div>
+            <span>{entries.length}장</span>
           </div>
-          <span className="text-xs opacity-35">{entries.length}장</span>
-        </div>
-        <BookReader entries={entries} />
+          <BookReader entries={entries} coverStyleId={book.cover_style_id} />
         </section>
       </div>
 

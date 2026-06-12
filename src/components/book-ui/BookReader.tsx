@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { formatFullDate } from "@/lib/date";
 import { EMOTIONS, PERSONAS, WEATHER_OPTIONS } from "@/types";
+import type { CoverStyleId } from "./bookTypes";
 
 interface BookReaderEmotion {
   emotion_code?: string;
@@ -27,6 +28,8 @@ export interface BookReaderEntry {
 
 interface BookReaderProps {
   entries: BookReaderEntry[];
+  /** 표지 스타일에 맞는 속지(질감/글꼴/장식)를 입힌다. 미지정 시 기본 크림 속지. */
+  coverStyleId?: CoverStyleId;
 }
 
 function getEmotionLabel(emotion: BookReaderEmotion): string {
@@ -34,9 +37,8 @@ function getEmotionLabel(emotion: BookReaderEmotion): string {
   return `${found?.emoji ? `${found.emoji} ` : ""}${emotion.emotion_label}`;
 }
 
-function getPersonaLabel(personaCode?: string): string {
-  const persona = PERSONAS.find((item) => item.code === personaCode);
-  return persona?.name || "답장";
+function getPersona(personaCode?: string) {
+  return PERSONAS.find((item) => item.code === personaCode) ?? null;
 }
 
 function getWeatherLabel(weatherCode?: string | null, weatherLabel?: string | null): string | null {
@@ -47,7 +49,7 @@ function getWeatherLabel(weatherCode?: string | null, weatherLabel?: string | nu
   return `${found?.emoji ? `${found.emoji} ` : ""}${label}`;
 }
 
-export default function BookReader({ entries }: BookReaderProps) {
+export default function BookReader({ entries, coverStyleId }: BookReaderProps) {
   const pages = useMemo(
     () => [...entries].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
     [entries],
@@ -56,6 +58,7 @@ export default function BookReader({ entries }: BookReaderProps) {
 
   const entry = pages[pageIndex];
   const reply = entry?.replies?.[0];
+  const persona = getPersona(reply?.persona);
   const weatherLabel = getWeatherLabel(entry?.weather_code, entry?.weather_label);
   const hasPrevious = pageIndex > 0;
   const hasNext = pageIndex < pages.length - 1;
@@ -69,12 +72,16 @@ export default function BookReader({ entries }: BookReaderProps) {
   }
 
   return (
-    <div className="book-reader" aria-live="polite">
+    <div
+      className={["book-reader", coverStyleId ? `book-reader--${coverStyleId}` : ""].join(" ").trim()}
+      aria-live="polite"
+    >
       <div className="book-reader__frame" key={entry.id}>
+        {/* 왼쪽 페이지: 내가 적은 기록 */}
         <article className="book-reader__page book-reader__page--diary">
           <div className="book-reader__meta">
             <span className="book-reader__label">오늘의 기록</span>
-            <time>{formatFullDate(entry.created_at)}</time>
+            <time className="book-reader__date-stamp">{formatFullDate(entry.created_at)}</time>
           </div>
 
           {(weatherLabel || (entry.diary_emotions && entry.diary_emotions.length > 0)) && (
@@ -96,13 +103,19 @@ export default function BookReader({ entries }: BookReaderProps) {
           <Link href={`/diary/${entry.id}`} className="book-reader__open-link">이 기록 자세히 보기</Link>
         </article>
 
+        {/* 오른쪽 페이지: 도착한 답장(편지지 카드) */}
         <aside className="book-reader__page book-reader__page--reply">
           <div className="book-reader__meta book-reader__meta--persona">
-            <span className="book-reader__persona-name">{getPersonaLabel(reply?.persona)}</span>
+            <span className="book-reader__persona-name">
+              {persona?.emoji && <span aria-hidden="true">{persona.emoji}</span>}
+              {persona?.name || "답장"}
+            </span>
           </div>
 
           {reply?.content ? (
-            <p className="book-reader__reply">{reply.content}</p>
+            <div className="book-reader__reply-letter">
+              <p className="book-reader__reply">{reply.content}</p>
+            </div>
           ) : (
             <p className="book-reader__reply opacity-50">아직 답장이 없어요.</p>
           )}
@@ -118,7 +131,7 @@ export default function BookReader({ entries }: BookReaderProps) {
         >
           ← 이전 장
         </button>
-        <span className="book-reader__counter">{pageIndex + 1} / {pages.length}</span>
+        <span className="book-reader__counter">{pageIndex + 1} / {pages.length} 장</span>
         <button
           type="button"
           className="book-reader__button"

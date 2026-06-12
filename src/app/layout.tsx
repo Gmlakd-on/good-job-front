@@ -8,6 +8,7 @@ import Providers from "./providers";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import "./globals.css";
 import "./ui-overrides.css"; // 데스크톱 레이아웃/표지 선반/설정 2단 — globals.css 다음에 로드되어야 함
+import "./reference-ui.css"; // 레퍼런스 UI(리포트/교환/도감/일기장/상세 리더) — ui-overrides.css 다음에 로드되어야 함
 
 export const metadata: Metadata = {
   title: "참 잘했어요",
