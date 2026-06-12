@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -16,6 +15,58 @@ type TestCard = {
   icon: string;
   title: string;
 };
+
+type LocalizedDeepQuestion = {
+  ko: string;
+  en: string;
+};
+
+const DEEP_RANDOM_QUESTIONS: LocalizedDeepQuestion[] = [
+  {
+    ko: "내 인생에서 가장 중요하게 생각하는 가치 3가지는 무엇이며, 나는 오늘 그 가치를 지키며 살았는가?",
+    en: "What are the three values I consider most important in life, and did I live by them today?",
+  },
+  {
+    ko: "남들의 시선을 완전히 배제할 수 있다면, 나는 지금 어떤 선택을 하고 싶은가?",
+    en: "If I could completely remove other people's opinions from the equation, what choice would I want to make now?",
+  },
+  {
+    ko: "내가 가진 시간과 에너지를 가장 기쁘게 쓰고 있는 곳은 어디인가?",
+    en: "Where am I spending my time and energy with the most joy?",
+  },
+  {
+    ko: "요즘 나를 가장 자주 웃게 만드는 것과, 반대로 나를 가장 자주 지치게 만드는 것은 무엇인가?",
+    en: "What has been making me smile most often lately, and what has been draining me most often?",
+  },
+  {
+    ko: "나의 감정을 억누르거나 숨기려 할 때, 몸은 어떤 신호를 보내는가?",
+    en: "When I try to suppress or hide my emotions, what signals does my body send me?",
+  },
+  {
+    ko: "나는 지금 나 자신을 충분히 다정하게 대하고 있는가? 아니라면 무엇을 해주어야 할까?",
+    en: "Am I treating myself with enough kindness right now? If not, what do I need to give myself?",
+  },
+  {
+    ko: "내가 가진 고민 중 1년 뒤에도 여전히 중요할 고민은 무엇인가?",
+    en: "Which of my current worries will still matter one year from now?",
+  },
+  {
+    ko: "최근에 배운 것 중 나의 세계를 넓혀준 것이 있다면 무엇인가?",
+    en: "What have I learned recently that expanded my world?",
+  },
+  {
+    ko: "지금의 나를 힘들게 하는 상황에서 내가 바꿀 수 있는 작은 부분은 무엇인가?",
+    en: "In the situation that is making things hard for me right now, what small part can I change?",
+  },
+  {
+    ko: "어린 시절의 내가 지금의 나를 본다면, 가장 놀라워할 점은 무엇일까?",
+    en: "If my childhood self saw me now, what would surprise them the most?",
+  },
+  {
+    ko: "미래의 내가 지금의 나에게 해주고 싶은 단 한 마디 조언은 무엇일까?",
+    en: "What is the one piece of advice my future self would want to give me right now?",
+  },
+];
 
 function loadAnswers(): Answers {
   try {
@@ -73,6 +124,7 @@ export default function DexPage() {
   const [browsing, setBrowsing] = useState(false);
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editDraft, setEditDraft] = useState("");
+  const [deepQuestionIndex, setDeepQuestionIndex] = useState(0);
 
   const copy = language === "en"
     ? {
@@ -90,10 +142,10 @@ export default function DexPage() {
       browseDesc: "Gather the answers you have written so far.",
       browseAction: "View my answers",
       closeAction: "Close answers",
-      aiTitle: "AI-recommended next question",
-      aiDesc: "Based on your recent answers, we picked a question that may fit you.",
-      aiQuestion: "When did you feel most grateful lately?",
-      aiAction: "Record with this question",
+      deepTitle: "Deep random question sheet",
+      deepDesc: "Add one when you want to leave a deeper thought.",
+      deepAction: "Record with this question",
+      deepNext: "Show another deep question",
       testsTitle: "Small self-discovery cards",
       notAnswered: "Not answered yet",
       localNote: "Saved on this device for now. Account sync can be connected later.",
@@ -121,10 +173,10 @@ export default function DexPage() {
       browseDesc: "지금까지 기록한 나의 답을 한눈에 모아볼 수 있어요.",
       browseAction: "내 답 보러 가기",
       closeAction: "답변 닫기",
-      aiTitle: "AI가 추천하는 다음 질문",
-      aiDesc: "최근 답변을 바탕으로 당신에게 꼭 맞는 질문을 골랐어요.",
-      aiQuestion: "요즘 가장 감사한 순간은 언제였나요?",
-      aiAction: "이 질문으로 기록하기",
+      deepTitle: "깊이있는 랜덤 질문지",
+      deepDesc: "깊은 생각을 남기고 싶을 때, 추가해보세요",
+      deepAction: "이 질문으로 기록하기",
+      deepNext: "다른 깊은 질문 보기",
       testsTitle: "나를 알아가는 작은 카드",
       notAnswered: "아직 답하지 않았어요",
       localNote: "현재 답변은 이 기기에 저장돼요. 계정 동기화는 후속 작업으로 연결할 수 있어요.",
@@ -144,9 +196,11 @@ export default function DexPage() {
     setHydrated(true);
   }, []);
 
-  // 기본 100문 + AI 추천으로 추가된 질문 = 전체 도감 질문 (추가될 때마다 101문, 102문…으로 늘어난다)
+  // 기본 100문 + 깊이있는 랜덤 질문으로 추가된 질문 = 전체 도감 질문 (추가될 때마다 101문, 102문…으로 늘어난다)
   const allQuestions = useMemo(() => [...DEX_QUESTIONS, ...customQuestions], [customQuestions]);
   const totalQuestions = allQuestions.length;
+  const selectedDeepQuestion = DEEP_RANDOM_QUESTIONS[deepQuestionIndex] ?? DEEP_RANDOM_QUESTIONS[0];
+  const deepQuestion = language === "en" ? selectedDeepQuestion.en : selectedDeepQuestion.ko;
 
   const answeredCount = useMemo(
     () => Object.values(answers).filter((value) => value?.trim()).length,
@@ -171,14 +225,14 @@ export default function DexPage() {
     window.setTimeout(() => setSavedFlash(false), 2000);
   };
 
-  // AI 추천 질문으로 바로 기록: 도감에 없는 질문이면 새 번호로 추가(100문 -> 101문)하고 그 질문을 펼친다
-  const startAiQuestion = () => {
-    const existingIdx = allQuestions.indexOf(copy.aiQuestion);
+  // 깊이있는 랜덤 질문을 바로 기록: 도감에 없는 질문이면 새 번호로 추가(100문 -> 101문)하고 그 질문을 펼친다.
+  const startDeepQuestion = () => {
+    const existingIdx = allQuestions.indexOf(deepQuestion);
 
     if (existingIdx >= 0) {
       setForcedIdx(existingIdx);
     } else {
-      const nextCustom = [...customQuestions, copy.aiQuestion];
+      const nextCustom = [...customQuestions, deepQuestion];
       setCustomQuestions(nextCustom);
       saveCustomQuestions(nextCustom);
       setForcedIdx(DEX_QUESTIONS.length + nextCustom.length - 1);
@@ -187,6 +241,10 @@ export default function DexPage() {
     setDraft("");
     window.scrollTo({ top: 0, behavior: "smooth" });
     window.setTimeout(() => document.getElementById("dex-answer")?.focus(), 350);
+  };
+
+  const showAnotherDeepQuestion = () => {
+    setDeepQuestionIndex((current) => (current + 1) % DEEP_RANDOM_QUESTIONS.length);
   };
 
   const saveEdit = () => {
@@ -219,14 +277,6 @@ export default function DexPage() {
           <span style={{ width: `${progressPct}%` }} />
         </div>
         <strong>{answeredCount} / {totalQuestions} {copy.answered}</strong>
-        <Image
-          src="/illustrations/dex-progress-banner.png"
-          alt=""
-          width={520}
-          height={174}
-          className="dex-progress-hero__banner"
-          priority
-        />
       </section>
 
       <section className="dex-question-hero">
@@ -267,15 +317,6 @@ export default function DexPage() {
             </>
           )}
         </div>
-        <div className="dex-question-hero__art" aria-hidden="true">
-          <Image
-            src="/illustrations/dex-question-banner.png"
-            alt=""
-            width={620}
-            height={207}
-            className="dex-question-hero__banner"
-          />
-        </div>
       </section>
 
       <section className="dex-feature-row" aria-label="나의 도감 바로가기">
@@ -290,13 +331,18 @@ export default function DexPage() {
         </article>
         <article className="dex-feature-card dex-feature-card--ai">
           <div>
-            <h2>✦ {copy.aiTitle}</h2>
-            <p>{copy.aiDesc}</p>
-            <blockquote>“{copy.aiQuestion}”</blockquote>
+            <h2>✦ {copy.deepTitle}</h2>
+            <p>{copy.deepDesc}</p>
+            <blockquote>“{deepQuestion}”</blockquote>
           </div>
-          <button type="button" onClick={startAiQuestion}>
-            ✎ {copy.aiAction}
-          </button>
+          <div className="dex-feature-card__actions">
+            <button type="button" onClick={startDeepQuestion}>
+              ✎ {copy.deepAction}
+            </button>
+            <button type="button" onClick={showAnotherDeepQuestion}>
+              ⟳ {copy.deepNext}
+            </button>
+          </div>
         </article>
       </section>
 

@@ -227,6 +227,12 @@ export default function ExchangeRandomPage() {
         </div>
       )}
 
+      <section className="xch-random-safety-card" aria-label={t("xch.rd.safetyTitle")}>
+        <strong>🔎 {t("xch.rd.safetyTitle")}</strong>
+        <p>{t("xch.rd.safetyAccept")}</p>
+        <p>{t("xch.rd.safetyControl")}</p>
+      </section>
+
       {/* ── 0. 선행 조건 안내 ── */}
       {!profile ? (
         <div className="diary-card p-6 text-center">
@@ -400,10 +406,6 @@ export default function ExchangeRandomPage() {
               </button>
             </div>
           )}
-
-          <p className="text-[11px] opacity-35 px-1 leading-relaxed">
-            {t("xch.rd.safety")}
-          </p>
         </>
       )}
     </div>

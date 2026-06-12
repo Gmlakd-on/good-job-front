@@ -51,6 +51,7 @@ export default function ExchangeHubPage() {
   const [received, setReceived] = useState<InviteRow[]>([]);
   const [sent, setSent] = useState<InviteRow[]>([]);
   const [friendModalOpen, setFriendModalOpen] = useState(false);
+  const [randomNoticeOpen, setRandomNoticeOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [searching, setSearching] = useState(false);
   const [searched, setSearched] = useState(false);
@@ -77,6 +78,14 @@ export default function ExchangeHubPage() {
       friendDesc: "Search a friend ID and start a one-on-one diary.",
       randomTitle: "Random exchange",
       randomDesc: "Quietly exchange with someone new.",
+      randomNoticeTitle: "Random exchange notes",
+      randomNoticeActive: "Finish your current exchange before starting a new connection.",
+      randomNoticePenalty: "Ending without a special reason may cause a matching penalty.",
+      randomNoticeAccept: "A random exchange begins only when both people accept the offer.",
+      randomNoticeSafety: "Even after it starts, you can stop, block, or report anytime if you feel uncomfortable.",
+      randomNoticeContinue: "Continue to random exchange",
+      randomNoticeBlocked: "Got it",
+      randomNoticeCancel: "Cancel",
       lockTitle: "Only one exchange at a time",
       lockDesc: "Finish your current exchange before starting a new one. Ending without a reason may cause a matching penalty.",
       lockMore: "Learn more",
@@ -110,6 +119,14 @@ export default function ExchangeHubPage() {
       friendDesc: "친구 아이디를 검색해 1:1 교환을 시작해요.",
       randomTitle: "랜덤 교환",
       randomDesc: "새로운 한 사람과 조용히 교환해요.",
+      randomNoticeTitle: "랜덤 교환 유의 사항",
+      randomNoticeActive: "지금 진행 중인 교환이 끝나야 새로운 연결을 만들 수 있어요.",
+      randomNoticePenalty: "특별한 이유 없는 중단은 매칭 페널티가 생길 수 있어요.",
+      randomNoticeAccept: "제안을 받으면 서로 수락해야 시작돼요.",
+      randomNoticeSafety: "시작 후에도 불편하면 언제든 중단·차단·신고할 수 있어요.",
+      randomNoticeContinue: "랜덤 교환으로 계속",
+      randomNoticeBlocked: "확인했어요",
+      randomNoticeCancel: "취소",
       lockTitle: "교환은 한 번에 한 명과만 가능해요",
       lockDesc: "지금 진행 중인 교환이 끝나야 새로운 연결을 만들 수 있어요. 특별한 이유 없는 중단은 매칭 페널티가 생길 수 있어요.",
       lockMore: "자세히 보기",
@@ -252,6 +269,16 @@ export default function ExchangeHubPage() {
     setStatusText("");
   };
 
+  const openRandomNotice = () => {
+    setRandomNoticeOpen(true);
+    setStatusText("");
+  };
+
+  const goRandomExchange = () => {
+    setRandomNoticeOpen(false);
+    router.push("/exchange/random");
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
@@ -326,7 +353,7 @@ export default function ExchangeHubPage() {
             </span>
             <b aria-hidden="true">→</b>
           </button>
-          <Link href="/exchange/random" className="exchange-connect-card exchange-connect-card--green">
+          <button type="button" onClick={openRandomNotice} className="exchange-connect-card exchange-connect-card--green">
             <span className="exchange-connect-card__image" aria-hidden="true">
               <Image src="/home-icons/refresh-card.png" alt="" width={56} height={56} />
             </span>
@@ -335,17 +362,8 @@ export default function ExchangeHubPage() {
               <em>{submission ? expiresShort(submission.expires_at, t) : copy.randomDesc}</em>
             </span>
             <b aria-hidden="true">→</b>
-          </Link>
+          </button>
         </div>
-      </section>
-
-      <section className="exchange-lock-note" aria-label={copy.lockTitle}>
-        <span aria-hidden="true">🔒</span>
-        <div>
-          <strong>{copy.lockTitle}</strong>
-          <p>{copy.lockDesc}</p>
-        </div>
-        <Link href="/exchange/friends">{copy.lockMore} ›</Link>
       </section>
 
       <section className="exchange-bottom-grid exchange-bottom-grid--single">
@@ -370,6 +388,60 @@ export default function ExchangeHubPage() {
           </span>
         </Link>
       </section>
+
+      {randomNoticeOpen && (
+        <div className="exchange-random-notice" role="dialog" aria-modal="true" aria-labelledby="exchange-random-notice-title">
+          <div className="exchange-random-notice__backdrop" onClick={() => setRandomNoticeOpen(false)} />
+          <section className="exchange-random-notice__card">
+            <header>
+              <div>
+                <p>{copy.randomNoticeTitle}</p>
+                <h2 id="exchange-random-notice-title">{copy.lockTitle}</h2>
+              </div>
+              <button type="button" onClick={() => setRandomNoticeOpen(false)} aria-label={copy.close}>×</button>
+            </header>
+
+            <ul className="exchange-random-notice__list">
+              <li>
+                <span aria-hidden="true">1</span>
+                <div>
+                  <strong>{copy.lockTitle}</strong>
+                  <p>{copy.randomNoticeActive}</p>
+                </div>
+              </li>
+              <li>
+                <span aria-hidden="true">2</span>
+                <div>
+                  <strong>{copy.randomNoticeAccept}</strong>
+                  <p>{copy.randomNoticeSafety}</p>
+                </div>
+              </li>
+              <li>
+                <span aria-hidden="true">3</span>
+                <div>
+                  <strong>{language === "ko" ? "매칭 페널티 안내" : "Matching penalty note"}</strong>
+                  <p>{copy.randomNoticePenalty}</p>
+                </div>
+              </li>
+            </ul>
+
+            <div className="exchange-random-notice__actions">
+              <button type="button" onClick={() => setRandomNoticeOpen(false)} className="exchange-random-notice__secondary">
+                {copy.randomNoticeCancel}
+              </button>
+              {slot ? (
+                <button type="button" onClick={() => setRandomNoticeOpen(false)} className="exchange-random-notice__primary">
+                  {copy.randomNoticeBlocked}
+                </button>
+              ) : (
+                <button type="button" onClick={goRandomExchange} className="exchange-random-notice__primary">
+                  {copy.randomNoticeContinue}
+                </button>
+              )}
+            </div>
+          </section>
+        </div>
+      )}
 
       {friendModalOpen && (
         <div className="exchange-friend-modal" role="dialog" aria-modal="true" aria-labelledby="exchange-friend-modal-title">

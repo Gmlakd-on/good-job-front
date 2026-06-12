@@ -4550,8 +4550,8 @@ html[lang="en"] .home-shell .home-quote-card__text.hero-quote {
 .dex-progress-hero {
   position: relative;
   overflow: hidden;
-  min-height: 236px;
-  padding-right: min(40vw, 520px);
+  min-height: 0;
+  padding-right: 28px;
 }
 
 .dex-progress-hero__intro,
@@ -4574,13 +4574,13 @@ html[lang="en"] .home-shell .home-quote-card__text.hero-quote {
 .dex-question-hero {
   position: relative;
   overflow: hidden;
-  min-height: 390px;
+  min-height: 300px;
 }
 
 .dex-question-hero__content {
   position: relative;
   z-index: 1;
-  max-width: min(72%, 980px);
+  max-width: 100%;
 }
 
 .dex-question-hero__art {
@@ -4646,9 +4646,10 @@ html[lang="en"] .home-shell .home-quote-card__text.hero-quote {
 }
 
 .exchange-current-card__cta--small {
-  grid-column: 1;
-  max-width: 340px;
-  margin-top: 18px;
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  width: min(340px, 100%);
 }
 
 .exchange-current-card__image {
@@ -4777,6 +4778,14 @@ html[lang="en"] .home-shell .home-quote-card__text.hero-quote {
   .exchange-current-card--compact,
   .exchange-connect-grid--two {
     grid-template-columns: 1fr;
+  }
+
+  .exchange-current-card__cta--small {
+    grid-column: 1;
+    grid-row: auto;
+    justify-self: stretch;
+    width: 100%;
+    margin-top: 18px;
   }
 
   .exchange-current-card__image {

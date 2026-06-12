@@ -22,6 +22,7 @@ export interface BookReaderEntry {
   created_at: string;
   weather_code?: string | null;
   weather_label?: string | null;
+  weather?: { code?: string | null; label?: string | null } | null;
   diary_emotions?: BookReaderEmotion[];
   replies?: BookReaderReply[];
 }
@@ -59,7 +60,10 @@ export default function BookReader({ entries, coverStyleId }: BookReaderProps) {
   const entry = pages[pageIndex];
   const reply = entry?.replies?.[0];
   const persona = getPersona(reply?.persona);
-  const weatherLabel = getWeatherLabel(entry?.weather_code, entry?.weather_label);
+  const weatherLabel = getWeatherLabel(
+    entry?.weather_code ?? entry?.weather?.code,
+    entry?.weather_label ?? entry?.weather?.label,
+  );
   const hasPrevious = pageIndex > 0;
   const hasNext = pageIndex < pages.length - 1;
 
@@ -88,7 +92,7 @@ export default function BookReader({ entries, coverStyleId }: BookReaderProps) {
             <div className="book-reader__emotion-row" aria-label="선택한 날씨와 감정">
               {weatherLabel && (
                 <span className="book-reader__emotion book-reader__emotion--weather">
-                  {weatherLabel}
+                  <span className="book-reader__emotion-label">날씨</span> {weatherLabel}
                 </span>
               )}
               {entry.diary_emotions?.map((emotion) => (
