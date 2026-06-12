@@ -341,11 +341,12 @@ export default function HomePage() {
     ? "참이가 긍정을 먹었어요!"
     : "참이는 오늘의 긍정 확언을 기다리고 있어요.";
 
-  const mascotHelper = isAffirmationCompleted
-    ? "오늘 확언 완료"
-    : hasStartedButNotCompleted
-      ? "아직 오늘의 확언을 먹지 못했어요."
-      : "확언을 먹이면 참이가 더 힘을 내요!";
+  const affirmationStreakLabel =
+    streakCount >= 3
+      ? `🔥 연속 ${streakCount}일째`
+      : streakCount > 0
+        ? `🔥 ${streakCount}일째`
+        : "🔥 오늘 시작";
 
   const currentAffirmationText = isAffirmationCompleted ? dailyAffirmation?.text?.trim() ?? "" : "";
 
@@ -569,7 +570,7 @@ export default function HomePage() {
             <article className={`chami-mascot-card chami-card chami-mascot-card--${mascotState}`}>
               <div className="chami-mascot-card__copy">
                 <p>{mascotMessage}</p>
-                <span className="chami-streak-pill">🔥 연속 {streakCount}일째</span>
+                <span className="chami-streak-pill">{affirmationStreakLabel}</span>
               </div>
               <div className="chami-mascot-stage" aria-hidden="true">
                 <span className="chami-sparkle chami-sparkle--left">✦</span>
@@ -585,7 +586,6 @@ export default function HomePage() {
                 <span aria-hidden="true">🍃</span>
                 {isAffirmationCompleted ? "오늘 확언 완료" : "확언 먹이 주기"}
               </button>
-              <p className="chami-mascot-card__helper">{mascotHelper}</p>
             </article>
           </section>
 
@@ -640,10 +640,7 @@ export default function HomePage() {
                     data-full-width-responsive="true"
                   />
                 ) : (
-                  <div className="chami-ad-placeholder__fallback">
-                    <strong>Google AdSense</strong>
-                    <p>환경변수에 광고 클라이언트/슬롯 ID를 연결하면 이 영역에 광고가 노출돼요.</p>
-                  </div>
+                  <div className="chami-ad-placeholder__fallback" aria-hidden="true" />
                 )}
               </div>
             </article>

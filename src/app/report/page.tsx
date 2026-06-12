@@ -145,9 +145,129 @@ const REFRESH_CARD_POOL: Record<"ko" | "en", Record<RefreshGroup, RefreshCardSug
   },
 };
 
+
+const EXTRA_KO_REFRESH_MISSIONS: RefreshCardSuggestion[] = [
+  {
+    category: "sense",
+    icon: "👂",
+    title: "미션: 소리 수집하기",
+    body: "주변에서 들리는 가장 편안한 소리 하나에 1분간 집중해 보세요. 빗소리, 타자 소리, 혹은 멀리서 들리는 일상적인 소리도 좋습니다.",
+    action: "가장 편안했던 소리 하나를 마음속에 저장하기",
+  },
+  {
+    category: "sense",
+    icon: "🌿",
+    title: "미션: 향기 한 스푼",
+    body: "좋아하는 핸드크림을 바르거나 차를 한 잔 우려보세요. 그 향기를 깊게 들이마시고 내쉬는 데에만 온전히 집중해 보세요.",
+    action: "향을 들이마시며 천천히 숨 3번 쉬기",
+  },
+  {
+    category: "lightAction",
+    icon: "🤲",
+    title: "미션: 내 몸 깨우기",
+    body: "손끝부터 발끝까지 천천히 힘을 주었다가 '툭' 하고 한꺼번에 풀어보세요. 몸에 쌓인 잔여 긴장감이 빠져나가는 것을 느껴보세요.",
+    action: "힘을 주고 풀어내는 감각을 한 번 더 느끼기",
+  },
+  {
+    category: "sense",
+    icon: "🍃",
+    title: "오늘의 감정 🍃 개운함",
+    body: "지금의 개운한 느낌이 어디에서 시작됐는지 잠깐 살펴보세요. 몸이 가벼운 곳, 생각이 정리된 곳을 하나만 찾아도 충분해요.",
+    action: "오늘의 개운함을 만든 작은 이유 한 가지 떠올리기",
+  },
+  {
+    category: "mission",
+    icon: "🗑️",
+    title: "미션: 마음 쓰레기통 비우기",
+    body: "지금 나를 불편하게 하는 생각을 종이에 적고, 종이를 구겨 버리며 마음에서 떠나보내 주세요.",
+    action: "버리고 싶은 생각을 한 문장으로 적기",
+  },
+  {
+    category: "mission",
+    icon: "🪞",
+    title: "미션: 나를 향한 다정함",
+    body: "오늘 가장 애쓴 나를 위해, 거울 속의 나에게 \"오늘 하루도 정말 고생 많았어\"라고 나지막이 말해주세요.",
+    action: "거울 속 나와 3초 눈 맞추기",
+  },
+  {
+    category: "mission",
+    icon: "👏",
+    title: "미션: 칭찬 샤워",
+    body: "오늘 내가 한 일 중 아주 사소하지만 잘한 행동 하나를 찾아 스스로에게 칭찬해 주세요. 예를 들면 물 한 잔 마시기처럼 작은 것도 좋아요.",
+    action: "사소하지만 잘한 행동 하나 말해주기",
+  },
+  {
+    category: "sense",
+    icon: "👀",
+    title: "미션: 시선의 확장",
+    body: "평소와는 다른 각도로 지금 있는 공간을 30초만 천천히 둘러보세요. 고개를 살짝 들어보거나, 앉은 자리에서 몸을 돌려봐도 좋아요.",
+    action: "처음 보인 물건 하나를 새롭게 바라보기",
+  },
+  {
+    category: "sense",
+    icon: "🎨",
+    title: "미션: 예쁜 구석 찾기",
+    body: "내 주변에서 색감이 가장 예쁜 사물 하나를 골라 10초 동안 가만히 관찰해 보세요. 책상, 방 안, 창밖 어디든 괜찮아요.",
+    action: "가장 예뻤던 색 이름 붙이기",
+  },
+  {
+    category: "mission",
+    icon: "🙏",
+    title: "미션: 고마움의 목록",
+    body: "오늘 나를 미소 짓게 했던 아주 작은 일 3가지만 떠올려 보세요. 당연하게 지나쳤던 것들의 소중함을 느껴보세요.",
+    action: "작은 고마움 3가지를 천천히 떠올리기",
+  },
+  {
+    category: "content",
+    icon: "🎵",
+    title: "미션: BGM 바꾸기",
+    body: "지금 내 기분을 반전시켜줄 수 있는 노래 한 곡을 골라보세요. 곡이 끝날 때까지 아무것도 하지 않고 오직 음악에만 빠져보세요.",
+    action: "노래가 끝날 때까지 화면 잠시 내려놓기",
+  },
+  {
+    category: "content",
+    icon: "📖",
+    title: "미션: 오늘의 문장 찾기",
+    body: "책을 아무 페이지나 펼치거나, 눈에 보이는 문장 하나를 골라 오늘의 나에게 건네는 메시지로 읽어보세요.",
+    action: "오늘 나에게 닿은 문장 한 줄 고르기",
+  },
+  {
+    category: "sense",
+    icon: "🖼️",
+    title: "미션: 풍경 액자 만들기",
+    body: "창가로 가서 창문을 액자라고 생각하고, 밖의 풍경을 한 폭의 그림처럼 1분 동안 감상해 보세요.",
+    action: "풍경 속 가장 먼저 눈에 들어온 것 기억하기",
+  },
+  {
+    category: "question",
+    icon: "🌦️",
+    title: "미션: 감정 날씨 기록",
+    body: "오늘 내 마음의 상태를 날씨 단어로 표현해 보세요. 맑음, 흐림 뒤 갬, 소나기처럼 적고 왜 그런지도 한 문장 덧붙여보세요.",
+    action: "오늘의 마음 날씨를 한 단어로 정하기",
+  },
+  {
+    category: "question",
+    icon: "💫",
+    title: "미션: 낯선 질문 던지기",
+    body: "'만약 오늘 내가 딱 한 가지 소원을 이룰 수 있다면?'이라는 질문을 스스로에게 던지고 짧게 대답해 보세요.",
+    action: "오늘의 소원 하나를 아주 솔직하게 떠올리기",
+  },
+  {
+    category: "mission",
+    icon: "🌙",
+    title: "미션: 내일의 기분 예약",
+    body: "내일 아침 나에게 선물하고 싶은 기분 한 가지를 정하고, 그걸 느끼기 위해 할 수 있는 작은 행동을 계획해 보세요.",
+    action: "내일 아침을 위한 작은 행동 하나 정하기",
+  },
+];
+
 function pickRefreshCardSuggestion(code: string, language: "ko" | "en", seed: number): RefreshCardSuggestion {
   const group = REFRESH_GROUP_BY_EMOTION[code] ?? "default";
-  const pool = [...REFRESH_CARD_POOL[language][group], ...REFRESH_CARD_POOL[language].default];
+  const basePool = REFRESH_CARD_POOL[language][group] ?? REFRESH_CARD_POOL[language].default;
+  const fallbackPool = group === "default" ? [] : REFRESH_CARD_POOL[language].default;
+  const extraPool = language === "ko" ? EXTRA_KO_REFRESH_MISSIONS : [];
+  const pool = [...basePool, ...fallbackPool, ...extraPool];
+
   return pool[Math.abs(seed) % pool.length] ?? REFRESH_CARD_POOL[language].default[0];
 }
 
@@ -176,25 +296,6 @@ function getEmotionMeta(code: string, language: "ko" | "en") {
   };
 }
 
-function createDailyCounts(diaries: DiaryForReport[], now: Date, language: "ko" | "en") {
-  const weekdays = language === "en"
-    ? ["S", "M", "T", "W", "T", "F", "S"]
-    : ["일", "월", "화", "수", "목", "금", "토"];
-
-  return Array.from({ length: 14 }, (_, index) => {
-    const daysAgo = 13 - index;
-    const date = new Date(now.getTime() - daysAgo * 86400000);
-    const dateKey = date.toDateString();
-    const count = diaries.filter((diary) => new Date(diary.created_at).toDateString() === dateKey).length;
-
-    return {
-      count,
-      date: `${date.getMonth() + 1}/${date.getDate()}`,
-      isToday: daysAgo === 0,
-      weekday: weekdays[date.getDay()],
-    };
-  });
-}
 
 export default function ReportPage() {
   const router = useRouter();
@@ -226,7 +327,6 @@ export default function ReportPage() {
       donut: "Emotion donut",
       distribution: "Emotion distribution",
       insight: "Emotion insight",
-      calendar: "Weekly emotion calendar",
       aiTitle: "AI summary of your emotional flow",
       noData: "No records yet",
       noDataDesc: "Once you write a diary, your emotional flow will appear here.",
@@ -257,7 +357,6 @@ export default function ReportPage() {
       donut: "감정 도넛",
       distribution: "감정 분포",
       insight: "감정 인사이트",
-      calendar: "주간 감정 캘린더",
       aiTitle: "AI가 요약한 감정 흐름",
       noData: "아직 기록이 없어요",
       noDataDesc: "일기를 쓰면 이곳에서 감정 흐름을 조용히 돌아볼 수 있어요.",
@@ -319,9 +418,6 @@ export default function ReportPage() {
   }, [filtered]);
 
   const streak = useMemo(() => computeStreak(diaries, now), [diaries, now]);
-  const dailyCounts = useMemo(() => createDailyCounts(diaries, now, language), [diaries, language, now]);
-  const maxDailyCount = Math.max(...dailyCounts.map((day) => day.count), 1);
-
   const topEmotion = sortedEmotions[0];
   const topMeta = topEmotion ? getEmotionMeta(topEmotion[0], language) : null;
   const topEmotionPct = topEmotion && totalEmotions > 0 ? Math.round((topEmotion[1] / totalEmotions) * 100) : 0;
@@ -475,24 +571,6 @@ export default function ReportPage() {
               <p>{copy.insightBody}</p>
               <button type="button">♥ {copy.cheer}</button>
             </aside>
-          </section>
-
-          <section className="report-calendar-card report-card-panel">
-            <p className="report-panel-title">{copy.calendar}</p>
-            <div className="report-days report-days--calendar">
-              {dailyCounts.map((day) => (
-                <div key={`${day.date}-${day.weekday}`} className={`report-days__col ${day.isToday ? "report-days__col--today" : ""}`}>
-                  <span className="report-days__count">{day.count > 0 ? day.count : ""}</span>
-                  <div
-                    className={`report-days__bar ${day.count > 0 ? "report-days__bar--filled" : ""}`}
-                    style={{ height: `${Math.max((day.count / maxDailyCount) * 62, day.count > 0 ? 10 : 3)}px` }}
-                    title={`${day.date} · ${day.count}`}
-                  />
-                  <span className="report-days__weekday">{day.weekday}</span>
-                  <span className="report-days__date">{day.date}</span>
-                </div>
-              ))}
-            </div>
           </section>
         </>
       )}
