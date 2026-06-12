@@ -189,42 +189,78 @@ export default function ExchangeHubPage() {
         <div className="diary-card p-3 mb-4 text-sm" role="status" style={{ color: "var(--deep-gray)" }}>{statusText}</div>
       )}
 
-      {/* ① 슬롯: 지금의 교환 */}
-      <section className="diary-card p-5 mb-4 hub-slot">
-        <p className="hub-slot__eyebrow">{t("hub.slotTitle")}</p>
-        {slot ? (
-          <>
-            <div className="flex items-center gap-3 mt-2">
-              <span className="xch-card__avatar" aria-hidden="true">
-                {(slot.partner_display_name || "?").slice(0, 1)}
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate" style={{ color: "var(--deep-gray)" }}>
-                  {t("xch.card.with", { name: slot.partner_display_name || t("xch.fr.anon") })}
-                </p>
-                <span className="xch-card__days" aria-label={t("xch.card.dayAria", { n: slotDay })}>
-                  {Array.from({ length: 7 }, (_, i) => (
-                    <span key={i} className={`xch-card__dot ${i < slotDay ? "xch-card__dot--past" : ""} ${i === slotDay - 1 ? "xch-card__dot--today" : ""}`} />
-                  ))}
-                  <span className="xch-card__day-label">{t("xch.card.day", { n: slotDay })}</span>
+      {/* ① 슬롯: 지금의 교환 — 레퍼런스 UI: 교환 상대 + 연속 기록 + 큰 CTA */}
+      {slot ? (
+        <>
+          <div className="xch2-top mb-4">
+            <section className="diary-card xch2-pair p-5" aria-label={t("hub.pairTitle")}>
+              <p className="hub-slot__eyebrow">{t("hub.pairTitle")}</p>
+              <div className="xch2-pair__row">
+                <span className="xch2-pair__person">
+                  <span className="xch2-pair__avatar" aria-hidden="true">🐻</span>
+                  <span className="xch2-pair__name">{t("hub.pairMe")}</span>
+                </span>
+                <svg className="xch2-pair__heart" viewBox="0 0 120 40" aria-hidden="true">
+                  <path d="M4 24 C 28 8, 44 8, 58 22 C 60 12, 72 10, 74 18 C 76 10, 88 12, 90 22 C 100 14, 110 18, 116 24"
+                    fill="none" stroke="var(--stamp-vermilion)" strokeWidth="2.4" strokeLinecap="round" strokeDasharray="1 6" />
+                </svg>
+                <span className="xch2-pair__person">
+                  <span className="xch2-pair__avatar" aria-hidden="true">
+                    {(slot.partner_display_name || "?").slice(0, 1)}
+                  </span>
+                  <span className="xch2-pair__name">{slot.partner_display_name || t("xch.fr.anon")}</span>
                 </span>
               </div>
-            </div>
-            <Link href={`/exchange/${slot.id}`} className="btn-primary w-full py-3 text-sm text-center block mt-4">
-              {t("hub.writeToday")}
+              <p className="xch2-pair__caption">{t("hub.pairCaption")}</p>
+            </section>
+
+            <section className="diary-card xch2-streak p-5" aria-label={t("hub.streakTitle")}>
+              <div className="xch2-streak__head">
+                <span className="xch2-streak__flame" aria-hidden="true">🔥</span>
+                <div>
+                  <p className="hub-slot__eyebrow">{t("hub.streakTitle")}</p>
+                  <p className="xch2-streak__big">{t("hub.streakDay", { n: slotDay })}</p>
+                </div>
+              </div>
+              <p className="xch2-streak__label">{t("hub.weekLabel")}</p>
+              <div className="xch2-streak__days" aria-label={t("xch.card.dayAria", { n: slotDay })}>
+                {Array.from({ length: 7 }, (_, i) => (
+                  <span key={i} className="xch2-streak__day">
+                    <span className="xch2-streak__day-num">{t("hub.dayShort", { n: i + 1 })}</span>
+                    <span
+                      className={`xch2-streak__check ${i < slotDay ? "xch2-streak__check--done" : ""} ${i === slotDay - 1 ? "xch2-streak__check--today" : ""}`}
+                      aria-hidden="true"
+                    >
+                      {i < slotDay ? "✓" : ""}
+                    </span>
+                  </span>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          <section className="diary-card xch2-cta p-5 mb-4">
+            <p className="xch2-cta__title">
+              {t("hub.waiting", { name: slot.partner_display_name || t("xch.fr.anon") })}
+            </p>
+            <Link href={`/exchange/${slot.id}`} className="btn-primary xch2-cta__btn">
+              ✏️ {t("hub.writeToday")}
             </Link>
-            <p className="text-[11px] opacity-40 mt-2 text-center">
+            <p className="xch2-cta__caption">
               {cancelRemain > 0 ? t("hub.cancelLockD", { d: cancelRemain }) : t("hub.cancelOpen")}
             </p>
-          </>
-        ) : (
+          </section>
+        </>
+      ) : (
+        <section className="diary-card p-5 mb-4 hub-slot">
+          <p className="hub-slot__eyebrow">{t("hub.slotTitle")}</p>
           <div className="hub-slot__empty">
             <span className="hub-slot__ring" aria-hidden="true">💌</span>
             <p className="text-sm font-medium mt-3" style={{ color: "var(--deep-gray)" }}>{t("hub.slotEmpty")}</p>
             <p className="text-xs opacity-45 mt-1 leading-relaxed">{t("hub.slotEmptyDesc")}</p>
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* ② 새 연결 패널 */}
       <section className="diary-card p-5 mb-4">
@@ -320,7 +356,7 @@ export default function ExchangeHubPage() {
                       </div>
                     )}
                     {sent.length > 0 && (
-                      <p className="text-[11px] opacity-40 mt-2">
+                      <p className="text-xs opacity-40 mt-2">
                         {t("hub.sentPending", { n: sent.length })} — {sent.map((i) => i.to_profile?.display_name || t("xch.fr.anon")).join(", ")}
                       </p>
                     )}

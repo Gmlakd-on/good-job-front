@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import BookCompleteModal from "@/components/book-ui/BookCompleteModal";
 import BookCover from "@/components/book-ui/BookCover";
-import BookProgress from "@/components/book-ui/BookProgress";
 import BookReader from "@/components/book-ui/BookReader";
 import {
   canCompleteBook,
@@ -122,7 +121,6 @@ export default function BookDetailPage({ params }: { params: Promise<{ bookId: s
             </p>
           </div>
         </div>
-        <div className="mt-5"><BookProgress book={book} /></div>
         <div className="mt-5 grid gap-2">
           {canWrite ? (
             <Link href={`/write?bookId=${book.id}`} className="rounded-full bg-[var(--soft-accent)] py-3 text-center text-sm text-white">이어 쓰기</Link>
@@ -131,10 +129,12 @@ export default function BookDetailPage({ params }: { params: Promise<{ bookId: s
               {book.status === "locked" ? "잠긴 일기장은 더 이상 작성할 수 없어요." : "이 일기장은 가득 찼어요."}
             </p>
           )}
-          <button type="button" disabled={!canComplete} onClick={() => setCompleteOpen(true)}
-            className="rounded-full bg-[var(--warm-bg-deep)] py-3 text-sm disabled:opacity-40">
-            {canComplete ? "일기장 완결하기" : `완결까지 ${30 - book.entry_count}개 남음`}
-          </button>
+          {canComplete && (
+            <button type="button" onClick={() => setCompleteOpen(true)}
+              className="rounded-full bg-[var(--warm-bg-deep)] py-3 text-sm">
+              일기장 완결하기
+            </button>
+          )}
         </div>
         </section>
 

@@ -515,6 +515,27 @@ const ko = {
   "home.feat.dex.desc": "100문 100답과 작은 테스트로 나를 수집해요.",
   "home.feat.dex.b1": "100문 100답",
   "home.feat.dex.b2": "테스트",
+
+  // ── 교환 허브 v2 (레퍼런스 UI) ──
+  "hub.pairTitle": "당신의 교환 상대",
+  "hub.pairMe": "나",
+  "hub.pairCaption": "서로의 하루를 응원하는 사이예요",
+  "hub.streakTitle": "교환일기",
+  "hub.streakDay": "{n}일째",
+  "hub.weekLabel": "이번 교환 기록",
+  "hub.dayShort": "{n}일",
+  "hub.waiting": "{name} 님이 당신의 오늘을 기다려요 ✦",
+
+  // ── 나의 도감 v2 (레퍼런스 UI) ──
+  "dex.heroSub": "나를 더 깊이 이해하는 시간이 될 거예요.",
+  "dex.count": "{n} / 100",
+  "dex.streak": "연속 {n}일",
+  "dex.myAnswer": "나의 답변",
+  "dex.answerHint": "오늘의 생각을 자유롭게 적어보세요. 짧아도, 길어도 괜찮아요.",
+  "dex.record": "도감에 기록하기",
+  "dex.recent": "최근 기록",
+  "dex.recentDesc": "나의 생각들이 쌓이고 있어요",
+  "dex.viewAll": "전체 보기",
 };
 
 const en: Record<keyof typeof ko, string> = {
@@ -1023,6 +1044,27 @@ const en: Record<keyof typeof ko, string> = {
   "home.feat.dex.desc": "Collect yourself through 100 questions and small tests.",
   "home.feat.dex.b1": "100 Q&A",
   "home.feat.dex.b2": "Tests",
+
+  // ── Exchange hub v2 (reference UI) ──
+  "hub.pairTitle": "Your exchange partner",
+  "hub.pairMe": "Me",
+  "hub.pairCaption": "Cheering for each other's days",
+  "hub.streakTitle": "Exchange diary",
+  "hub.streakDay": "Day {n}",
+  "hub.weekLabel": "This exchange",
+  "hub.dayShort": "D{n}",
+  "hub.waiting": "{name} is waiting for your today ✦",
+
+  // ── My Compendium v2 (reference UI) ──
+  "dex.heroSub": "A moment to understand yourself a little deeper.",
+  "dex.count": "{n} / 100",
+  "dex.streak": "{n}-day streak",
+  "dex.myAnswer": "My answer",
+  "dex.answerHint": "Write today's thoughts freely. Short or long — both are fine.",
+  "dex.record": "Record in my compendium",
+  "dex.recent": "Recent records",
+  "dex.recentDesc": "Your thoughts are piling up",
+  "dex.viewAll": "View all",
 };
 
 export type DictKey = keyof typeof ko;

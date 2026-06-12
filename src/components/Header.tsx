@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import AuthModal from "@/components/auth/AuthModal";
+import LanguageToggle from "@/components/LanguageToggle";
 import type { User } from "@supabase/supabase-js";
 
 type AuthMode = "login" | "signup";
@@ -144,7 +145,7 @@ export default function Header() {
                 </svg>
                 {unreadCount > 0 && (
                   <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-white"
-                    style={{ background: "var(--stamp-vermilion)", fontSize: "9px", fontWeight: 600, lineHeight: 1 }}>
+                    style={{ background: "var(--stamp-vermilion)", fontSize: "10px", fontWeight: 600, lineHeight: 1 }}>
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
@@ -196,6 +197,7 @@ export default function Header() {
             </>
           ) : (
             <>
+              <LanguageToggle />
               <button
                 type="button"
                 onClick={() => openAuthModal("login")}

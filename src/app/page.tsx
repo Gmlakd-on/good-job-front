@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import MascotHero from "@/components/home/MascotHero";
 import TryItDemo from "@/components/home/TryItDemo";
 import AuthModal from "@/components/auth/AuthModal";
+import LanguageToggle from "@/components/LanguageToggle";
 import type { User } from "@supabase/supabase-js";
 
 interface Quote {
@@ -118,6 +119,7 @@ export default function HomePage() {
             <div className="home-nav__actions">
               {!user ? (
                 <>
+                  <LanguageToggle />
                   <button
                     type="button"
                     className="home-nav__button home-nav__button--ghost"
