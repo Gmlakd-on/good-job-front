@@ -1214,111 +1214,246 @@
   border-left: 3px solid var(--stamp-vermilion, #c4553a);
 }
 
-/* ── FIX: 일기장 만들기 모바일 레이아웃 안정화 ─────────
-   원인: .grid 안의 cover shelf / form card가 기본 min-width:auto라서
-   내부 flex 콘텐츠 폭만큼 부모가 늘어나고, body overflow-x:hidden에 의해
-   잘려 보이면서 선반 자체 스크롤이 안 되는 현상.
-*/
-.book-new-page,
-.book-create,
-.book-create > *,
-.cover-shelf-wrapper,
-.cover-shelf,
-.cover-shelf__rail,
-.book-create__fields,
-.book-create__fields > * {
-  box-sizing: border-box;
-  min-width: 0;
-  max-width: 100%;
+/* ── 17. 교환 허브 대시보드 ── */
+.hub-slot__eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--soft-accent, #d98e73);
 }
 
-.book-create {
-  width: 100%;
+.hub-slot__empty { text-align: center; padding: 18px 8px 10px; }
+
+.hub-slot__ring {
+  display: inline-grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  font-size: 22px;
+  border-radius: 50%;
+  border: 2px dashed var(--warm-bg-deep, #d8cbb8);
 }
 
-.cover-shelf-wrapper,
-.cover-shelf {
-  width: 100%;
-  overflow: visible;
+.hub-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+
+.hub-chip {
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--warm-bg, #f3ead9);
+  color: var(--deep-gray, #4a4039);
+  opacity: 0.8;
+  white-space: nowrap;
 }
 
-.cover-shelf__rail {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: visible;
-  scroll-snap-type: x proximity;
-  scroll-padding-inline: 12px;
-  padding-left: 12px;
-  padding-right: 44px;
-  -webkit-overflow-scrolling: touch;
+.hub-chip--live {
+  background: rgba(217, 142, 115, 0.16);
+  color: var(--soft-accent, #c97b5a);
+  opacity: 1;
 }
 
-.cover-shelf__item {
-  max-width: calc(100vw - 56px);
+.hub-locked {
+  padding: 14px 16px;
+  border-radius: var(--radius-md, 12px);
+  background: var(--warm-bg, #f3ead9);
 }
 
-.cover-shelf__image,
-.cover-shelf__image img {
-  user-select: none;
-  -webkit-user-drag: none;
+.hub-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--warm-bg, #f3ead9);
 }
 
-.cover-shelf__board {
-  width: auto;
-  max-width: calc(100% - 12px);
+.hub-tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 12.5px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  color: var(--deep-gray, #4a4039);
+  opacity: 0.65;
+  transition: background 0.15s ease, opacity 0.15s ease;
 }
 
-.book-create__fields {
-  width: 100%;
-  grid-template-columns: minmax(0, 1fr);
+.hub-tab--active {
+  background: var(--paper-white, #fffdf8);
+  opacity: 1;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
-.book-create__fields > .diary-card {
-  width: 100%;
-  min-width: 0;
+.hub-tab__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--stamp-vermilion, #c4553a);
 }
 
-.book-create__fields input,
-.book-create__fields select {
-  min-width: 0;
-  max-width: 100%;
+.hub-random-cta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md, 12px);
+  background: var(--warm-bg, #f3ead9);
+  transition: background 0.15s ease;
 }
 
-@media (max-width: 767.98px) {
-  .cover-shelf__rail {
-    gap: 12px;
-    padding-top: 14px;
-    padding-left: 2px;
-    padding-right: 34px;
-    scroll-padding-inline: 2px;
-  }
+.hub-random-cta:hover { background: var(--cream-deep, #f1e7d4); }
 
-  .cover-shelf__item {
-    width: clamp(142px, 42vw, 164px);
-    padding: 10px 8px 14px;
-    border-radius: 16px;
-  }
-
-  .cover-shelf__image-box {
-    height: clamp(128px, 38vw, 152px);
-  }
-
-  .cover-shelf__description {
-    font-size: 10.5px;
-  }
-
-  .cover-shelf__board {
-    margin-left: 0;
-    margin-right: 0;
-    max-width: 100%;
-  }
+.hub-archive {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 
-/* 768px 태블릿/작은 화면에서 2단 카드가 깨지지 않도록, 넓은 데스크톱부터 2단 */
+.hub-archive:hover { box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07); transform: translateY(-1px); }
+
+.hub-archive__icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  font-size: 19px;
+  border-radius: 12px;
+  background: var(--warm-bg, #f3ead9);
+}
+
+/* 중단 정책 안내 */
+.xch-policy {
+  padding: 10px 12px;
+  border-radius: var(--radius-md, 12px);
+  background: rgba(196, 85, 58, 0.07);
+  margin-bottom: 12px;
+}
+
+/* 데스크톱: 허브 2단 — 좌측 슬롯+보관함, 우측 새 연결 */
 @media (min-width: 1024px) {
-  .book-create__fields {
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
-    align-items: start;
-  }
+  /* 허브는 자연 스택 유지가 더 읽기 좋아 폭만 제한 */
+  .hub-slot, .hub-archive { max-width: none; }
+}
+
+/* ── 18. 나의 도감 ── */
+.dex-progress {
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--warm-bg-deep, #efe5d6);
+}
+
+.dex-progress__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--soft-accent, #d98e73), var(--stamp-vermilion, #c4553a));
+  transition: width 0.4s ease;
+}
+
+.dex-today {
+  padding: 16px;
+  border-radius: var(--radius-md, 12px);
+  background: var(--warm-bg, #f3ead9);
+}
+
+.dex-today__eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--soft-accent, #c97b5a);
+  margin-bottom: 6px;
+}
+
+.dex-today__q {
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--deep-gray, #4a4039);
+  font-weight: 500;
+}
+
+.dex-complete {
+  padding: 16px;
+  text-align: center;
+  border-radius: var(--radius-md, 12px);
+  background: var(--warm-bg, #f3ead9);
+}
+
+.dex-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.dex-list__item {
+  padding: 10px 12px;
+  border-radius: var(--radius-md, 12px);
+  background: var(--warm-bg, #f3ead9);
+  opacity: 0.7;
+}
+
+.dex-list__item--done { opacity: 1; }
+
+.dex-list__q { font-size: 12.5px; color: var(--deep-gray, #4a4039); }
+
+.dex-list__num { font-size: 10px; opacity: 0.45; margin-right: 2px; }
+
+.dex-list__a {
+  font-size: 13px;
+  margin-top: 4px;
+  color: var(--deep-gray, #4a4039);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.dex-list__a--empty { opacity: 0.35; font-size: 11.5px; }
+
+.dex-list__edit {
+  font-size: 10.5px;
+  margin-left: 8px;
+  text-decoration: underline;
+  opacity: 0.5;
+}
+
+.dex-list__edit:hover { opacity: 0.9; }
+
+.dex-tests {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.dex-test {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border-radius: var(--radius-md, 12px);
+  background: var(--warm-bg, #f3ead9);
+  opacity: 0.75;
+  border: 1.5px dashed var(--warm-bg-deep, #d8cbb8);
+}
+
+.dex-test__soon {
+  align-self: flex-start;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--paper-white, #fffdf8);
+  color: var(--deep-gray, #4a4039);
+  opacity: 0.7;
+}
+
+@media (min-width: 1024px) {
+  .dex-tests { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* 홈 기능 카드 4개 대응 */
+@media (min-width: 1024px) {
+  .home-feature-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
 }

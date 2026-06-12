@@ -204,6 +204,13 @@ export default function HomePage() {
               badges={[t("home.feat.report.b1"), t("home.feat.report.b2")]}
               onClick={() => user ? router.push("/report") : openAuthModal("login", "/report")}
             />
+            <FeatureCard
+              icon="📒"
+              title={t("home.feat.dex.title")}
+              description={t("home.feat.dex.desc")}
+              badges={[t("home.feat.dex.b1"), t("home.feat.dex.b2")]}
+              onClick={() => router.push("/dex")}
+            />
           </div>
         </section>
       </main>

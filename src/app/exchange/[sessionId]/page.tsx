@@ -119,6 +119,12 @@ export default function ExchangeSessionPage() {
     [entries, rawDay],
   );
 
+  // 3일 최소 동행 규칙: 안전 사유가 아니면 3일 전 중단 불가 (백엔드 가드와 동일 정책)
+  const MIN_DAYS = 3;
+  const termRemainDays = Math.max(MIN_DAYS - rawDay + 1, 0);
+  const termIsSafe = termReason ? SAFE_TERMINATION_REASONS.includes(termReason) : false;
+  const termBlocked = Boolean(termReason) && !termIsSafe && termRemainDays > 0;
+
   /** 연장 투표 카드 노출 조건: 7일 차 이후이거나 투표가 이미 시작됐을 때 (extended 제외) */
   const showExtension =
     Boolean(session) &&
@@ -349,6 +355,19 @@ export default function ExchangeSessionPage() {
                 className="w-full px-4 py-3 text-sm outline-none resize-none mb-3"
                 style={inputStyle}
               />
+              {termBlocked && (
+                <div className="xch-policy" role="note">
+                  <p className="text-xs" style={{ color: "var(--stamp-vermilion)" }}>
+                    {t("xch.term.minDays", { d: termRemainDays })}
+                  </p>
+                  <p className="text-[11px] opacity-50 mt-1">{t("xch.term.minDaysSafeNote")}</p>
+                </div>
+              )}
+              {Boolean(termReason) && !termIsSafe && !termBlocked && session?.type === "random" && (
+                <p className="xch-policy text-[11px]" style={{ color: "var(--stamp-vermilion)" }} role="note">
+                  {t("xch.term.penaltyWarn")}
+                </p>
+              )}
               <label className="xch-check">
                 <input
                   type="checkbox"
@@ -360,7 +379,7 @@ export default function ExchangeSessionPage() {
               <div className="flex gap-2 mt-4">
                 <button
                   onClick={terminate}
-                  disabled={busy || !termReason}
+                  disabled={busy || !termReason || termBlocked}
                   className="flex-1 py-3 text-sm rounded-full text-white disabled:opacity-40"
                   style={{ background: "var(--deep-gray)" }}
                 >

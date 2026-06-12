@@ -118,6 +118,7 @@ export default function Header() {
             <NavLink href="/books" label={t("nav.bookshelf")} />
             <NavLink href="/exchange" label={t("nav.exchange")} />
             <NavLink href="/report" label={t("nav.report")} />
+            <NavLink href="/dex" label={t("nav.dexFull")} />
           </nav>
         )}
 
@@ -166,6 +167,7 @@ export default function Header() {
                       <div className="p-1.5">
                         <MenuLink href="/books" label={t("nav.bookshelf")} onClick={() => setMenuOpen(false)} />
                         <MenuLink href="/exchange" label={t("nav.exchange")} onClick={() => setMenuOpen(false)} />
+                        <MenuLink href="/dex" label={t("nav.dexFull")} onClick={() => setMenuOpen(false)} />
                         <MenuLink href="/notifications" label={unreadCount > 0 ? `${t("nav.notifications")} (${unreadCount})` : t("nav.notifications")} onClick={() => setMenuOpen(false)} />
                         <MenuLink href="/settings" label={t("nav.settings")} onClick={() => setMenuOpen(false)} />
                       </div>
