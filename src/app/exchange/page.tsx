@@ -384,7 +384,7 @@ export default function ExchangeHubPage() {
             </div>
           )}
           <span className="exchange-archive-card__all">
-            <span aria-hidden="true">📁</span> {copy.archiveAll} <b aria-hidden="true">›</b>
+            {copy.archiveAll} <b aria-hidden="true">›</b>
           </span>
         </Link>
       </section>
