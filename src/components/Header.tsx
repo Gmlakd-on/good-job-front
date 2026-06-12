@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -11,81 +12,125 @@ import type { User } from "@supabase/supabase-js";
 
 type AuthMode = "login" | "signup";
 
-const PRIMARY_NAV_ITEMS = [
-  { href: "/books", labelKey: "nav.bookshelf", icon: "📚" },
-  { href: "/exchange", labelKey: "nav.exchange", icon: "✉️" },
-  { href: "/report", labelKey: "nav.report", icon: "📊" },
-  { href: "/dex", labelKey: "nav.dexFull", icon: "✦" },
-] as const;
+type NavIconType = "home" | "journal" | "exchange" | "report" | "dex";
+
+interface Profile {
+  email?: string | null;
+  nickname?: string | null;
+  profileImage?: string | null;
+}
+
+const PRIMARY_NAV_ITEMS: { href: string; label: string; icon: NavIconType }[] = [
+  { href: "/", label: "홈", icon: "home" },
+  { href: "/diaries", label: "일기장", icon: "journal" },
+  { href: "/exchange", label: "교환일기", icon: "exchange" },
+  { href: "/report", label: "감정 리포트", icon: "report" },
+  { href: "/dex", label: "나의 도감", icon: "dex" },
+];
+
+const isNavActive = (pathname: string, href: string) => {
+  if (href === "/") return pathname === "/";
+  if (href === "/diaries") return pathname.startsWith("/diaries") || pathname.startsWith("/diary");
+  return pathname === href || pathname.startsWith(`${href}/`);
+};
 
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { t } = useI18n();
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [navHidden, setNavHidden] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<AuthMode>("login");
 
   const fetchUnread = useCallback(async () => {
     try {
       const res = await fetch("/api/notifications", { cache: "no-store" });
-      if (res.ok) { const d = await res.json(); setUnreadCount(d.unreadCount || 0); }
-    } catch { /* 무시 */ }
+      if (res.ok) {
+        const d = (await res.json()) as { unreadCount?: number };
+        setUnreadCount(d.unreadCount || 0);
+      }
+    } catch {
+      // 읽지 않은 알림 수는 보조 정보라 실패해도 화면은 유지합니다.
+    }
+  }, []);
+
+  const fetchProfile = useCallback(async () => {
+    try {
+      const res = await fetch("/api/profile", { cache: "no-store" });
+      if (res.ok) {
+        const data = (await res.json()) as { profile?: Profile };
+        setProfile(data.profile ?? null);
+      }
+    } catch {
+      setProfile(null);
+    }
   }, []);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
-      if (data.user) fetchUnread();
+      if (data.user) {
+        void fetchUnread();
+        void fetchProfile();
+      }
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
-      setUser(s?.user ?? null);
-      if (s?.user) fetchUnread(); else setUnreadCount(0);
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setMenuOpen(false);
+      if (session?.user) {
+        void fetchUnread();
+        void fetchProfile();
+      } else {
+        setUnreadCount(0);
+        setProfile(null);
+      }
     });
+
     return () => subscription.unsubscribe();
-  }, [fetchUnread]);
+  }, [fetchProfile, fetchUnread]);
 
   useEffect(() => {
     if (!user) return;
     const refresh = () => fetchUnread();
-    const visChange = () => { if (document.visibilityState === "visible") fetchUnread(); };
+    const visibilityRefresh = () => {
+      if (document.visibilityState === "visible") void fetchUnread();
+    };
+
     window.addEventListener("notifications:changed", refresh);
     window.addEventListener("focus", refresh);
-    document.addEventListener("visibilitychange", visChange);
+    document.addEventListener("visibilitychange", visibilityRefresh);
+
     return () => {
       window.removeEventListener("notifications:changed", refresh);
       window.removeEventListener("focus", refresh);
-      document.removeEventListener("visibilitychange", visChange);
+      document.removeEventListener("visibilitychange", visibilityRefresh);
     };
   }, [fetchUnread, user]);
 
-  useEffect(() => {
-    let lastY = window.scrollY;
+  const profileImage = useMemo(() => {
+    const metadataAvatar = user?.user_metadata?.avatar_url;
+    if (typeof metadataAvatar === "string" && metadataAvatar.trim()) return metadataAvatar;
+    if (profile?.profileImage?.trim()) return profile.profileImage;
+    return null;
+  }, [profile?.profileImage, user?.user_metadata]);
 
-    const onScroll = () => {
-      const currentY = window.scrollY;
-      setScrolled(currentY > 12);
+  const displayName = useMemo(() => {
+    const nickname = profile?.nickname?.trim();
+    if (nickname) return nickname;
 
-      if (currentY < 24) {
-        setNavHidden(false);
-      } else if (currentY > lastY + 6) {
-        setNavHidden(true);
-      } else if (currentY < lastY - 6) {
-        setNavHidden(false);
-      }
+    const metadataName = user?.user_metadata?.name || user?.user_metadata?.full_name;
+    if (typeof metadataName === "string" && metadataName.trim()) return metadataName.trim();
 
-      lastY = currentY;
-    };
-
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    const emailName = user?.email?.split("@")[0]?.trim();
+    return emailName || "내 계정";
+  }, [profile?.nickname, user?.email, user?.user_metadata]);
 
   const openAuthModal = (mode: AuthMode) => {
     setAuthModalMode(mode);
@@ -101,95 +146,78 @@ export default function Header() {
     router.refresh();
   };
 
-  // On the main page the header is part of the page component itself
+  // On the main page the header is part of the page component itself.
   if (pathname === "/") return null;
 
   return (
-    <header
-      className={`site-header ${navHidden ? "site-header--hidden" : ""}`}
-      style={{
-        background: scrolled ? "rgba(254,252,248,0.96)" : "rgba(254,252,248,0.9)",
-        backdropFilter: "blur(18px) saturate(1.1)",
-        borderBottom: "1px solid var(--border-hairline)",
-      }}
-    >
-      <div className="site-header__inner">
-        <Link href="/" className="site-header__brand" aria-label={t("nav.toHome")}>
-          <span>참 잘했어요</span>
+    <header className="chami-home-nav chami-global-nav" aria-label="상단 메뉴">
+      <div className="chami-home-nav__inner">
+        <Link href="/" className="chami-home-nav__logo" aria-label={t("nav.toHome")}>
+          참 잘했어요
         </Link>
 
-        {/* 로그인 상태 - 내비 링크 */}
         {user && (
-          <nav className="site-header__nav" aria-label={t("nav.mainMenu")}>
+          <nav className="chami-home-nav__links" aria-label={t("nav.mainMenu")}>
             {PRIMARY_NAV_ITEMS.map((item) => (
-              <NavLink
+              <Link
                 key={item.href}
                 href={item.href}
-                label={t(item.labelKey)}
-                icon={item.icon}
-                active={pathname.startsWith(item.href)}
-              />
+                aria-current={isNavActive(pathname, item.href) ? "page" : undefined}
+                className={`chami-home-nav__link ${isNavActive(pathname, item.href) ? "chami-home-nav__link--active" : ""}`}
+              >
+                <DashboardNavIcon type={item.icon} />
+                <span>{item.label}</span>
+              </Link>
             ))}
           </nav>
         )}
 
-        <div className="site-header__actions">
+        <div className="chami-home-nav__actions">
           {user ? (
             <>
-              {/* 알림 아이콘 */}
-              <Link href="/notifications" className="site-header__icon-button"
-                aria-label={unreadCount > 0 ? t("nav.unread", { n: unreadCount }) : t("nav.notifications")}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" style={{ color: "var(--text-secondary)" }}>
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                </svg>
-                {unreadCount > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-white"
-                    style={{ background: "var(--stamp-vermilion)", fontSize: "10px", fontWeight: 600, lineHeight: 1 }}>
-                    {unreadCount > 9 ? "9+" : unreadCount}
+              <Link
+                href="/notifications"
+                className="chami-home-nav__icon"
+                aria-label={unreadCount > 0 ? t("nav.unread", { n: unreadCount }) : t("nav.notifications")}
+              >
+                <BellIcon />
+                {unreadCount > 0 && <span className="chami-home-nav__badge">{unreadCount > 9 ? "9+" : unreadCount}</span>}
+              </Link>
+              <Link href="/support" className="chami-home-nav__icon" aria-label="도움말">
+                <HelpIcon />
+              </Link>
+
+              <div className="chami-profile-menu">
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen((open) => !open)}
+                  className="chami-profile-menu__button"
+                  aria-expanded={menuOpen}
+                  aria-label={t("nav.menu")}
+                >
+                  <span className="chami-profile-menu__avatar">
+                    <Image src={profileImage || "/mascot/mascot-idle.png"} alt="" width={42} height={42} unoptimized />
                   </span>
-                )}
-              </Link>
-
-              {/* 설정 아이콘 */}
-              <Link href="/settings" className="site-header__icon-button" aria-label={t("nav.settings")}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" style={{ color: "var(--text-secondary)" }}>
-                  <circle cx="12" cy="12" r="3" />
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                </svg>
-              </Link>
-
-              {/* 이메일 아바타 드롭다운 */}
-              <div className="relative">
-                <button type="button" onClick={() => setMenuOpen(!menuOpen)}
-                  className="site-header__profile-button" aria-label={t("nav.menu")}>
-                  {user.email?.charAt(0).toUpperCase() || "?"}
+                  <span className="chami-profile-menu__name">{displayName}님</span>
+                  <ChevronDownIcon />
                 </button>
+
                 {menuOpen && (
                   <>
-                    <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                    <div className="absolute right-0 top-11 z-20 min-w-[180px] overflow-hidden"
-                      style={{ borderRadius: "var(--radius-sm)", background: "var(--paper-white)", border: "1px solid var(--border-subtle)", boxShadow: "var(--shadow-book)" }}>
-                      <div className="p-3 pb-2">
-                        <p className="truncate text-xs max-w-[156px]" style={{ color: "var(--text-muted)" }}>{user.email}</p>
-                      </div>
-                      <div className="mx-3 h-px" style={{ background: "var(--border-hairline)" }} />
-                      <div className="p-1.5">
-                        <MenuLink href="/books" label={t("nav.bookshelf")} onClick={() => setMenuOpen(false)} />
-                        <MenuLink href="/exchange" label={t("nav.exchange")} onClick={() => setMenuOpen(false)} />
-                        <MenuLink href="/report" label={t("nav.report")} onClick={() => setMenuOpen(false)} />
-                        <MenuLink href="/dex" label={t("nav.dexFull")} onClick={() => setMenuOpen(false)} />
-                        <MenuLink href="/notifications" label={unreadCount > 0 ? `${t("nav.notifications")} (${unreadCount})` : t("nav.notifications")} onClick={() => setMenuOpen(false)} />
-                        <MenuLink href="/settings" label={t("nav.settings")} onClick={() => setMenuOpen(false)} />
-                      </div>
-                      <div className="mx-3 h-px" style={{ background: "var(--border-hairline)" }} />
-                      <div className="p-1.5">
-                        <button type="button" onClick={handleLogout}
-                          className="w-full px-3 py-2.5 text-left text-sm transition-colors hover:bg-[rgba(74,52,40,0.03)]"
-                          style={{ borderRadius: "var(--radius-xs)", color: "var(--stamp-vermilion)" }}>
-                          {t("nav.logout")}
-                        </button>
-                      </div>
+                    <div className="chami-profile-menu__backdrop" onClick={() => setMenuOpen(false)} />
+                    <div className="chami-profile-menu__panel">
+                      <Link href="/settings" onClick={() => setMenuOpen(false)}>
+                        마이페이지
+                      </Link>
+                      <Link href="/books" onClick={() => setMenuOpen(false)}>
+                        내 책장
+                      </Link>
+                      <Link href="/notifications" onClick={() => setMenuOpen(false)}>
+                        알림{unreadCount > 0 ? ` ${unreadCount}` : ""}
+                      </Link>
+                      <button type="button" onClick={handleLogout}>
+                        로그아웃
+                      </button>
                     </div>
                   </>
                 )}
@@ -198,19 +226,13 @@ export default function Header() {
           ) : (
             <>
               <LanguageToggle />
-              <button
-                type="button"
-                onClick={() => openAuthModal("login")}
-                className="px-3 py-1.5 text-sm font-medium rounded-full transition-all"
-                style={{ color: "var(--text-secondary)", background: "transparent", border: "1px solid var(--border-subtle)" }}
-              >
+              <button type="button" className="chami-home-nav__auth-button" onClick={() => openAuthModal("login")}>
                 {t("nav.login")}
               </button>
               <button
                 type="button"
+                className="chami-home-nav__auth-button chami-home-nav__auth-button--solid"
                 onClick={() => openAuthModal("signup")}
-                className="px-3 py-1.5 text-sm font-medium rounded-full text-white transition-all"
-                style={{ background: "var(--stamp-vermilion)", border: "1px solid var(--stamp-vermilion)" }}
               >
                 {t("nav.signup")}
               </button>
@@ -218,6 +240,7 @@ export default function Header() {
           )}
         </div>
       </div>
+
       <AuthModal
         open={authModalOpen}
         mode={authModalMode}
@@ -229,35 +252,91 @@ export default function Header() {
   );
 }
 
-function NavLink({
-  href,
-  label,
-  icon,
-  active,
-}: {
-  href: string;
-  label: string;
-  icon: string;
-  active: boolean;
-}) {
+function DashboardNavIcon({ type }: { type: NavIconType }) {
+  const commonProps = {
+    width: 19,
+    height: 19,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.9,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  if (type === "home") {
+    return (
+      <svg {...commonProps}>
+        <path d="M3 10.5 12 3l9 7.5" />
+        <path d="M5 10v10h14V10" />
+        <path d="M9.5 20v-6h5v6" />
+      </svg>
+    );
+  }
+
+  if (type === "journal") {
+    return (
+      <svg {...commonProps}>
+        <path d="M7 4h10a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" />
+        <path d="M9 8h6M9 12h5" />
+      </svg>
+    );
+  }
+
+  if (type === "exchange") {
+    return (
+      <svg {...commonProps}>
+        <path d="M7 7h11l-2.2-2.2" />
+        <path d="M17 17H6l2.2 2.2" />
+        <rect x="4" y="9" width="7" height="6" rx="1.4" />
+        <rect x="13" y="9" width="7" height="6" rx="1.4" />
+      </svg>
+    );
+  }
+
+  if (type === "report") {
+    return (
+      <svg {...commonProps}>
+        <path d="M5 19V5" />
+        <path d="M9 19v-7" />
+        <path d="M13 19V8" />
+        <path d="M17 19v-4" />
+        <path d="M4 19h16" />
+      </svg>
+    );
+  }
+
   return (
-    <Link
-      href={href}
-      aria-current={active ? "page" : undefined}
-      className={`site-header__nav-link ${active ? "site-header__nav-link--active" : ""}`}
-    >
-      <span aria-hidden>{icon}</span>
-      <span>{label}</span>
-    </Link>
+    <svg {...commonProps}>
+      <path d="M12 4 14.1 8.4 19 9.1 15.5 12.5 16.3 17.4 12 15.1 7.7 17.4 8.5 12.5 5 9.1 9.9 8.4 12 4Z" />
+    </svg>
   );
 }
 
-function MenuLink({ href, label, onClick }: { href: string; label: string; onClick: () => void }) {
+function BellIcon() {
   return (
-    <Link href={href} onClick={onClick}
-      className="block px-3 py-2.5 text-sm transition-colors hover:bg-[rgba(74,52,40,0.03)]"
-      style={{ borderRadius: "var(--radius-xs)", color: "var(--text-primary)" }}>
-      {label}
-    </Link>
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  );
+}
+
+function HelpIcon() {
+  return (
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.8 9a2.4 2.4 0 1 1 3.85 1.9c-.84.58-1.32 1.07-1.32 2.1" />
+      <path d="M12 17h.01" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="m6 9 6 6 6-6" />
+    </svg>
   );
 }

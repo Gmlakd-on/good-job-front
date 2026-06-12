@@ -3680,3 +3680,183 @@ html[lang="en"] .home-shell .home-quote-card__text.hero-quote {
   .report-reading-card strong { font-size: 20px; }
   .report-donut { width: 150px; height: 150px; }
 }
+
+/* --------------------------------------------------------------------------
+   Chami home polish: font consistency, centered mascot, direct affirmation input
+   -------------------------------------------------------------------------- */
+.chami-home,
+.chami-global-nav {
+  --chami-ui-font: "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --chami-hand-font: "KyoboHandwriting2024", "Gaegu", "Noto Sans KR", cursive;
+  font-family: var(--chami-ui-font);
+}
+
+.chami-home-nav__logo,
+.chami-note-card__quote,
+.chami-note-card__author,
+.chami-mascot-card__copy p {
+  font-family: var(--chami-hand-font);
+}
+
+.chami-note-card__label,
+.chami-affirmation-box__eyebrow,
+.chami-affirmation-box__text,
+.chami-mini-card h2,
+.chami-ad-card h2,
+.nickname-modal__card h2 {
+  font-family: var(--chami-ui-font) !important;
+}
+
+.chami-note-card__quote {
+  line-height: 1.18;
+  letter-spacing: -0.045em;
+}
+
+.chami-mascot-card {
+  justify-items: center;
+  text-align: center;
+}
+
+.chami-mascot-card__copy {
+  width: 100%;
+  max-width: 100%;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.chami-mascot-card__copy p {
+  max-width: min(100%, 560px);
+  margin-inline: auto;
+  text-align: center;
+  text-wrap: balance;
+  word-break: keep-all;
+  line-height: 1.32;
+}
+
+.chami-streak-pill {
+  margin-inline: auto;
+}
+
+.chami-mascot-stage {
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.chami-mascot-stage__image {
+  margin-inline: auto;
+}
+
+.chami-feed-button {
+  width: min(100%, 420px);
+  margin-inline: auto;
+}
+
+.chami-mascot-card__helper {
+  width: 100%;
+  text-align: center;
+}
+
+.chami-affirmation-box__empty p {
+  margin: 0;
+  color: #587a31;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
+.chami-affirmation-box__empty span {
+  display: inline-block;
+  margin-top: 4px;
+  color: #9a8d82;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.chami-affirmation-editor textarea::placeholder {
+  color: #9a8d82;
+  opacity: 0.9;
+}
+
+.chami-home-nav__badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: inline-flex;
+  min-width: 17px;
+  height: 17px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ef4a32;
+  color: white;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.chami-home-nav__auth-button {
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(111, 85, 58, 0.15);
+  background: rgba(255, 255, 255, 0.62);
+  color: #4a392f;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.chami-home-nav__auth-button--solid {
+  border-color: #d55339;
+  background: #d55339;
+  color: white;
+}
+
+.chami-profile-menu__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 21;
+  background: transparent;
+}
+
+.chami-profile-menu__panel {
+  z-index: 22;
+}
+
+.chami-global-nav + .site-main {
+  padding-top: 32px;
+}
+
+@media (min-width: 1024px) {
+  .chami-mascot-card__copy p {
+    font-size: clamp(30px, 2.1vw, 38px);
+  }
+}
+
+@media (max-width: 900px) {
+  .chami-global-nav .chami-home-nav__inner {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .chami-global-nav .chami-home-nav__actions {
+    justify-self: end;
+  }
+}
+
+@media (max-width: 680px) {
+  .chami-mascot-card__copy p {
+    white-space: normal;
+  }
+
+  .chami-affirmation-box__empty p {
+    font-size: 16px;
+  }
+
+  .chami-global-nav .chami-home-nav__inner {
+    width: min(100% - 28px, 100%);
+  }
+}

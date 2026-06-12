@@ -44,7 +44,32 @@ interface DailyAffirmation {
   createdAt: string | null;
 }
 
-const DEFAULT_AFFIRMATION = "나는 지금의 나로도 충분해요.";
+const AFFIRMATION_SUGGESTIONS = [
+  "나는 내 모습 그대로 충분히 가치 있는 사람이다.",
+  "나는 내 인생을 스스로 선택하고 책임질 힘이 있다.",
+  "오늘의 나는 어제보다 더 성장하고 단단해졌다.",
+  "나는 나를 사랑하며, 나에게 친절하게 대한다.",
+  "나의 잠재력은 무한하며, 나는 무엇이든 해낼 수 있다.",
+  "나는 떨리지만, 도전을 즐긴다.",
+  "나의 노력은 매일 조금씩 긍정적 결실을 맺고 있다.",
+  "나는 집중하고 몰입하며, 내가 원하는 목표에 다가가고 있다.",
+  "나는 문제를 해결할 충분한 지혜와 능력을 갖추고 있다.",
+  "나는 나만의 속도로 묵묵히 나의 길을 걷고 있다.",
+  "나는 지금 이 순간, 충분히 평온하고 안전하다.",
+  "나는 부정적인 생각을 흘려보내고 긍정적인 에너지로 나를 채운다.",
+  "오늘 하루 내게 일어나는 모든 일은 나를 좋은 방향으로 이끈다.",
+  "나는 내 감정을 소중히 여기며, 그것을 건강하게 표현한다.",
+  "마음의 짐을 내려놓고, 가벼운 마음으로 오늘을 맞이한다.",
+  "나는 내 삶에 이미 존재하는 수많은 감사함에 집중한다.",
+  "나는 사랑스러운 존재이다.",
+  "좋은 일들이 자연스럽게 내 삶 속으로 흘러들어온다.",
+  "나는 매일 새로운 가능성을 마주하는 행운을 누린다.",
+  "나는 나의 현재와 미래를 깊이 신뢰한다.",
+] as const;
+
+const getRandomAffirmationSuggestion = () =>
+  AFFIRMATION_SUGGESTIONS[Math.floor(Math.random() * AFFIRMATION_SUGGESTIONS.length)];
+
 const DASHBOARD_QUOTE_TEXT = "지금 이 순간이\n당신이 가진 전부입니다.";
 const DASHBOARD_QUOTE_AUTHOR = "에크하르트 톨레";
 
@@ -119,7 +144,8 @@ export default function HomePage() {
   const [nicknameSaving, setNicknameSaving] = useState(false);
   const [dailyAffirmation, setDailyAffirmation] = useState<DailyAffirmation | null>(null);
   const [streakCount, setStreakCount] = useState(0);
-  const [affirmationDraft, setAffirmationDraft] = useState(DEFAULT_AFFIRMATION);
+  const [affirmationDraft, setAffirmationDraft] = useState("");
+  const [affirmationSuggestion, setAffirmationSuggestion] = useState<string>(AFFIRMATION_SUGGESTIONS[0]);
   const [affirmationEditing, setAffirmationEditing] = useState(false);
   const [affirmationSaving, setAffirmationSaving] = useState(false);
   const [affirmationError, setAffirmationError] = useState("");
@@ -142,6 +168,10 @@ export default function HomePage() {
     });
 
     return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    setAffirmationSuggestion(getRandomAffirmationSuggestion());
   }, []);
 
   useEffect(() => {
@@ -271,7 +301,7 @@ export default function HomePage() {
         };
         if (data.dailyAffirmation) {
           setDailyAffirmation(data.dailyAffirmation);
-          setAffirmationDraft(data.dailyAffirmation.text || DEFAULT_AFFIRMATION);
+          setAffirmationDraft(data.dailyAffirmation.completed ? data.dailyAffirmation.text : "");
           setFeedStarted(Boolean(data.dailyAffirmation.feedStartedAt && !data.dailyAffirmation.completed));
         }
         setStreakCount(data.streakCount ?? 0);
@@ -314,7 +344,7 @@ export default function HomePage() {
         : "/mascot/mascot-idle.png";
 
   const mascotMessage = isAffirmationCompleted
-    ? "참이가 확언을 맛있게 먹었어요!"
+    ? "참이가 긍정을 먹었어요!"
     : "참이는 오늘의 긍정 확언을 기다리고 있어요.";
 
   const mascotHelper = isAffirmationCompleted
@@ -323,7 +353,7 @@ export default function HomePage() {
       ? "아직 오늘의 확언을 먹지 못했어요."
       : "확언을 먹이면 참이가 더 힘을 내요!";
 
-  const currentAffirmationText = dailyAffirmation?.text || DEFAULT_AFFIRMATION;
+  const currentAffirmationText = isAffirmationCompleted ? dailyAffirmation?.text?.trim() ?? "" : "";
 
   const guardAuth = useCallback(
     (next: string, mode: AuthMode = "login") => {
@@ -353,7 +383,8 @@ export default function HomePage() {
     setAffirmationError("");
     setFeedStarted(true);
     setAffirmationEditing(true);
-    setAffirmationDraft(currentAffirmationText || DEFAULT_AFFIRMATION);
+    setAffirmationSuggestion(getRandomAffirmationSuggestion());
+    setAffirmationDraft("");
 
     try {
       const response = await fetch("/api/daily-affirmation", {
@@ -373,7 +404,7 @@ export default function HomePage() {
     } catch {
       setAffirmationError("입력 모드는 열었지만 서버 준비에 실패했어요. 다시 시도해주세요.");
     }
-  }, [currentAffirmationText, guardAuth, isAffirmationCompleted]);
+  }, [guardAuth, isAffirmationCompleted]);
 
   const completeAffirmationFeed = useCallback(async () => {
     if (!guardAuth("/")) return;
@@ -560,7 +591,7 @@ export default function HomePage() {
                       <textarea
                         value={affirmationDraft}
                         onChange={(event) => setAffirmationDraft(event.target.value)}
-                        placeholder={DEFAULT_AFFIRMATION}
+                        placeholder={affirmationSuggestion}
                         maxLength={120}
                         aria-label="오늘의 확언 입력"
                       />
@@ -574,8 +605,13 @@ export default function HomePage() {
                         {affirmationSaving ? "먹이는 중" : "참이에게 주기"}
                       </button>
                     </div>
-                  ) : (
+                  ) : isAffirmationCompleted ? (
                     <p className="chami-affirmation-box__text">{currentAffirmationText}</p>
+                  ) : (
+                    <div className="chami-affirmation-box__empty">
+                      <p>확언 먹이 주기를 누르고, 오늘의 긍정확언을 직접 적어주세요.</p>
+                      <span>입력창에는 랜덤 예시가 힌트로 보여요.</span>
+                    </div>
                   )}
                   {affirmationError && <p className="chami-form-error">{affirmationError}</p>}
                 </div>
@@ -596,7 +632,7 @@ export default function HomePage() {
             <article className={`chami-mascot-card chami-card chami-mascot-card--${mascotState}`}>
               <div className="chami-mascot-card__copy">
                 <p>{mascotMessage}</p>
-                <span className="chami-streak-pill">🔥 연속 {streakCount || 5}일째</span>
+                <span className="chami-streak-pill">🔥 연속 {streakCount}일째</span>
               </div>
               <div className="chami-mascot-stage" aria-hidden="true">
                 <span className="chami-sparkle chami-sparkle--left">✦</span>
@@ -667,13 +703,6 @@ export default function HomePage() {
             </article>
           </section>
 
-          <section className="chami-habit-bar chami-card" aria-label="기록 습관">
-            <span aria-hidden="true">🗓️</span>
-            <p>매일의 작은 기록이 쌓여, 더 단단한 나를 만듭니다.</p>
-            <button type="button" onClick={() => (guardAuth("/report") ? router.push("/report") : undefined)}>
-              나의 기록 습관 보기 <span aria-hidden="true">›</span>
-            </button>
-          </section>
         </main>
 
         {nicknameModalOpen && (
