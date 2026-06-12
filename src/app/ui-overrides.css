@@ -5016,3 +5016,164 @@ html[lang="en"] .home-shell .home-quote-card__text.hero-quote {
     background: rgba(239, 74, 50, 0.08);
   }
 }
+
+/* ── Latest polish: persistent affirmation copy guide, AdSense slot, refined settings toggles ── */
+.chami-affirmation-editor__field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.chami-affirmation-editor__guide {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(74, 52, 40, 0.045);
+  color: rgba(74, 52, 40, 0.54);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.chami-affirmation-editor__guide span {
+  display: inline-flex;
+  margin-right: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.68);
+  color: rgba(213, 83, 57, 0.78);
+  font-size: 12px;
+  font-weight: 900;
+  vertical-align: middle;
+}
+
+.chami-affirmation-editor textarea {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.chami-affirmation-editor textarea::placeholder {
+  color: rgba(74, 52, 40, 0.34);
+  font-weight: 600;
+}
+
+.chami-ad-placeholder--adsense {
+  min-height: 176px;
+  padding: 12px;
+  border-style: solid;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.54), rgba(255, 247, 234, 0.78)),
+    repeating-linear-gradient(135deg, rgba(126, 91, 56, 0.05) 0 8px, transparent 8px 18px);
+}
+
+.chami-adsense-slot {
+  width: 100%;
+  min-height: 150px;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.chami-ad-placeholder__fallback {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  text-align: center;
+  color: rgba(74, 52, 40, 0.54);
+}
+
+.chami-ad-placeholder__fallback strong {
+  color: rgba(74, 52, 40, 0.72);
+  font-size: 16px;
+}
+
+.chami-ad-placeholder__fallback p {
+  max-width: 260px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.settings-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 68px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(74, 52, 40, 0.12);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(236, 224, 205, 0.62));
+  color: rgba(74, 52, 40, 0.42);
+  box-shadow: inset 0 1px 2px rgba(74, 52, 40, 0.08), 0 8px 18px rgba(74, 52, 40, 0.06);
+  cursor: pointer;
+  transition: background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, transform 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.settings-toggle:hover {
+  transform: translateY(-1px);
+}
+
+.settings-toggle--off {
+  justify-content: flex-end;
+  padding-right: 10px;
+}
+
+.settings-toggle--on {
+  justify-content: flex-start;
+  padding-left: 11px;
+  border-color: rgba(126, 155, 114, 0.42);
+  background: linear-gradient(135deg, #92aa82, #6f8f62);
+  color: rgba(255, 255, 255, 0.92);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.38), 0 12px 24px rgba(126, 155, 114, 0.24);
+}
+
+.settings-toggle__state {
+  position: relative;
+  z-index: 1;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.settings-toggle__knob {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #fffdf8, #f7eee1);
+  box-shadow: 0 3px 9px rgba(48, 31, 22, 0.24), inset 0 1px rgba(255, 255, 255, 0.9);
+  transition: left 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.22s ease;
+}
+
+.settings-toggle--on .settings-toggle__knob {
+  left: 37px;
+  box-shadow: 0 4px 11px rgba(48, 31, 22, 0.26), inset 0 1px rgba(255, 255, 255, 0.95);
+}
+
+.settings-toggle:focus-visible {
+  outline: 3px solid rgba(126, 155, 114, 0.28);
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .chami-affirmation-editor__guide {
+    font-size: 14px;
+  }
+
+  .settings-toggle {
+    width: 64px;
+    height: 32px;
+  }
+
+  .settings-toggle__knob {
+    width: 24px;
+    height: 24px;
+  }
+
+  .settings-toggle--on .settings-toggle__knob {
+    left: 35px;
+  }
+}

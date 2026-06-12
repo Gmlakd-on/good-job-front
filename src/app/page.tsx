@@ -490,6 +490,9 @@ export default function HomePage() {
 
   const quoteText = `“${localizedQuote.text}”`;
   const quoteAuthor = localizedQuote.author;
+  const adsenseClientId = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT_ID ?? "";
+  const adsenseHomeSlot = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_HOME_SLOT ?? "";
+  const canRenderAdsenseSlot = Boolean(adsenseClientId && adsenseHomeSlot);
 
   if (authChecked && user) {
     return (
@@ -515,13 +518,20 @@ export default function HomePage() {
                   <p className="chami-affirmation-box__eyebrow">오늘의 확언</p>
                   {affirmationEditing && !isAffirmationCompleted ? (
                     <div className="chami-affirmation-editor">
-                      <textarea
-                        value={affirmationDraft}
-                        onChange={(event) => setAffirmationDraft(event.target.value)}
-                        placeholder={affirmationSuggestion}
-                        maxLength={120}
-                        aria-label="오늘의 확언 입력"
-                      />
+                      <div className="chami-affirmation-editor__field">
+                        <p id="affirmation-copy-guide" className="chami-affirmation-editor__guide">
+                          <span>따라 적어봐요</span>
+                          {affirmationSuggestion}
+                        </p>
+                        <textarea
+                          value={affirmationDraft}
+                          onChange={(event) => setAffirmationDraft(event.target.value)}
+                          placeholder="위 문장을 천천히 따라 적거나, 나만의 확언을 적어보세요."
+                          maxLength={120}
+                          aria-label="오늘의 확언 입력"
+                          aria-describedby="affirmation-copy-guide"
+                        />
+                      </div>
                       <button
                         type="button"
                         className="chami-spoon-button"
@@ -617,10 +627,24 @@ export default function HomePage() {
             <article className="chami-ad-card chami-ad-card--placeholder chami-card" aria-label="광고 영역">
               <div className="chami-ad-card__label">
                 <span>광고 영역</span>
-                <em>AD</em>
+                <em>Google AdSense</em>
               </div>
-              <div className="chami-ad-placeholder">
-                <p>광고가 노출될 자리입니다.</p>
+              <div className="chami-ad-placeholder chami-ad-placeholder--adsense">
+                {canRenderAdsenseSlot ? (
+                  <ins
+                    className="adsbygoogle chami-adsense-slot"
+                    style={{ display: "block" }}
+                    data-ad-client={adsenseClientId}
+                    data-ad-slot={adsenseHomeSlot}
+                    data-ad-format="auto"
+                    data-full-width-responsive="true"
+                  />
+                ) : (
+                  <div className="chami-ad-placeholder__fallback">
+                    <strong>Google AdSense</strong>
+                    <p>환경변수에 광고 클라이언트/슬롯 ID를 연결하면 이 영역에 광고가 노출돼요.</p>
+                  </div>
+                )}
               </div>
             </article>
           </section>

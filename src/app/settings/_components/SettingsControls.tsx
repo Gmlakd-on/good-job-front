@@ -7,40 +7,19 @@
 export function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
   return (
     <button
+      type="button"
       role="switch"
       aria-checked={value}
+      aria-label={value ? "켜짐" : "꺼짐"}
       onClick={() => onChange(!value)}
-      style={{
-        position: "relative",
-        width: "50px",
-        height: "26px",
-        borderRadius: "999px",
-        border: value ? "1px solid rgba(196,85,58,0.35)" : "1px solid rgba(74,52,40,0.14)",
-        background: value ? "linear-gradient(135deg, #e86448, #c4553a)" : "rgba(74,52,40,0.12)",
-        boxShadow: value ? "inset 0 1px 1px rgba(255,255,255,0.35), 0 8px 18px rgba(196,85,58,0.16)" : "inset 0 1px 2px rgba(74,52,40,0.08)",
-        flexShrink: 0,
-        minWidth: "50px",
-        transition: "background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease",
-        WebkitTapHighlightColor: "transparent",
-        cursor: "pointer",
-      }}
+      className={`settings-toggle ${value ? "settings-toggle--on" : "settings-toggle--off"}`}
     >
-      <span
-        style={{
-          position: "absolute",
-          top: "3px",
-          left: value ? "27px" : "3px",
-          width: "20px",
-          height: "20px",
-          borderRadius: "50%",
-          background: "linear-gradient(180deg, #fff, #fbf5eb)",
-          boxShadow: "0 2px 7px rgba(48,31,22,0.22)",
-          transition: "left 0.2s ease",
-        }}
-      />
+      <span className="settings-toggle__state" aria-hidden="true">{value ? "ON" : "OFF"}</span>
+      <span className="settings-toggle__knob" aria-hidden="true" />
     </button>
   );
 }
+
 
 export function CTABtn({ onClick, loading, label }: { onClick: () => void; loading?: boolean; label: string }) {
   return (
