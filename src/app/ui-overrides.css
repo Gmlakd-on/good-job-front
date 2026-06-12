@@ -1213,3 +1213,112 @@
 .xch-ext {
   border-left: 3px solid var(--stamp-vermilion, #c4553a);
 }
+
+/* ── FIX: 일기장 만들기 모바일 레이아웃 안정화 ─────────
+   원인: .grid 안의 cover shelf / form card가 기본 min-width:auto라서
+   내부 flex 콘텐츠 폭만큼 부모가 늘어나고, body overflow-x:hidden에 의해
+   잘려 보이면서 선반 자체 스크롤이 안 되는 현상.
+*/
+.book-new-page,
+.book-create,
+.book-create > *,
+.cover-shelf-wrapper,
+.cover-shelf,
+.cover-shelf__rail,
+.book-create__fields,
+.book-create__fields > * {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.book-create {
+  width: 100%;
+}
+
+.cover-shelf-wrapper,
+.cover-shelf {
+  width: 100%;
+  overflow: visible;
+}
+
+.cover-shelf__rail {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 12px;
+  padding-left: 12px;
+  padding-right: 44px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cover-shelf__item {
+  max-width: calc(100vw - 56px);
+}
+
+.cover-shelf__image,
+.cover-shelf__image img {
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.cover-shelf__board {
+  width: auto;
+  max-width: calc(100% - 12px);
+}
+
+.book-create__fields {
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.book-create__fields > .diary-card {
+  width: 100%;
+  min-width: 0;
+}
+
+.book-create__fields input,
+.book-create__fields select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 767.98px) {
+  .cover-shelf__rail {
+    gap: 12px;
+    padding-top: 14px;
+    padding-left: 2px;
+    padding-right: 34px;
+    scroll-padding-inline: 2px;
+  }
+
+  .cover-shelf__item {
+    width: clamp(142px, 42vw, 164px);
+    padding: 10px 8px 14px;
+    border-radius: 16px;
+  }
+
+  .cover-shelf__image-box {
+    height: clamp(128px, 38vw, 152px);
+  }
+
+  .cover-shelf__description {
+    font-size: 10.5px;
+  }
+
+  .cover-shelf__board {
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 100%;
+  }
+}
+
+/* 768px 태블릿/작은 화면에서 2단 카드가 깨지지 않도록, 넓은 데스크톱부터 2단 */
+@media (min-width: 1024px) {
+  .book-create__fields {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+    align-items: start;
+  }
+}

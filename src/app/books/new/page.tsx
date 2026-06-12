@@ -74,7 +74,7 @@ export default function NewBookPage() {
   }
 
   return (
-    <div className="pt-4">
+    <div className="book-new-page pt-4">
       <div className="mb-5 flex items-center justify-between">
         <Link href="/books" className="text-sm opacity-40 hover:opacity-70">
           {t("book.new.backToShelf")}

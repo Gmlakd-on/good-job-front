@@ -20,7 +20,7 @@ export default function PersonaSelector({ selected, onChange }: PersonaSelectorP
         누가 내 일기를 읽어줄까요?
       </p>
       <p className="text-sm mb-5" style={{ color: "var(--text-muted)" }}>
-        조언자가 아니라, 오늘 하루를 읽고 짧게 답글을 남길 사람을 고르는 거예요.
+        오늘 하루를 읽고 짧게 답글을 남길 존재를 고르는 거예요
       </p>
 
       <div className="grid grid-cols-1 gap-2.5">

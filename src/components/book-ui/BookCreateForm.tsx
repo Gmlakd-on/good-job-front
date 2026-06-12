@@ -11,9 +11,11 @@
  */
 import { useState } from "react";
 import CoverShelf from "./CoverShelf";
-import { COVER_STYLES, type CoverStyleId, type CoverVariant } from "./bookTypes";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { DictKey } from "@/lib/i18n/dictionary";
+
+type CoverStyleId = "stone" | "archive" | "1950" | "1980" | "1990" | "2000" | "2010";
+type CoverVariant = null;
 
 interface BookCreateFormProps {
   loading?: boolean;
@@ -51,10 +53,10 @@ export default function BookCreateForm({ loading = false, onSubmit }: BookCreate
   const [coverStyleId, setCoverStyleId] = useState<CoverStyleId>("archive");
   const [maxEntries, setMaxEntries] = useState<30 | 50 | 100 | 365>(30);
 
-  const selectedStyle = COVER_STYLES.find((s) => s.id === coverStyleId);
+  const selectedStyle = true;
 
   return (
-    <div className="grid gap-5">
+    <div className="book-create grid gap-5">
       {/* 1. 표지 선반 */}
       <div className="cover-shelf-wrapper">
         <p className="font-serif text-lg mb-1 px-1">{t("book.cover.heading")}</p>

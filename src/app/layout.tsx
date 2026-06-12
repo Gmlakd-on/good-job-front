@@ -14,8 +14,12 @@ export const metadata: Metadata = {
   description: "꾸준한 기록을 돕는 일기장",
   manifest: "/manifest.json",
   icons: {
-    icon: [{ url: "/favicon.ico" }],
-    apple: [{ url: "/icons/icon-192.png" }],
+    icon: [
+      { url: "/favicon.ico?v=2", sizes: "any" },
+      { url: "/icons/icon-192.png?v=2", sizes: "192x192", type: "image/png" },
+    ],
+    shortcut: ["/favicon.ico?v=2"],
+    apple: [{ url: "/icons/icon-192.png?v=2", sizes: "192x192", type: "image/png" }],
   },
   appleWebApp: {
     capable: true,
@@ -53,7 +57,9 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap"
           rel="stylesheet"
         />
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <link rel="icon" href="/favicon.ico?v=2" sizes="any" />
+        <link rel="icon" href="/icons/icon-192.png?v=2" type="image/png" sizes="192x192" />
+        <link rel="apple-touch-icon" href="/icons/icon-192.png?v=2" />
       </head>
       <body>
         <Providers>
