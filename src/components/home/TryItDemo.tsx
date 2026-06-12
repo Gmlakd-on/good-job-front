@@ -95,11 +95,11 @@ export default function TryItDemo() {
   };
 
   return (
-    <section className="try-demo" aria-label="체험해보기">
-      <div className="try-demo__inner">
-        <p className="try-demo__eyebrow">가입 없이 30초 체험</p>
-        <h2 className="try-demo__title">표지를 고르고, 한 줄 적고, 답장을 받아보세요</h2>
-        <p className="try-demo__sub">이렇게 매일의 일기가 한 권의 책이 되고, 답장이 함께 쌓여요. 체험 내용은 저장되지 않아요.</p>
+    <section className="try-demo section" aria-label="체험해보기">
+      <div className="main-container try-demo__inner">
+        <p className="try-demo__eyebrow section-eyebrow">가입 없이 30초 체험</p>
+        <h2 className="try-demo__title section-title">표지를 고르고, 한 줄 적고, 답장을 받아보세요</h2>
+        <p className="try-demo__sub section-description">이렇게 매일의 일기가 한 권의 책이 되고, 답장이 함께 쌓여요. 체험 내용은 저장되지 않아요.</p>
 
         {/* 1. 표지 선반 (실제 서비스와 동일한 컴포넌트) */}
         <div className="try-demo__step">
@@ -110,14 +110,14 @@ export default function TryItDemo() {
         {/* 2. 답장해줄 존재 + 한 줄 일기 */}
         <div className="try-demo__step">
           <span className="try-demo__step-label">② 답장해줄 존재를 고르고, 오늘 마음을 한 줄 적어보세요</span>
-          <div className="try-demo__personas" role="radiogroup" aria-label="답장 페르소나 선택">
+          <div className="try-demo__personas reply-character-grid" role="radiogroup" aria-label="답장 페르소나 선택">
             {PERSONAS.map((p) => (
               <button
                 key={p.id}
                 type="button"
                 role="radio"
                 aria-checked={persona === p.id}
-                className={`try-demo__persona ${persona === p.id ? "try-demo__persona--active" : ""}`}
+                className={`try-demo__persona reply-character-card ${persona === p.id ? "try-demo__persona--active" : ""}`}
                 onClick={() => setPersona(p.id)}
               >
                 <span className="try-demo__persona-icon">
@@ -131,13 +131,13 @@ export default function TryItDemo() {
                     aria-hidden="true"
                   />
                 </span>
-                <span className="try-demo__persona-name">{p.name}</span>
-                <span className="try-demo__persona-tag">{p.tagline}</span>
+                <span className="try-demo__persona-name reply-character-name">{p.name}</span>
+                <span className="try-demo__persona-tag reply-character-description">{p.tagline}</span>
               </button>
             ))}
           </div>
           <textarea
-            className="try-demo__textarea"
+            className="try-demo__textarea diary-textarea"
             rows={3}
             maxLength={300}
             value={text}
@@ -147,7 +147,7 @@ export default function TryItDemo() {
           />
           <button
             type="button"
-            className="try-demo__submit"
+            className="try-demo__submit cta-button"
             disabled={!text.trim() || thinking}
             onClick={handleSubmit}
           >

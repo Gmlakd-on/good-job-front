@@ -130,7 +130,7 @@ export default function CoverShelf({ selected, onSelect }: CoverShelfProps) {
 
       <div
         ref={railRef}
-        className="cover-shelf__rail"
+        className="cover-shelf__rail cover-carousel"
         role="radiogroup"
         aria-label={t("book.cover.shelfAria")}
         onKeyDown={handleKeyDown}
@@ -145,7 +145,7 @@ export default function CoverShelf({ selected, onSelect }: CoverShelfProps) {
               aria-checked={isSelected}
               data-cover-id={cover.id}
               tabIndex={isSelected || (!selected && cover.id === COVERS[0].id) ? 0 : -1}
-              className={`cover-shelf__item ${isSelected ? "cover-shelf__item--selected" : ""}`}
+              className={`cover-shelf__item cover-card ${isSelected ? "cover-shelf__item--selected" : ""}`}
               onClick={() => {
                 onSelect(cover.id);
                 centerCover(cover.id, true);
@@ -158,12 +158,12 @@ export default function CoverShelf({ selected, onSelect }: CoverShelfProps) {
                   width={180}
                   height={240}
                   className="cover-shelf__image"
-                  sizes="188px"
+                  sizes="260px"
                   priority={cover.id === selected || cover.id === "stone"}
                 />
               </span>
-              <span className="cover-shelf__label">{t(cover.labelKey)}</span>
-              <span className="cover-shelf__description">{t(cover.descKey)}</span>
+              <span className="cover-shelf__label cover-card-title">{t(cover.labelKey)}</span>
+              <span className="cover-shelf__description cover-card-description">{t(cover.descKey)}</span>
             </button>
           );
         })}

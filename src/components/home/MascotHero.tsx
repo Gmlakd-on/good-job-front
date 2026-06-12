@@ -65,7 +65,7 @@ export default function MascotHero() {
   return (
     <button
       type="button"
-      className={`mascot-hero${happy ? " mascot-hero--happy" : ""}`}
+      className={`mascot-hero hero-character${happy ? " mascot-hero--happy" : ""}`}
       onClick={handleTap}
       aria-label="마스코트 쓰다듬기. 누르면 하트와 함께 웃어줘요."
     >

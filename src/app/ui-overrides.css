@@ -123,7 +123,7 @@
 }
 
 .cover-shelf__label {
-  font-family: "KyoboHandwriting2024SeoWooPark", "Noto Serif KR", Georgia, serif;
+  font-family: "Noto Serif KR", Georgia, serif;
   font-size: 15px;
   font-weight: 700;
   line-height: 1.2;
@@ -266,7 +266,7 @@
 
 .try-demo__title {
   margin-top: 6px;
-  font-family: "KyoboHandwriting2024SeoWooPark", "Noto Serif KR", Georgia, serif;
+  font-family: "Noto Serif KR", Georgia, serif;
   font-size: 24px;
   font-weight: 700;
   line-height: 1.3;
@@ -398,7 +398,7 @@
 }
 
 .try-demo__reply-text {
-  font-family: "KyoboHandwriting2024SeoWooPark", "Noto Serif KR", Georgia, serif;
+  font-family: "Noto Serif KR", Georgia, serif;
   font-size: 16px;
   line-height: 1.7;
   color: var(--ink-dark, #3e3a36);
@@ -482,7 +482,7 @@
 }
 
 .empty-shelf__title {
-  font-family: "KyoboHandwriting2024SeoWooPark", "Noto Serif KR", Georgia, serif;
+  font-family: "Noto Serif KR", Georgia, serif;
   font-size: 19px;
   font-weight: 700;
   color: var(--ink-dark, #3e3a36);
@@ -1699,333 +1699,314 @@
   }
 }
 
-/* ═══════════════════════════════════════════════
-   v3 개선 — 손글씨 글꼴 가독성 / 새 일기장 레이아웃 /
-   언어 토글 / 교환 허브 v2 / 나의 도감 v2
-   ═══════════════════════════════════════════════ */
-
-/* ── 14. 작은 글씨 일괄 확대 (손글씨 글꼴은 작게 보임) ── */
-.cover-shelf__description { font-size: 13px; min-height: 2.4em; }
-.cover-shelf__label { font-size: 17px; }
-.cover-shelf__selected-desc { font-size: 15px; opacity: 0.7; }
-.hub-slot__eyebrow { font-size: 13px; }
-.dex-list__q, .dex-list__a { font-size: 15px; }
-.xch-card__day-label { font-size: 13px; }
-
-/* ── 15. 새 일기장 만들기 — 레이아웃 근본 수정 ──
-   문제: 페이지가 site-main 최대폭(최대 1100px)을 그대로 쓰면서
-   ① 선반 화살표가 음수 위치(-14px)로 빠져나가 잘리고
-   ② 2열 폼 그리드가 minmax(0) 없이 내용 폭만큼 늘어나 카드가 잘려 보임.
-   해결: 페이지 자체에 읽기 좋은 최대폭 + 그리드 minmax(0) + 화살표를 안쪽으로. */
-.book-new-page {
-  max-width: 880px;
-  margin-inline: auto;
+/* ── 12. Main page layout/readability pass ──────────────── */
+.main-container {
+  width: min(100% - 48px, 1280px);
+  margin: 0 auto;
 }
 
-.book-create__fields {
-  grid-template-columns: minmax(0, 1fr);
+.section {
+  padding: 96px 0;
 }
 
-@media (min-width: 768px) {
-  .book-create__fields {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-.cover-shelf { overflow: visible; }
-.cover-shelf__rail { padding-bottom: 14px; }
-.cover-shelf__board { margin-top: -10px; }
-.cover-shelf__arrow--left { left: 4px; }
-.cover-shelf__arrow--right { right: 4px; }
-
-/* ── 16. 언어 토글 (비로그인 ko/en) ── */
-.lang-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  padding: 2px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-full);
-  background: var(--paper-white);
-}
-
-.lang-toggle__btn {
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  font-size: 13px;
-  line-height: 1.2;
-  color: var(--text-secondary);
-  background: transparent;
-  cursor: pointer;
-  transition: background 150ms ease, color 150ms ease;
-}
-
-.lang-toggle__btn--active {
-  background: var(--paper-aged);
-  color: var(--text-primary);
-  font-weight: 600;
-}
-
-.lang-toggle__btn:focus-visible {
-  outline: 2px solid var(--stamp-vermilion);
-  outline-offset: 1px;
-}
-
-/* ── 17. 교환 허브 v2 — 상대 카드 + 연속 기록 + 큰 CTA ── */
-.xch2-top {
-  display: grid;
-  gap: 14px;
-}
-
-@media (min-width: 720px) {
-  .xch2-top {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: stretch;
-  }
-}
-
-.xch2-pair__row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 14px;
-}
-
-.xch2-pair__person {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  min-width: 64px;
-}
-
-.xch2-pair__avatar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: var(--paper-aged);
-  border: 2px solid rgba(196, 85, 58, 0.25);
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--stamp-vermilion-deep);
-}
-
-.xch2-pair__name {
-  font-size: 14px;
-  font-weight: 600;
-  max-width: 96px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.xch2-pair__heart {
-  flex: 1;
-  max-width: 120px;
-  height: 36px;
-}
-
-.xch2-pair__caption {
-  margin-top: 12px;
-  text-align: center;
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.xch2-streak__head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.xch2-streak__flame { font-size: 26px; }
-
-.xch2-streak__big {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--stamp-vermilion);
-  line-height: 1.15;
-}
-
-.xch2-streak__label {
-  margin-top: 12px;
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.xch2-streak__days {
-  display: flex;
-  justify-content: space-between;
-  gap: 4px;
-  margin-top: 6px;
-}
-
-.xch2-streak__day {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  flex: 1;
-}
-
-.xch2-streak__day-num {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.xch2-streak__check {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 1.5px solid var(--border-medium);
-  font-size: 13px;
-  color: #fff;
-  background: transparent;
-}
-
-.xch2-streak__check--done {
-  background: var(--stamp-vermilion);
-  border-color: var(--stamp-vermilion);
-}
-
-.xch2-streak__check--today {
-  border-style: dashed;
-  border-color: var(--stamp-vermilion);
-}
-
-.xch2-cta {
-  text-align: center;
-  background: linear-gradient(180deg, rgba(255, 245, 232, 0.9), rgba(254, 252, 248, 0.96));
-}
-
-.xch2-cta__title {
-  font-size: 17px;
-  font-weight: 600;
-  margin-inline: auto;
-}
-
-.xch2-cta__btn {
-  display: block;
-  max-width: 360px;
-  margin: 14px auto 0;
-  padding: 12px 24px;
-  text-align: center;
+.section-eyebrow {
+  margin-bottom: 12px;
+  color: var(--stamp-vermilion, #c4553a);
   font-size: 16px;
-}
-
-.xch2-cta__caption {
-  margin: 10px auto 0;
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-/* ── 18. 나의 도감 v2 — 히어로 질문 + 진행/연속 + 최근 기록 ── */
-.dex2 {
-  max-width: 640px;
-  margin-inline: auto;
-}
-
-.dex2-hero {
-  padding: 22px 20px;
-  border-radius: var(--radius-lg);
-  border: 1px solid rgba(126, 155, 114, 0.25);
-  background:
-    linear-gradient(135deg, rgba(244, 238, 222, 0.95), rgba(231, 238, 222, 0.85));
-  box-shadow: var(--shadow-card);
-}
-
-.dex2-hero__eyebrow {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--cloth-sage);
-}
-
-.dex2-hero__q {
-  margin-top: 8px;
-  font-family: "KyoboHandwriting2024SeoWooPark", "Noto Serif KR", serif;
-  font-size: 23px;
   font-weight: 700;
-  line-height: 1.4;
-  color: var(--ink-dark);
-}
-
-.dex2-hero__sub {
-  margin-top: 8px;
-  font-size: 14px;
-  color: var(--text-secondary);
-}
-
-.dex2-hero__meta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.dex2-hero__count {
-  font-size: 14px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.dex2-hero__bar {
-  flex: 1;
-  height: 8px;
-  border-radius: var(--radius-full);
-  background: rgba(74, 52, 40, 0.1);
-  overflow: hidden;
-}
-
-.dex2-hero__fill {
-  height: 100%;
-  border-radius: var(--radius-full);
-  background: var(--stamp-vermilion);
-  transition: width 300ms var(--ease-out-expo);
-}
-
-.dex2-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  background: rgba(196, 85, 58, 0.1);
-  color: var(--stamp-vermilion-deep);
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.dex2-recent {
-  display: grid;
-  gap: 8px;
-}
-
-.dex2-recent__item {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: var(--radius-md);
-  background: var(--paper-cream);
-  border: 1px solid var(--border-hairline);
-}
-
-.dex2-recent__date {
-  flex: 0 0 auto;
-  font-size: 12px;
-  color: var(--text-muted);
-  min-width: 52px;
-}
-
-.dex2-recent__q {
-  font-size: 15px;
   line-height: 1.5;
+}
+
+.section-title {
+  font-size: clamp(30px, 2.4vw, 40px);
+  line-height: 1.35;
+  letter-spacing: -0.03em;
+}
+
+.section-description {
+  color: #7a6f66;
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.home-hero__inner.hero-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  align-items: center;
+  gap: 64px;
+  min-height: 640px;
+  padding: 0;
+}
+
+.home-hero__quote-zone {
+  max-width: 720px;
+}
+
+.home-quote-card.hero-quote-card {
+  max-width: 720px;
+  width: 100%;
+  padding: clamp(32px, 4vw, 52px);
+}
+
+.home-quote-card__text.hero-quote {
+  font-size: clamp(32px, 3vw, 48px);
+  line-height: 1.35;
+  letter-spacing: -0.03em;
+}
+
+.home-quote-card__meta.hero-label,
+.home-quote-card__author {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.home-hero__ctas {
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.primary-button,
+.secondary-button {
+  min-height: 56px;
+  padding: 0 28px;
+  border-radius: 18px;
+  font-size: 18px;
+}
+
+.home-hero__mascot-zone {
+  display: grid;
+  min-height: 420px;
+  place-items: center;
+  align-self: center;
+}
+
+.home-hero__glow {
+  right: 50%;
+  bottom: 50%;
+  width: min(92%, 460px);
+  transform: translate(50%, 50%);
+}
+
+.home-hero__mascot,
+.mascot-hero.hero-character {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  justify-self: center;
+  width: min(100%, 420px);
+}
+
+.try-demo {
+  padding: 0;
+}
+
+.try-demo__inner {
+  max-width: none;
+}
+
+.try-demo__sub {
+  max-width: 760px;
+}
+
+.try-demo__step {
+  margin-top: 40px;
+}
+
+.try-demo__step-label {
+  margin-bottom: 16px;
+  color: var(--ink-body, #4d443c);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.cover-shelf__rail.cover-carousel {
+  display: flex;
+  gap: 28px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: calc((100% - 260px) / 2);
+  padding: 8px 4px 24px;
+}
+
+.cover-shelf__item.cover-card {
+  flex: 0 0 260px;
+  width: 260px;
+  min-height: 340px;
+  padding: 24px 20px 26px;
+  scroll-snap-align: center;
+  border-radius: 24px;
+}
+
+.cover-shelf__image-box {
+  height: 204px;
+}
+
+.cover-shelf__label.cover-card-title {
+  font-size: 24px;
+  line-height: 1.35;
+}
+
+.cover-shelf__description.cover-card-description {
+  min-height: auto;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.try-demo__personas.reply-character-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.try-demo__persona.reply-character-card {
+  min-height: 150px;
+  padding: 28px 32px;
+  border-radius: 22px;
+}
+
+.try-demo__persona-name.reply-character-name {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.try-demo__persona-tag.reply-character-description {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.try-demo__textarea.diary-textarea {
+  width: 100%;
+  min-height: 160px;
+  padding: 28px 32px;
+  border-radius: 24px;
+  font-size: 20px;
+  line-height: 1.7;
+}
+
+.try-demo__textarea.diary-textarea::placeholder {
+  color: #9b8f84;
+  font-size: 20px;
+}
+
+.try-demo__submit.cta-button {
+  min-width: 220px;
+  width: auto;
+  height: 64px;
+  padding: 0 32px;
+  border-radius: 999px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.try-demo__submit.cta-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.home-feature-section.section {
+  width: 100%;
+  margin: 0;
+  padding: 96px 0;
+}
+
+.home-feature-grid.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 24px;
+}
+
+.home-feature-card.feature-card {
+  min-height: 300px;
+  padding: 40px 36px;
+  border-radius: 28px;
+}
+
+.home-feature-card__title.feature-card-title {
+  font-size: 28px;
+  line-height: 1.35;
+  letter-spacing: -0.03em;
+}
+
+.home-feature-card__description.feature-card-description {
+  margin-top: 24px;
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.home-feature-card__badge {
+  font-size: 15px;
+}
+
+@media (max-width: 1100px) {
+  .home-feature-grid.feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 960px) {
+  .home-hero__inner.hero-inner {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    min-height: auto;
+    padding: 64px 0;
+    text-align: center;
+  }
+
+  .home-hero__quote-zone,
+  .home-quote-card.hero-quote-card {
+    max-width: 100%;
+  }
+
+  .home-hero__ctas {
+    justify-content: center;
+  }
+
+  .home-hero__mascot-zone {
+    min-height: 300px;
+  }
+
+  .home-hero__mascot,
+  .mascot-hero.hero-character {
+    width: 280px;
+  }
+}
+
+@media (max-width: 900px) {
+  .try-demo__personas.reply-character-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-container {
+    width: min(100% - 32px, 100%);
+  }
+
+  .section,
+  .home-feature-section.section {
+    padding: 64px 0;
+  }
+
+  .try-demo__textarea.diary-textarea {
+    padding: 24px;
+    font-size: 18px;
+  }
+
+  .try-demo__textarea.diary-textarea::placeholder {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 640px) {
+  .home-feature-grid.feature-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .home-feature-card.feature-card {
+    min-height: 260px;
+    padding: 32px 28px;
+  }
 }
