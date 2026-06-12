@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
@@ -50,7 +50,7 @@ const AFFIRMATION_SUGGESTIONS = [
   "오늘의 나는 어제보다 더 성장하고 단단해졌다.",
   "나는 나를 사랑하며, 나에게 친절하게 대한다.",
   "나의 잠재력은 무한하며, 나는 무엇이든 해낼 수 있다.",
-  "나는 떨리지만, 도전을 즐긴다.",
+  "나는 떨리지만, 도전을 즐긴다",
   "나의 노력은 매일 조금씩 긍정적 결실을 맺고 있다.",
   "나는 집중하고 몰입하며, 내가 원하는 목표에 다가가고 있다.",
   "나는 문제를 해결할 충분한 지혜와 능력을 갖추고 있다.",
@@ -72,14 +72,6 @@ const getRandomAffirmationSuggestion = () =>
 
 const DASHBOARD_QUOTE_TEXT = "지금 이 순간이\n당신이 가진 전부입니다.";
 const DASHBOARD_QUOTE_AUTHOR = "에크하르트 톨레";
-
-const DASHBOARD_NAV_ITEMS = [
-  { href: "/", label: "홈", icon: "home" },
-  { href: "/diaries", label: "일기장", icon: "journal" },
-  { href: "/exchange", label: "교환일기", icon: "exchange" },
-  { href: "/report", label: "감정 리포트", icon: "report" },
-  { href: "/dex", label: "나의 도감", icon: "dex" },
-] as const;
 
 const LANGUAGE_OPTIONS: { value: LanguageOption; label: string }[] = [
   { value: "ko", label: "KO" },
@@ -128,16 +120,14 @@ const KNOWN_QUOTE_TRANSLATIONS: Record<string, { quote: string; author: string }
 export default function HomePage() {
   const { t, language, setLanguage } = useI18n();
   const router = useRouter();
-  const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [quote, setQuote] = useState<Quote | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<AuthMode>("login");
   const [navHidden, setNavHidden] = useState(false);
-  const [authNext, setAuthNext] = useState("/books");
+  const [authNext, setAuthNext] = useState("/");
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [profileLoading, setProfileLoading] = useState(false);
   const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
   const [nicknameInput, setNicknameInput] = useState("");
   const [nicknameError, setNicknameError] = useState("");
@@ -150,7 +140,6 @@ export default function HomePage() {
   const [affirmationSaving, setAffirmationSaving] = useState(false);
   const [affirmationError, setAffirmationError] = useState("");
   const [feedStarted, setFeedStarted] = useState(false);
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -210,7 +199,7 @@ export default function HomePage() {
       );
   }, [language, t]);
 
-  const openAuthModal = useCallback((mode: AuthMode, next = "/books") => {
+  const openAuthModal = useCallback((mode: AuthMode, next = "/") => {
     setAuthModalMode(mode);
     setAuthNext(next);
     setAuthModalOpen(true);
@@ -266,17 +255,9 @@ export default function HomePage() {
     return nickname || null;
   }, [profile?.nickname]);
 
-  const profileImage = useMemo(() => {
-    const metadataAvatar = user?.user_metadata?.avatar_url;
-    if (typeof metadataAvatar === "string" && metadataAvatar.trim()) return metadataAvatar;
-    if (profile?.profileImage) return profile.profileImage;
-    return null;
-  }, [profile?.profileImage, user?.user_metadata]);
-
   const loadDashboardData = useCallback(async () => {
     if (!user) return;
 
-    setProfileLoading(true);
     try {
       const [profileResponse, affirmationResponse] = await Promise.all([
         fetch("/api/profile", { cache: "no-store" }),
@@ -306,8 +287,8 @@ export default function HomePage() {
         }
         setStreakCount(data.streakCount ?? 0);
       }
-    } finally {
-      setProfileLoading(false);
+    } catch {
+      setAffirmationError("홈 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
     }
   }, [user]);
 
@@ -494,79 +475,12 @@ export default function HomePage() {
     [nicknameInput],
   );
 
-  const handleLogout = useCallback(async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    setProfileMenuOpen(false);
-    router.refresh();
-  }, [router]);
-
   const quoteText = `“${localizedQuote.text}”`;
   const quoteAuthor = localizedQuote.author;
 
   if (authChecked && user) {
     return (
       <div className="chami-home">
-        <header className="chami-home-nav" aria-label="홈 상단 메뉴">
-          <div className="chami-home-nav__inner">
-            <Link href="/" className="chami-home-nav__logo" aria-label="참 잘했어요 홈">
-              참 잘했어요
-            </Link>
-
-            <nav className="chami-home-nav__links" aria-label="주요 메뉴">
-              {DASHBOARD_NAV_ITEMS.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`chami-home-nav__link ${pathname === item.href ? "chami-home-nav__link--active" : ""}`}
-                >
-                  <DashboardNavIcon type={item.icon} />
-                  <span>{item.label}</span>
-                </Link>
-              ))}
-            </nav>
-
-            <div className="chami-home-nav__actions">
-              <Link href="/notifications" className="chami-home-nav__icon" aria-label="알림">
-                <BellIcon />
-              </Link>
-              <Link href="/support" className="chami-home-nav__icon" aria-label="도움말">
-                <HelpIcon />
-              </Link>
-              <div className="chami-profile-menu">
-                <button
-                  type="button"
-                  className="chami-profile-menu__button"
-                  onClick={() => setProfileMenuOpen((open) => !open)}
-                  aria-expanded={profileMenuOpen}
-                  aria-label="프로필 메뉴 열기"
-                >
-                  <span className="chami-profile-menu__avatar">
-                    <Image src={profileImage || "/mascot/mascot-idle.png"} alt="" width={40} height={40} unoptimized />
-                  </span>
-                  <span className="chami-profile-menu__name">
-                    {profileLoading ? "불러오는 중" : `${displayNickname ?? "이름 설정"}님`}
-                  </span>
-                  <ChevronDownIcon />
-                </button>
-                {profileMenuOpen && (
-                  <div className="chami-profile-menu__panel">
-                    <Link href="/settings" onClick={() => setProfileMenuOpen(false)}>
-                      마이페이지
-                    </Link>
-                    <Link href="/books" onClick={() => setProfileMenuOpen(false)}>
-                      내 책장
-                    </Link>
-                    <button type="button" onClick={handleLogout}>
-                      로그아웃
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </header>
-
         <main className="chami-home-main">
           <section className="chami-home-grid" aria-label="오늘의 홈 대시보드">
             <article className="chami-note-card chami-card">
@@ -773,21 +687,21 @@ export default function HomePage() {
                     <button
                       type="button"
                       className="home-nav__button home-nav__button--ghost"
-                      onClick={() => openAuthModal("login", "/books")}
+                      onClick={() => openAuthModal("login", "/")}
                     >
                       {t("home.login")}
                     </button>
                     <button
                       type="button"
                       className="home-nav__button home-nav__button--solid"
-                      onClick={() => openAuthModal("signup", "/books")}
+                      onClick={() => openAuthModal("signup", "/")}
                     >
                       {t("home.signup")}
                     </button>
                   </>
                 ) : (
-                  <Link href="/books" className="home-nav__button home-nav__button--solid">
-                    {t("home.myShelf")}
+                  <Link href="/" className="home-nav__button home-nav__button--solid">
+                    {t("nav.home")}
                   </Link>
                 )}
               </div>
@@ -908,93 +822,3 @@ function FeatureCard({
     </button>
   );
 }
-
-function DashboardNavIcon({ type }: { type: (typeof DASHBOARD_NAV_ITEMS)[number]["icon"] }) {
-  const commonProps = {
-    width: 19,
-    height: 19,
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: 1.9,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    "aria-hidden": true,
-  };
-
-  if (type === "home") {
-    return (
-      <svg {...commonProps}>
-        <path d="M3 10.5 12 3l9 7.5" />
-        <path d="M5 10v10h14V10" />
-        <path d="M9.5 20v-6h5v6" />
-      </svg>
-    );
-  }
-
-  if (type === "journal") {
-    return (
-      <svg {...commonProps}>
-        <path d="M7 4h10a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" />
-        <path d="M9 8h6M9 12h5" />
-      </svg>
-    );
-  }
-
-  if (type === "exchange") {
-    return (
-      <svg {...commonProps}>
-        <path d="M7 7h11l-2.2-2.2" />
-        <path d="M17 17H6l2.2 2.2" />
-        <rect x="4" y="9" width="7" height="6" rx="1.4" />
-        <rect x="13" y="9" width="7" height="6" rx="1.4" />
-      </svg>
-    );
-  }
-
-  if (type === "report") {
-    return (
-      <svg {...commonProps}>
-        <path d="M5 19V5" />
-        <path d="M9 19v-7" />
-        <path d="M13 19V8" />
-        <path d="M17 19v-4" />
-        <path d="M4 19h16" />
-      </svg>
-    );
-  }
-
-  return (
-    <svg {...commonProps}>
-      <path d="M12 4 14.1 8.4 19 9.1 15.5 12.5 16.3 17.4 12 15.1 7.7 17.4 8.5 12.5 5 9.1 9.9 8.4 12 4Z" />
-    </svg>
-  );
-}
-
-function BellIcon() {
-  return (
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-    </svg>
-  );
-}
-
-function HelpIcon() {
-  return (
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M9.8 9a2.4 2.4 0 1 1 3.85 1.9c-.84.58-1.32 1.07-1.32 2.1" />
-      <path d="M12 17h.01" />
-    </svg>
-  );
-}
-
-function ChevronDownIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="m6 9 6 6 6-6" />
-    </svg>
-  );
-}
-

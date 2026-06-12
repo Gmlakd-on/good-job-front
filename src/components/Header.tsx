@@ -22,7 +22,7 @@ interface Profile {
 
 const PRIMARY_NAV_ITEMS: { href: string; label: string; icon: NavIconType }[] = [
   { href: "/", label: "홈", icon: "home" },
-  { href: "/diaries", label: "일기장", icon: "journal" },
+  { href: "/books", label: "일기장", icon: "journal" },
   { href: "/exchange", label: "교환일기", icon: "exchange" },
   { href: "/report", label: "감정 리포트", icon: "report" },
   { href: "/dex", label: "나의 도감", icon: "dex" },
@@ -30,7 +30,7 @@ const PRIMARY_NAV_ITEMS: { href: string; label: string; icon: NavIconType }[] = 
 
 const isNavActive = (pathname: string, href: string) => {
   if (href === "/") return pathname === "/";
-  if (href === "/diaries") return pathname.startsWith("/diaries") || pathname.startsWith("/diary");
+  if (href === "/books") return pathname.startsWith("/books") || pathname.startsWith("/diaries") || pathname.startsWith("/diary");
   return pathname === href || pathname.startsWith(`${href}/`);
 };
 
@@ -146,8 +146,7 @@ export default function Header() {
     router.refresh();
   };
 
-  // On the main page the header is part of the page component itself.
-  if (pathname === "/") return null;
+  if (pathname === "/" && !user) return null;
 
   return (
     <header className="chami-home-nav chami-global-nav" aria-label="상단 메뉴">
@@ -244,7 +243,7 @@ export default function Header() {
       <AuthModal
         open={authModalOpen}
         mode={authModalMode}
-        next="/books"
+        next="/"
         onClose={() => setAuthModalOpen(false)}
         onModeChange={setAuthModalMode}
       />

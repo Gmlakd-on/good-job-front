@@ -20,7 +20,7 @@ function getAuthRedirectOrigin() {
 }
 
 function getSafeNextPath(value: string) {
-  if (!value.startsWith("/") || value.startsWith("//")) return "/books";
+  if (!value.startsWith("/") || value.startsWith("//")) return "/";
   return value;
 }
 
@@ -33,7 +33,7 @@ interface SocialAuthPanelProps {
 
 export default function SocialAuthPanel({
   mode,
-  next = "/books",
+  next = "/",
   initialError = "",
   onModeChange,
 }: SocialAuthPanelProps) {

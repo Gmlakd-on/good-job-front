@@ -24,7 +24,7 @@ function AuthPageContent() {
   const initialError = searchParams.get("error")
     ? searchParams.get("message") || "소셜 로그인에 실패했어요. Supabase Auth 설정과 Redirect URL을 확인해주세요."
     : "";
-  const next = searchParams.get("next") || "/books";
+  const next = searchParams.get("next") || "/";
 
   return (
     <div className="flex flex-col items-center pt-12">

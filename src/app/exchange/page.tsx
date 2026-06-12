@@ -171,7 +171,7 @@ export default function ExchangeHubPage() {
           ← {t("xch.back.home")}
         </button>
         <h1 className="font-serif text-xl" style={{ color: "var(--deep-gray)" }}>{t("xch.title")}</h1>
-        <Link href="/exchange/friends" className="text-sm opacity-60 hover:opacity-90">{t("xch.friends")}</Link>
+        <Link href="/exchange/friends" className="text-sm opacity-60 hover:opacity-90"><span aria-hidden="true">＋</span> 친구 추가</Link>
       </div>
 
       {hasOffer && (

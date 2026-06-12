@@ -3860,3 +3860,589 @@ html[lang="en"] .home-shell .home-quote-card__text.hero-quote {
     width: min(100% - 28px, 100%);
   }
 }
+
+/* --------------------------------------------------------------------------
+   Reference polish pass: stable navigation, page containers, support, books
+   -------------------------------------------------------------------------- */
+.site-main {
+  transition: none !important;
+}
+
+.chami-global-nav + .site-main.site-main--full {
+  padding-top: 0 !important;
+}
+
+.chami-global-nav {
+  font-family: var(--chami-ui-font, "Noto Sans KR", system-ui, sans-serif);
+}
+
+.chami-global-nav .chami-home-nav__inner {
+  width: min(100% - 56px, 1440px);
+  min-height: 74px;
+  grid-template-columns: minmax(190px, auto) minmax(0, 1fr) minmax(260px, auto);
+}
+
+.chami-global-nav .chami-home-nav__logo,
+.home-nav__logo {
+  font-family: "KyoboHandwriting2024", "Gaegu", "Noto Sans KR", cursive !important;
+  letter-spacing: -0.035em;
+}
+
+.chami-global-nav .chami-home-nav__links {
+  gap: clamp(28px, 4vw, 64px);
+}
+
+.chami-global-nav .chami-home-nav__link {
+  flex: 0 0 auto;
+  min-width: 104px;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  transform: none !important;
+}
+
+.chami-global-nav .chami-home-nav__link span {
+  white-space: nowrap;
+}
+
+.chami-global-nav .chami-home-nav__link::after {
+  left: 18px;
+  right: 18px;
+}
+
+.chami-home-main,
+.books-page,
+.exchange-hub-page,
+.report-page,
+.dex-page,
+.support-page,
+.diary-detail-reader {
+  width: min(100% - 72px, 1360px);
+}
+
+.chami-home-main {
+  padding-top: 32px;
+  padding-bottom: 42px;
+}
+
+.chami-mascot-card {
+  grid-template-rows: auto auto auto auto;
+  align-content: center;
+  justify-content: center;
+  row-gap: 12px;
+}
+
+.chami-mascot-card__copy {
+  display: grid;
+  justify-items: center;
+}
+
+.chami-mascot-card--happy .chami-mascot-card__copy p {
+  white-space: nowrap;
+  font-size: clamp(30px, 2.05vw, 38px);
+  line-height: 1.22;
+}
+
+.chami-mascot-card--happy .chami-mascot-stage {
+  min-height: 230px;
+}
+
+.chami-mascot-card--happy .chami-mascot-stage__image {
+  width: min(72%, 310px);
+}
+
+.chami-mascot-card__helper {
+  margin-top: 2px;
+}
+
+.chami-feed-button {
+  max-width: 420px;
+}
+
+.chami-affirmation-editor textarea {
+  min-height: 86px;
+}
+
+.chami-affirmation-editor textarea::placeholder {
+  color: #8f8378;
+  font-weight: 600;
+}
+
+/* Books / diary shelf reference */
+.books-page {
+  margin: 0 auto;
+  padding: 48px 0 68px;
+  color: #3f3027;
+  font-family: "Noto Sans KR", system-ui, sans-serif;
+}
+
+.books-page--loading {
+  min-height: 42vh;
+  display: grid;
+  place-items: center;
+  color: #8b8177;
+}
+
+.books-page__topbar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 48px;
+}
+
+.books-page__topbar h1 {
+  margin: 0;
+  color: #3b2b22;
+  font-family: "KyoboHandwriting2024", "Gaegu", "Noto Serif KR", serif;
+  font-size: clamp(38px, 4vw, 52px);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  text-align: center;
+}
+
+.books-page__back {
+  justify-self: start;
+  color: #7e746b;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.books-page__new-book {
+  justify-self: end;
+  display: inline-flex;
+  min-height: 54px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 26px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #e66549, #d84b33);
+  color: white;
+  box-shadow: 0 14px 30px rgba(216, 75, 51, 0.22);
+  font-size: 18px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.book-shelf-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.book-card--shelf {
+  display: grid;
+  grid-template-columns: minmax(140px, 0.74fr) minmax(0, 1fr);
+  gap: 26px;
+  min-height: 330px;
+  padding: 34px;
+  border-radius: 18px;
+  border: 1px solid rgba(111, 85, 58, 0.14);
+  background: rgba(255, 252, 247, 0.92);
+  box-shadow: 0 16px 42px rgba(81, 59, 36, 0.11), inset 0 1px rgba(255, 255, 255, 0.86);
+}
+
+.book-card__cover-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+.book-card__body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 22px;
+}
+
+.book-card__title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.book-card__title-row h2 {
+  margin: 0 0 14px;
+  color: #3b2b22;
+  font-family: "KyoboHandwriting2024", "Gaegu", "Noto Serif KR", serif;
+  font-size: clamp(26px, 2.1vw, 34px);
+  line-height: 1.16;
+  letter-spacing: -0.04em;
+  word-break: keep-all;
+}
+
+.book-card__status,
+.book-card__count {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 13px;
+  border-radius: 8px;
+  background: #f5ecd8;
+  color: #7b6b5d;
+  font-size: 16px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.book-card__progress-box {
+  padding: 22px;
+  border-radius: 12px;
+  border: 1px solid rgba(111, 85, 58, 0.14);
+  background: rgba(255, 249, 239, 0.74);
+}
+
+.book-card__progress-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #3f3027;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.book-card__progress-track {
+  height: 15px;
+  margin: 20px 0 16px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(224, 211, 193, 0.72);
+}
+
+.book-card__progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #df5a3f, #ee7960);
+}
+
+.book-card__progress-box p {
+  margin: 0;
+  color: #817468;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.book-card__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.book-card__action {
+  display: inline-flex;
+  min-height: 56px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.book-card__action--ghost {
+  border: 1px solid rgba(111, 85, 58, 0.14);
+  background: #faf3e6;
+  color: #4a392f;
+}
+
+.book-card__action--solid {
+  background: linear-gradient(180deg, #4d4037, #2f2924);
+  color: white;
+  box-shadow: 0 10px 22px rgba(47, 41, 36, 0.18);
+}
+
+.books-page__empty-card {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 46px 32px;
+  border: 1px dashed rgba(111, 85, 58, 0.24);
+  border-radius: 30px;
+  background: rgba(255, 252, 247, 0.82);
+  text-align: center;
+}
+
+.books-page__empty-title {
+  margin: 0 0 10px;
+  color: #3f3027;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.books-page__empty-card p:not(.books-page__empty-title) {
+  color: #7d7066;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.books-page__empty-card a {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  margin-top: 22px;
+  padding: 0 22px;
+  border-radius: 999px;
+  background: #d55339;
+  color: white;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+/* Exchange/report/dex page density and reference alignment */
+.exchange-hub-page {
+  width: min(100% - 72px, 1180px);
+  padding: 34px 0 60px !important;
+}
+
+.exchange-hub-page__header {
+  display: grid !important;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 !important;
+  margin-bottom: 22px !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.exchange-hub-page__header h1 {
+  justify-self: center;
+  font-size: clamp(36px, 4vw, 52px) !important;
+}
+
+.exchange-hub-page__header a:last-child {
+  justify-self: end;
+  display: inline-flex;
+  min-height: 50px;
+  align-items: center;
+  padding: 0 24px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ef6348, #df4d35);
+  color: white !important;
+  opacity: 1 !important;
+  font-size: 17px !important;
+  font-weight: 900;
+  text-decoration: none;
+  box-shadow: 0 12px 26px rgba(223, 77, 53, 0.2);
+}
+
+.exchange-hub-page__slot {
+  min-height: 176px;
+}
+
+.exchange-hub-page__connect {
+  padding: 24px !important;
+}
+
+.report-page,
+.dex-page {
+  width: min(100% - 72px, 1180px);
+  padding: 34px 0 64px !important;
+}
+
+.report-page > .flex:first-child,
+.dex-page > .flex:first-child {
+  display: grid !important;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-bottom: 24px !important;
+}
+
+.report-page > .flex:first-child h1,
+.dex-page > .flex:first-child h1 {
+  justify-self: center;
+  font-size: clamp(36px, 4vw, 52px) !important;
+}
+
+/* Support page */
+.support-page {
+  margin: 0 auto;
+  padding: 54px 0 78px;
+  color: #3f3027;
+}
+
+.support-page__card {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 42px;
+  border: 1px solid rgba(111, 85, 58, 0.14);
+  border-radius: 32px;
+  background: linear-gradient(135deg, rgba(255, 252, 246, 0.96), rgba(255, 244, 229, 0.86));
+  box-shadow: 0 18px 44px rgba(81, 59, 36, 0.09);
+}
+
+.support-page__eyebrow {
+  margin: 0 0 10px;
+  color: #d55339;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.support-page h1 {
+  margin: 0;
+  color: #3b2b22;
+  font-family: "KyoboHandwriting2024", "Gaegu", "Noto Serif KR", serif;
+  font-size: clamp(36px, 5vw, 52px);
+  line-height: 1.08;
+}
+
+.support-page__lead {
+  margin: 16px 0 26px;
+  color: #71675f;
+  font-size: 17px;
+  line-height: 1.75;
+}
+
+.support-page__contact {
+  display: grid;
+  gap: 10px;
+  padding: 22px 24px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.56);
+  border: 1px solid rgba(111, 85, 58, 0.1);
+}
+
+.support-page__contact p {
+  margin: 0;
+  color: #5e524a;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.support-page__contact a {
+  color: #d55339;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.support-page__crisis {
+  margin-top: 22px;
+  padding: 22px 24px;
+  border-radius: 22px;
+  background: rgba(255, 244, 230, 0.72);
+  border: 1px solid rgba(213, 83, 57, 0.16);
+}
+
+.support-page__crisis-title {
+  margin: 0 0 16px;
+  color: #3f3027;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.65;
+}
+
+.support-page__crisis ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.support-page__crisis li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 252, 246, 0.78);
+  color: #5e524a;
+  font-size: 15px;
+}
+
+.support-page__crisis li strong {
+  color: #d55339;
+  font-size: 18px;
+}
+
+.support-page__crisis li em {
+  color: #82786f;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+@media (max-width: 1180px) {
+  .book-shelf-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .book-card--shelf {
+    grid-template-columns: 170px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .chami-global-nav .chami-home-nav__inner {
+    width: min(100% - 32px, 100%);
+    grid-template-columns: auto auto;
+    gap: 10px 18px;
+  }
+
+  .chami-global-nav .chami-home-nav__links {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    overflow-x: auto;
+    gap: 22px;
+  }
+
+  .chami-global-nav .chami-home-nav__link {
+    min-width: auto;
+  }
+
+  .chami-home-main,
+  .books-page,
+  .exchange-hub-page,
+  .report-page,
+  .dex-page,
+  .support-page,
+  .diary-detail-reader {
+    width: min(100% - 32px, 100%);
+  }
+
+  .books-page__topbar,
+  .exchange-hub-page__header,
+  .report-page > .flex:first-child,
+  .dex-page > .flex:first-child {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .books-page__back,
+  .books-page__new-book,
+  .exchange-hub-page__header a:last-child {
+    justify-self: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .chami-mascot-card--happy .chami-mascot-card__copy p {
+    white-space: normal;
+    font-size: 28px;
+  }
+
+  .book-card--shelf {
+    grid-template-columns: 1fr;
+    padding: 26px;
+  }
+
+  .book-card__actions {
+    grid-template-columns: 1fr;
+  }
+
+  .support-page__card {
+    padding: 28px 22px;
+  }
+
+  .support-page__crisis li {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
