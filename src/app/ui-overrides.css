@@ -2399,3 +2399,1284 @@ html[lang="en"] .home-shell .home-quote-card__text.hero-quote {
     font-size: clamp(27px, 8.4vw, 34px);
   }
 }
+
+/* --------------------------------------------------------------------------
+   Logged-in Chami home dashboard restoration
+   -------------------------------------------------------------------------- */
+.chami-home {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 78% 20%, rgba(255, 225, 152, 0.28), transparent 34%),
+    linear-gradient(180deg, #fffaf1 0%, #f8efe1 100%);
+  color: #3f3027;
+  font-family: var(--font-sans, "Noto Sans KR", system-ui, sans-serif);
+}
+
+.chami-home::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(142, 107, 75, 0.07) 0.65px, transparent 0.65px);
+  background-size: 18px 18px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.62), transparent 78%);
+}
+
+.chami-home-nav,
+.chami-home-main,
+.nickname-modal {
+  position: relative;
+  z-index: 1;
+}
+
+.chami-home-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid rgba(101, 80, 59, 0.11);
+  background: rgba(255, 251, 244, 0.88);
+  backdrop-filter: blur(18px) saturate(1.08);
+}
+
+.chami-home-nav__inner {
+  width: min(100% - 48px, 1360px);
+  min-height: 76px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 28px;
+}
+
+.chami-home-nav__logo {
+  font-family: "Gaegu", "Noto Sans KR", cursive;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+  color: #d55339;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.chami-home-nav__links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(18px, 3vw, 46px);
+  min-width: 0;
+}
+
+.chami-home-nav__link {
+  position: relative;
+  display: inline-flex;
+  min-height: 76px;
+  align-items: center;
+  gap: 7px;
+  color: #3f3027;
+  text-decoration: none;
+  font-size: 17px;
+  font-weight: 700;
+  opacity: 0.88;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.chami-home-nav__link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: #ef4a32;
+  opacity: 0;
+  transform: scaleX(0.7);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.chami-home-nav__link:hover,
+.chami-home-nav__link--active {
+  color: #ef4a32;
+  opacity: 1;
+}
+
+.chami-home-nav__link--active::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.chami-home-nav__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.chami-home-nav__icon {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #2f251f;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.chami-home-nav__icon:hover {
+  background: rgba(213, 83, 57, 0.08);
+  transform: translateY(-1px);
+}
+
+.chami-profile-menu {
+  position: relative;
+}
+
+.chami-profile-menu__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 4px 8px 4px 4px;
+  border: 0;
+  background: transparent;
+  color: #3f3027;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.chami-profile-menu__avatar {
+  width: 42px;
+  height: 42px;
+  overflow: hidden;
+  border-radius: 999px;
+  border: 1px solid rgba(213, 83, 57, 0.18);
+  background: #fff7dd;
+  box-shadow: 0 8px 20px rgba(146, 99, 49, 0.12);
+}
+
+.chami-profile-menu__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chami-profile-menu__name {
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+.chami-profile-menu__panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 168px;
+  padding: 8px;
+  border: 1px solid rgba(95, 69, 46, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 252, 247, 0.98);
+  box-shadow: 0 20px 50px rgba(81, 59, 36, 0.16);
+}
+
+.chami-profile-menu__panel a,
+.chami-profile-menu__panel button {
+  display: block;
+  width: 100%;
+  padding: 11px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #4a392f;
+  text-align: left;
+  text-decoration: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.chami-profile-menu__panel a:hover,
+.chami-profile-menu__panel button:hover {
+  background: #f8eadb;
+}
+
+.chami-home-main {
+  width: min(100% - 48px, 1360px);
+  margin: 0 auto;
+  padding: 28px 0 34px;
+}
+
+.chami-card {
+  border: 1px solid rgba(111, 85, 58, 0.13);
+  background: rgba(255, 252, 246, 0.84);
+  box-shadow: 0 18px 46px rgba(99, 71, 38, 0.1), inset 0 1px rgba(255, 255, 255, 0.82);
+  border-radius: 22px;
+}
+
+.chami-home-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.17fr) minmax(360px, 0.96fr);
+  gap: 28px;
+  align-items: stretch;
+}
+
+.chami-note-card {
+  position: relative;
+  min-height: 410px;
+  padding: clamp(26px, 3vw, 44px) clamp(24px, 4vw, 78px) 30px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 88% 10%, rgba(134, 161, 87, 0.14), transparent 18%),
+    linear-gradient(135deg, rgba(255, 253, 248, 0.94), rgba(255, 248, 235, 0.84));
+}
+
+.chami-note-card::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  top: 26px;
+  bottom: 26px;
+  width: 22px;
+  background: repeating-radial-gradient(circle at 10px 10px, rgba(193, 168, 132, 0.28) 0 6px, transparent 7px 25px);
+  opacity: 0.8;
+}
+
+.chami-note-card::after {
+  content: "🌿";
+  position: absolute;
+  right: 34px;
+  top: 22px;
+  color: rgba(105, 134, 73, 0.62);
+  font-size: 54px;
+  transform: rotate(-16deg);
+  opacity: 0.9;
+}
+
+.chami-note-card__label {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  color: #4a392d;
+  font-family: "Noto Serif KR", serif;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.chami-note-card__label span {
+  color: #e98373;
+  font-size: 40px;
+  line-height: 1;
+}
+
+.chami-note-card__quote {
+  margin: 28px auto 16px;
+  color: #372921;
+  font-family: "Gaegu", "Noto Serif KR", serif;
+  font-size: clamp(44px, 4.4vw, 68px);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.055em;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.chami-note-card__quote span {
+  display: block;
+}
+
+.chami-note-card__author {
+  margin: 0 0 22px;
+  color: #ef4a32;
+  font-family: "Gaegu", "Noto Sans KR", cursive;
+  font-size: 25px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.chami-affirmation-box {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 20px;
+  min-height: 76px;
+  padding: 16px 24px;
+  border: 1px solid rgba(218, 158, 114, 0.35);
+  border-radius: 16px;
+  background: rgba(255, 252, 246, 0.72);
+}
+
+.chami-affirmation-box__heart {
+  font-size: 42px;
+  filter: drop-shadow(0 8px 14px rgba(214, 82, 55, 0.18));
+}
+
+.chami-affirmation-box__eyebrow {
+  margin: 0 0 4px;
+  color: #766a61;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.chami-affirmation-box__text {
+  margin: 0;
+  color: #3f6f23;
+  font-family: "Noto Serif KR", serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.chami-affirmation-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.chami-affirmation-editor textarea {
+  width: 100%;
+  min-height: 68px;
+  resize: vertical;
+  border: 1px solid rgba(126, 91, 56, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.84);
+  color: #3f3027;
+  padding: 13px 14px;
+  font-size: 17px;
+  line-height: 1.55;
+  outline: none;
+}
+
+.chami-spoon-button {
+  min-height: 48px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 14px;
+  background: #789443;
+  color: white;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(80, 100, 48, 0.2);
+}
+
+.chami-note-card__buttons {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.66fr);
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.chami-button,
+.chami-feed-button,
+.chami-mini-card button,
+.chami-ad-card button,
+.chami-habit-bar button,
+.nickname-modal__card button {
+  border: 0;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+}
+
+.chami-button:hover,
+.chami-feed-button:hover:not(:disabled),
+.chami-mini-card button:hover,
+.chami-ad-card button:hover,
+.chami-habit-bar button:hover,
+.nickname-modal__card button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.chami-button {
+  min-height: 52px;
+  border-radius: 14px;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.chami-button--coral {
+  background: linear-gradient(180deg, #ff5138, #e7422c);
+  color: #fff;
+  box-shadow: 0 14px 28px rgba(228, 66, 44, 0.24);
+}
+
+.chami-button--ghost {
+  border: 1px solid rgba(119, 86, 60, 0.18);
+  background: rgba(255, 255, 255, 0.68);
+  color: #3f3027;
+}
+
+.chami-mascot-card {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  min-height: 410px;
+  padding: 30px 34px 28px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 70% 20%, rgba(255, 213, 111, 0.28), transparent 36%),
+    linear-gradient(135deg, rgba(255, 252, 244, 0.92), rgba(255, 244, 220, 0.82));
+}
+
+.chami-mascot-card--happy::after {
+  content: "";
+  position: absolute;
+  inset: 28% 15% 12%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 219, 112, 0.48), transparent 62%);
+  filter: blur(22px);
+  pointer-events: none;
+}
+
+.chami-mascot-card__copy {
+  position: relative;
+  z-index: 2;
+  max-width: 320px;
+}
+
+.chami-mascot-card__copy p {
+  margin: 0 0 18px;
+  color: #2f251f;
+  font-family: "Noto Serif KR", serif;
+  font-size: clamp(27px, 2.3vw, 34px);
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: -0.04em;
+  word-break: keep-all;
+}
+
+.chami-streak-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(130, 132, 75, 0.26);
+  border-radius: 999px;
+  background: rgba(255, 250, 235, 0.88);
+  color: #5f762e;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.chami-mascot-stage {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  min-height: 210px;
+}
+
+.chami-mascot-stage__image {
+  width: min(86%, 340px);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 30px rgba(154, 103, 37, 0.18));
+}
+
+.chami-sparkle {
+  position: absolute;
+  color: #fff3c8;
+  text-shadow: 0 0 12px rgba(255, 206, 90, 0.7);
+  font-size: 26px;
+}
+
+.chami-sparkle--left { left: 12%; top: 22%; }
+.chami-sparkle--right { right: 8%; top: 14%; }
+
+.chami-feed-button {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  width: 100%;
+  min-height: 62px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #8da34f, #789443);
+  color: #fff;
+  box-shadow: 0 14px 28px rgba(80, 100, 48, 0.24), inset 0 1px rgba(255, 255, 255, 0.24);
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.chami-feed-button:disabled {
+  opacity: 0.78;
+  cursor: default;
+}
+
+.chami-mascot-card__helper {
+  position: relative;
+  z-index: 2;
+  margin: 14px 0 0;
+  color: #7a6f66;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.chami-lower-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 0.75fr) minmax(0, 0.75fr) minmax(320px, 1.08fr);
+  gap: 22px;
+  margin-top: 22px;
+}
+
+.chami-mini-card,
+.chami-ad-card {
+  min-height: 190px;
+  padding: 24px 26px;
+}
+
+.chami-mini-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  column-gap: 18px;
+  row-gap: 18px;
+}
+
+.chami-mini-card__visual {
+  width: 76px;
+  height: 76px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 22px;
+  background: rgba(255, 235, 229, 0.72);
+  font-size: 42px;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.84);
+}
+
+.chami-mini-card h2,
+.chami-ad-card h2 {
+  margin: 0 0 10px;
+  color: #3c2d25;
+  font-family: "Noto Serif KR", serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.03em;
+}
+
+.chami-mini-card p,
+.chami-ad-card p {
+  margin: 0;
+  color: #6d6259;
+  font-size: 16px;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.chami-mini-card__strong {
+  color: #3f3027 !important;
+  font-weight: 800;
+}
+
+.chami-mini-card button,
+.chami-ad-card button,
+.chami-habit-bar button {
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(213, 83, 57, 0.38);
+  background: rgba(255, 255, 255, 0.56);
+  color: #e84b33;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.chami-mini-card button {
+  grid-column: 1 / -1;
+}
+
+.chami-mini-card--refresh .chami-mini-card__visual { background: rgba(232, 238, 207, 0.72); }
+.chami-mini-card--report .chami-mini-card__visual { background: rgba(232, 237, 246, 0.72); }
+
+.chami-ad-card__label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #3f3027;
+  font-size: 15px;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+.chami-ad-card__label em {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(134, 106, 73, 0.08);
+  color: #8a7f73;
+  font-size: 12px;
+  font-style: normal;
+}
+
+.chami-ad-card__body {
+  display: grid;
+  grid-template-columns: 128px minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+}
+
+.chami-ad-card__image {
+  min-height: 104px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f5efe3, #fff8ec);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38px;
+  line-height: 1.2;
+}
+
+.chami-ad-card button {
+  width: 100%;
+  margin-top: 18px;
+  color: #4a392f;
+  border-color: rgba(111, 85, 58, 0.16);
+}
+
+.chami-habit-bar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  min-height: 62px;
+  margin-top: 18px;
+  padding: 10px 26px;
+}
+
+.chami-habit-bar > span {
+  font-size: 32px;
+}
+
+.chami-habit-bar p {
+  margin: 0;
+  color: #75695f;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.chami-habit-bar button {
+  min-width: 220px;
+  color: #4a392f;
+  border-color: rgba(111, 85, 58, 0.14);
+}
+
+.chami-form-error {
+  margin: 8px 0 0;
+  color: #c94730;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.nickname-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(47, 37, 31, 0.32);
+  backdrop-filter: blur(12px);
+}
+
+.nickname-modal__card {
+  width: min(100%, 430px);
+  padding: 32px;
+  border-radius: 28px;
+  border: 1px solid rgba(111, 85, 58, 0.15);
+  background: #fffaf1;
+  text-align: center;
+  box-shadow: 0 26px 80px rgba(59, 43, 25, 0.24);
+}
+
+.nickname-modal__mascot img {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  margin: 0 auto 10px;
+}
+
+.nickname-modal__card h2 {
+  margin: 0 0 10px;
+  color: #3f3027;
+  font-family: "Noto Serif KR", serif;
+  font-size: 26px;
+}
+
+.nickname-modal__card p {
+  margin: 0 0 18px;
+  color: #75695f;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.nickname-modal__card input {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(111, 85, 58, 0.18);
+  background: white;
+  color: #3f3027;
+  font-size: 18px;
+  outline: none;
+}
+
+.nickname-modal__hint {
+  margin-top: 10px !important;
+  font-size: 13px !important;
+}
+
+.nickname-modal__card button[type="submit"] {
+  width: 100%;
+  min-height: 54px;
+  margin-top: 4px;
+  border-radius: 16px;
+  background: #e64a32;
+  color: white;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+@media (max-width: 1180px) {
+  .chami-home-nav__inner,
+  .chami-home-main { width: min(100% - 36px, 100%); }
+  .chami-home-nav__links { gap: 18px; }
+  .chami-home-grid { grid-template-columns: 1fr; }
+  .chami-mascot-card { min-height: 380px; }
+  .chami-lower-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .chami-ad-card { grid-column: auto / span 2; }
+}
+
+@media (max-width: 900px) {
+  .chami-home-nav__inner {
+    grid-template-columns: auto auto;
+    min-height: 68px;
+  }
+  .chami-home-nav__links {
+    grid-column: 1 / -1;
+    order: 3;
+    justify-content: flex-start;
+    overflow-x: auto;
+    gap: 18px;
+    margin: 0 -18px;
+    padding: 0 18px;
+  }
+  .chami-home-nav__link { min-height: 48px; white-space: nowrap; }
+  .chami-home-main { padding-top: 20px; }
+  .chami-note-card { padding: 30px 24px 24px; }
+  .chami-note-card::before, .chami-note-card::after { display: none; }
+  .chami-note-card__quote { font-size: clamp(40px, 10vw, 58px); }
+  .chami-mascot-card { padding: 26px 24px 24px; }
+}
+
+@media (max-width: 680px) {
+  .chami-home-nav__inner,
+  .chami-home-main { width: min(100% - 28px, 100%); }
+  .chami-home-nav__logo { font-size: 28px; }
+  .chami-home-nav__icon { display: none; }
+  .chami-profile-menu__name { display: none; }
+  .chami-home-grid, .chami-lower-grid { gap: 16px; }
+  .chami-note-card, .chami-mascot-card, .chami-mini-card, .chami-ad-card { border-radius: 20px; }
+  .chami-note-card__label { font-size: 21px; }
+  .chami-note-card__quote { margin-top: 20px; line-height: 1.14; }
+  .chami-affirmation-box { grid-template-columns: 1fr; gap: 10px; padding: 16px; }
+  .chami-affirmation-box__heart { font-size: 32px; }
+  .chami-affirmation-editor { grid-template-columns: 1fr; }
+  .chami-note-card__buttons { grid-template-columns: 1fr; }
+  .chami-mascot-card__copy p { font-size: 25px; }
+  .chami-mascot-stage { min-height: 170px; }
+  .chami-mascot-stage__image { width: min(74vw, 260px); }
+  .chami-feed-button { min-height: 56px; font-size: 19px; }
+  .chami-lower-grid { grid-template-columns: 1fr; }
+  .chami-ad-card { grid-column: auto; }
+  .chami-mini-card { grid-template-columns: 1fr; }
+  .chami-ad-card__body { grid-template-columns: 1fr; }
+  .chami-habit-bar { grid-template-columns: 1fr; text-align: center; padding: 18px; }
+  .chami-habit-bar button { min-width: 0; width: 100%; }
+}
+
+/* --------------------------------------------------------------------------
+   Warm page-level restorations for diary, exchange, report, and dex
+   -------------------------------------------------------------------------- */
+.exchange-hub-page,
+.diary-detail-reader,
+.report-page,
+.dex-page {
+  font-family: "Noto Sans KR", system-ui, sans-serif;
+  color: var(--deep-gray, #4a4039);
+}
+
+.exchange-hub-page {
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.exchange-hub-page__header {
+  padding: 22px 26px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, rgba(255, 252, 246, 0.92), rgba(255, 241, 224, 0.74));
+  border: 1px solid rgba(119, 86, 60, 0.13);
+  box-shadow: 0 18px 44px rgba(81, 59, 36, 0.09);
+}
+
+.exchange-hub-page__header h1 {
+  font-size: clamp(28px, 4vw, 42px) !important;
+  line-height: 1.2;
+  font-family: "Gaegu", "Noto Serif KR", serif !important;
+  color: #3c2d25 !important;
+}
+
+.exchange-hub-page__slot,
+.exchange-hub-page__connect,
+.exchange-hub-page .hub-archive,
+.exchange-hub-page .xch-offer-banner {
+  border-radius: 28px !important;
+  border-color: rgba(119, 86, 60, 0.13) !important;
+  background: rgba(255, 252, 246, 0.88) !important;
+  box-shadow: 0 16px 42px rgba(81, 59, 36, 0.09) !important;
+}
+
+.exchange-hub-page__slot {
+  position: relative;
+  overflow: hidden;
+  padding: 30px !important;
+}
+
+.exchange-hub-page__slot::after {
+  content: "💌";
+  position: absolute;
+  right: 32px;
+  bottom: 22px;
+  font-size: 80px;
+  opacity: 0.09;
+}
+
+.exchange-hub-page .hub-slot__eyebrow,
+.exchange-hub-page .text-sm.font-medium {
+  font-size: 18px !important;
+}
+
+.exchange-hub-page .xch-card__avatar {
+  width: 58px;
+  height: 58px;
+  font-size: 24px;
+  background: linear-gradient(135deg, #ffe9dc, #fff7e6);
+  color: #d55339;
+}
+
+.exchange-hub-page .xch-card__days {
+  min-height: 34px;
+  margin-top: 8px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(232, 238, 207, 0.72);
+}
+
+.exchange-hub-page .xch-card__dot {
+  display: none !important;
+}
+
+.exchange-hub-page .xch-card__day-label {
+  font-size: 14px;
+  color: #6f8137;
+  font-weight: 800;
+}
+
+.exchange-hub-page .btn-primary,
+.exchange-hub-page .hub-random-cta,
+.exchange-hub-page .hub-archive {
+  min-height: 52px;
+  border-radius: 16px !important;
+  font-size: 16px !important;
+  font-weight: 800;
+}
+
+.exchange-hub-page .hub-tabs {
+  min-height: 54px;
+  padding: 6px;
+  border-radius: 18px;
+}
+
+.exchange-hub-page .hub-tab {
+  min-height: 42px;
+  font-size: 15px;
+  border-radius: 14px;
+}
+
+.exchange-hub-page input,
+.exchange-hub-page textarea {
+  border: 1px solid rgba(119, 86, 60, 0.13) !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  font-size: 16px !important;
+}
+
+.exchange-hub-page .hub-locked,
+.exchange-hub-page .hub-slot__empty,
+.exchange-hub-page .hub-random-cta {
+  background: rgba(255, 247, 234, 0.78) !important;
+  border-radius: 22px !important;
+}
+
+.diary-detail-reader {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.diary-detail-reader__head {
+  margin: 0 0 20px;
+  padding: 28px 32px;
+  border-radius: 30px;
+  border: 1px solid rgba(119, 86, 60, 0.12);
+  background: linear-gradient(135deg, rgba(255, 252, 246, 0.95), rgba(255, 243, 226, 0.74));
+  box-shadow: 0 18px 44px rgba(81, 59, 36, 0.08);
+}
+
+.diary-detail-reader__eyebrow {
+  margin: 0 0 8px;
+  color: #d55339;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.diary-detail-reader__head h1 {
+  margin: 0;
+  color: #3c2d25;
+  font-family: "Gaegu", "Noto Serif KR", serif;
+  font-size: clamp(36px, 5vw, 56px);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+}
+
+.diary-detail-reader__head > p:last-child {
+  margin: 12px 0 0;
+  color: #83776c;
+  font-size: 16px;
+}
+
+.diary-detail-reader__tags span {
+  font-size: 15px !important;
+  font-weight: 700;
+}
+
+.diary-detail-reader__book {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+  perspective: 1400px;
+}
+
+.diary-detail-reader__page {
+  min-height: 460px;
+  border-radius: 28px !important;
+  background: linear-gradient(135deg, rgba(255, 253, 248, 0.96), rgba(255, 249, 238, 0.86)) !important;
+  box-shadow: 0 18px 44px rgba(81, 59, 36, 0.1), inset 0 1px rgba(255,255,255,0.82) !important;
+}
+
+.diary-detail-reader__page--mine {
+  transform-origin: right center;
+}
+
+.diary-detail-reader__page--reply {
+  transform-origin: left center;
+}
+
+.diary-detail-reader__page-label {
+  margin: 0 0 14px;
+  color: #d55339;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.diary-detail-reader__page p.whitespace-pre-line {
+  font-size: 18px !important;
+  line-height: 2 !important;
+  color: #3d3029 !important;
+  word-break: keep-all;
+}
+
+.diary-detail-reader__pending {
+  display: grid;
+  place-items: center;
+  min-height: 320px;
+  text-align: center;
+  color: #75695f;
+}
+
+.diary-detail-reader__pending p {
+  margin: 0 0 10px;
+  color: #3c2d25;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.diary-detail-reader__pending span {
+  display: block;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.report-page {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.report-page > .flex:first-child h1,
+.dex-page > .flex:first-child h1 {
+  font-family: "Gaegu", "Noto Serif KR", serif !important;
+  font-size: clamp(30px, 4vw, 46px) !important;
+  color: #3c2d25 !important;
+}
+
+.report-reading-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.report-reading-card,
+.report-ai-summary,
+.report-donut-card,
+.report-distribution-card,
+.report-calendar-card {
+  border-radius: 26px !important;
+  border: 1px solid rgba(119, 86, 60, 0.12) !important;
+  background: rgba(255, 252, 246, 0.9) !important;
+  box-shadow: 0 16px 40px rgba(81, 59, 36, 0.08) !important;
+}
+
+.report-reading-card {
+  padding: 20px;
+}
+
+.report-reading-card span,
+.report-ai-summary__title {
+  display: block;
+  color: #d55339;
+  font-size: 14px;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.report-reading-card strong {
+  display: block;
+  color: #3c2d25;
+  font-size: 22px;
+  line-height: 1.3;
+  font-weight: 900;
+}
+
+.report-reading-card p,
+.report-ai-summary p {
+  margin: 10px 0 0;
+  color: #75695f;
+  font-size: 15px;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.report-ai-summary {
+  padding: 22px 24px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, rgba(255, 252, 246, 0.95), rgba(244, 248, 226, 0.82)) !important;
+}
+
+.report-visual-grid {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.report-donut-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.report-donut {
+  width: 172px;
+  height: 172px;
+  padding: 18px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(119, 86, 60, 0.12);
+}
+
+.report-donut > div {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  border-radius: 999px;
+  background: #fffaf1;
+  text-align: center;
+}
+
+.report-donut strong {
+  display: block;
+  color: #3c2d25;
+  font-size: 34px;
+  line-height: 1;
+}
+
+.report-donut span {
+  margin-top: 6px;
+  color: #75695f;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.report-page .report-bar {
+  height: 13px;
+  background: rgba(222, 204, 183, 0.48);
+}
+
+.report-page .report-bar__fill {
+  background: linear-gradient(90deg, #e59a78, #d55339);
+}
+
+.report-page .report-days {
+  min-height: 160px;
+  padding-top: 16px;
+}
+
+.report-page .report-days__bar {
+  border-radius: 999px 999px 8px 8px;
+  background: rgba(222, 204, 183, 0.46);
+}
+
+.report-page .report-days__bar--filled {
+  background: linear-gradient(180deg, #e7b887, #d55339);
+}
+
+.dex-page {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.dex-page > p.text-center {
+  font-size: 16px !important;
+  opacity: 0.62 !important;
+}
+
+.dex-page__collection,
+.dex-page__tests {
+  position: relative;
+  overflow: hidden;
+  border-radius: 30px !important;
+  border: 1px solid rgba(119, 86, 60, 0.13) !important;
+  background: linear-gradient(135deg, rgba(255, 252, 246, 0.96), rgba(255, 244, 226, 0.82)) !important;
+  box-shadow: 0 18px 44px rgba(81, 59, 36, 0.09) !important;
+}
+
+.dex-page__collection::after {
+  content: "📒";
+  position: absolute;
+  right: 34px;
+  top: 34px;
+  font-size: 84px;
+  opacity: 0.1;
+}
+
+.dex-page .dex-progress {
+  height: 14px;
+  background: rgba(222, 204, 183, 0.52);
+}
+
+.dex-page .dex-progress__fill {
+  background: linear-gradient(90deg, #d55339, #e7b887);
+}
+
+.dex-page .dex-today {
+  border-radius: 26px;
+  background: rgba(255, 250, 240, 0.84);
+  border: 1px dashed rgba(119, 86, 60, 0.18);
+  padding: 24px;
+}
+
+.dex-page .dex-today__eyebrow {
+  font-size: 15px;
+  color: #d55339;
+}
+
+.dex-page .dex-today__q {
+  font-family: "Noto Serif KR", serif;
+  font-size: clamp(24px, 3.3vw, 34px);
+  line-height: 1.45;
+  color: #3c2d25;
+  word-break: keep-all;
+}
+
+.dex-page textarea {
+  min-height: 128px;
+  font-size: 18px !important;
+  line-height: 1.7;
+  border-radius: 20px !important;
+  border: 1px solid rgba(119, 86, 60, 0.13);
+}
+
+.dex-page .dex-list {
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.48);
+}
+
+.dex-page .dex-list__item {
+  border-radius: 18px;
+}
+
+.dex-page .dex-list__q {
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.dex-page .dex-list__a {
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.dex-page .dex-tests {
+  gap: 16px;
+}
+
+.dex-page .dex-test {
+  min-height: 150px;
+  border-radius: 24px;
+  background: rgba(255, 250, 240, 0.82);
+  border: 1px solid rgba(119, 86, 60, 0.12);
+}
+
+.dex-page .dex-test p {
+  font-size: 18px !important;
+  line-height: 1.4;
+  font-weight: 800;
+}
+
+@media (max-width: 980px) {
+  .diary-detail-reader__book,
+  .report-reading-cards,
+  .report-visual-grid {
+    grid-template-columns: 1fr;
+  }
+  .diary-detail-reader__page { min-height: auto; }
+}
+
+@media (max-width: 640px) {
+  .exchange-hub-page__header,
+  .diary-detail-reader__head,
+  .dex-page__collection,
+  .dex-page__tests {
+    border-radius: 24px !important;
+    padding: 22px !important;
+  }
+  .report-reading-card strong { font-size: 20px; }
+  .report-donut { width: 150px; height: 150px; }
+}

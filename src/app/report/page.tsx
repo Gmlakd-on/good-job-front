@@ -103,6 +103,10 @@ export default function ReportPage() {
   const streak = useMemo(() => computeStreak(diaries, now), [diaries, now]);
   const topEmotion = sorted[0] ? EMOTIONS.find((e) => e.code === sorted[0][0]) : null;
   const nextEmotion = sorted[1] ? EMOTIONS.find((e) => e.code === sorted[1][0]) : null;
+  const topEmotionCount = sorted[0]?.[1] ?? 0;
+  const topEmotionPct = totalEmotions > 0 ? Math.round((topEmotionCount / totalEmotions) * 100) : 0;
+  const repeatedEmotion = sorted.find(([, count]) => count >= 2);
+  const recoveryHint = streak > 0 ? "기록을 이어가며 마음을 회복하는 흐름이 보여요." : "짧은 문장 하나로 오늘의 마음을 다시 시작해봐요.";
 
   if (loading) {
     return (
@@ -113,7 +117,7 @@ export default function ReportPage() {
   }
 
   return (
-    <div className="pt-2 report">
+    <div className="report-page pt-2 report">
       <div className="flex items-center justify-between mb-5">
         <button onClick={() => router.back()} className="text-sm opacity-40 hover:opacity-70">
           {t("report.back")}
@@ -191,8 +195,46 @@ export default function ReportPage() {
             </div>
           ) : (
             <>
+              <div className="report-reading-cards">
+                <article className="diary-card report-reading-card">
+                  <span>이번 주 가장 많았던 감정</span>
+                  <strong>{topEmotion ? `${topEmotion.emoji} ${topEmotion.label}` : "아직 없어요"}</strong>
+                  <p>{topEmotion ? `${topEmotionPct}% 정도가 이 감정으로 남아 있어요.` : "기록이 쌓이면 가장 자주 머문 감정이 보여요."}</p>
+                </article>
+                <article className="diary-card report-reading-card">
+                  <span>자주 반복된 감정</span>
+                  <strong>{repeatedEmotion ? `${EMOTIONS.find((e) => e.code === repeatedEmotion[0])?.emoji ?? "•"} ${EMOTIONS.find((e) => e.code === repeatedEmotion[0])?.label ?? repeatedEmotion[0]}` : "조금 더 지켜볼게요"}</strong>
+                  <p>{repeatedEmotion ? "반복되는 감정은 나를 돌보라는 작은 신호일 수 있어요." : "아직 반복 패턴을 말하기엔 기록이 적어요."}</p>
+                </article>
+                <article className="diary-card report-reading-card">
+                  <span>회복된 감정</span>
+                  <strong>{streak > 0 ? `연속 ${streak}일 기록` : "기록 준비 중"}</strong>
+                  <p>{recoveryHint}</p>
+                </article>
+              </div>
+
+              <div className="diary-card report-ai-summary">
+                <p className="report-ai-summary__title">AI가 요약한 감정 흐름</p>
+                <p>
+                  {topEmotion
+                    ? `${t(`report.periodLabel.${period}` as DictKey)} 동안 ${topEmotion.label} 감정이 가장 자주 보였어요. 기록을 단정하지 않고, 오늘의 나를 천천히 살피는 방향으로 이어가면 좋아요.`
+                    : "아직 분석할 기록이 충분하지 않아요. 오늘의 짧은 한 줄부터 남겨보세요."}
+                </p>
+              </div>
+
+              <div className="report-visual-grid">
+                <div className="diary-card p-5 report-donut-card">
+                  <p className="text-sm font-medium mb-4 opacity-70">감정 도넛</p>
+                  <div className="report-donut" style={{ background: `conic-gradient(var(--soft-accent, #d98e73) 0 ${topEmotionPct}%, rgba(222, 204, 183, 0.48) ${topEmotionPct}% 100%)` }}>
+                    <div>
+                      <strong>{topEmotionPct}%</strong>
+                      <span>{topEmotion?.label ?? "감정"}</span>
+                    </div>
+                  </div>
+                </div>
+
               {/* 감정 분포 바 차트 */}
-              <div className="diary-card p-5">
+              <div className="diary-card p-5 report-distribution-card">
                 <p className="text-sm font-medium mb-4 opacity-70">{t("report.distribution")}</p>
                 <div className="space-y-3">
                   {sorted.map(([code, count], rank) => {
@@ -217,9 +259,10 @@ export default function ReportPage() {
                   })}
                 </div>
               </div>
+              </div>
 
               {/* 일별 기록 (최근 2주) */}
-              <div className="diary-card p-5">
+              <div className="diary-card p-5 report-calendar-card">
                 <p className="text-sm font-medium mb-4 opacity-70">{t("report.twoWeeks")}</p>
                 <div className="report-days">
                   {dailyCounts.map((d, i) => (

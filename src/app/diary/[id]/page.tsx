@@ -144,7 +144,7 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
   const weatherLabel = weather?.label || diary.weather_label;
 
   return (
-    <div className="pt-2">
+    <div className="diary-detail-reader pt-2">
       <button
         onClick={() => router.push("/diaries")}
         className="text-sm opacity-40 mb-6 hover:opacity-70"
@@ -152,8 +152,14 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
         ← {t("common.toBook")}
       </button>
 
+      <section className="diary-detail-reader__head">
+        <p className="diary-detail-reader__eyebrow">오늘의 기록을 다시 펼쳐요</p>
+        <h1>내가 남긴 하루와 도착한 답장</h1>
+        <p>{dateStr}</p>
+      </section>
+
       {/* 감정 태그 */}
-      <div className="flex gap-2 mb-3 flex-wrap">
+      <div className="diary-detail-reader__tags flex gap-2 mb-3 flex-wrap">
         {weatherLabel && (
           <span className="text-sm px-3 py-1 rounded-full text-white" style={{ background: "var(--cloth-indigo)" }}>
             {weather?.emoji} {weatherLabel}
@@ -191,8 +197,9 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
         })()}
       </div>
 
-      {/* 일기 본문 */}
-      <div className="diary-card p-5 mb-4">
+      <section className="diary-detail-reader__book">
+        {/* 일기 본문 */}
+      <article className="diary-card p-5 mb-4 diary-detail-reader__page diary-detail-reader__page--mine">
         <div className="flex items-center justify-between mb-3">
           <p className="text-xs opacity-40">{dateStr}</p>
           <div className="flex gap-3">
@@ -249,7 +256,38 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
             {diary.content}
           </p>
         )}
-      </div>
+      </article>
+
+      <article className="diary-card p-5 mb-4 diary-detail-reader__page diary-detail-reader__page--reply">
+        <p className="diary-detail-reader__page-label">도착한 답장</p>
+        {reply ? (
+          <>
+            <ReplyCard
+              content={reply.content}
+              persona={reply.persona}
+            />
+            <AIInsightBadge insight={reply.persona === "operator_voice" ? null : diary.ai_insight} />
+            <div className="mt-4">
+              <FeedbackButtons replyId={reply.id} onSubmit={handleFeedback} />
+            </div>
+            <div className="mt-2">
+              <ReportButton targetType="REPLY" targetId={reply.id} />
+            </div>
+          </>
+        ) : pendingOwnerRequest ? (
+          <div className="diary-detail-reader__pending">
+            <p>참이가 직접 읽는 중이에요 💌</p>
+            <span>AI 답글이 아니라 운영자가 직접 남기는 답글이에요.</span>
+            <span>도착 예정: {formatOwnerDueAt(pendingOwnerRequest.reply_due_at)}</span>
+          </div>
+        ) : (
+          <div className="diary-detail-reader__pending">
+            <p>아직 답장이 도착하지 않았어요.</p>
+            <span>잠시 뒤 다시 펼쳐보면 따뜻한 답장이 도착해 있을 거예요.</span>
+          </div>
+        )}
+      </article>
+      </section>
 
       {/* 삭제 확인 */}
       <ConfirmDialog
@@ -278,32 +316,6 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
         </div>
       )}
 
-      {/* 답글 */}
-      {reply && (
-        <>
-          <ReplyCard
-            content={reply.content}
-            persona={reply.persona}
-          />
-          <AIInsightBadge insight={reply.persona === "operator_voice" ? null : diary.ai_insight} />
-          <div className="mt-4">
-            <FeedbackButtons replyId={reply.id} onSubmit={handleFeedback} />
-          </div>
-          <div className="mt-2">
-            <ReportButton targetType="REPLY" targetId={reply.id} />
-          </div>
-        </>
-      )}
-
-      {!reply && pendingOwnerRequest && (
-        <div className="diary-card p-5 text-center">
-          <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>참이가 직접 읽는 중이에요 💌</p>
-          <p className="text-xs mt-2 leading-relaxed" style={{ color: "var(--text-muted)" }}>
-            AI 답글이 아니라 운영자가 직접 남기는 답글이에요.
-            <span className="block mt-1">도착 예정: {formatOwnerDueAt(pendingOwnerRequest.reply_due_at)}</span>
-          </p>
-        </div>
-      )}
     </div>
   );
 }

@@ -1,46 +1,27 @@
 "use client";
 
 /**
- * 나의 도감 — 나를 알아가는 작은 질문들. (레퍼런스 UI 반영 v2)
- * ① 오늘의 질문 히어로 카드: 질문 크게 + "나를 더 깊이 이해하는 시간" + 진행(n/100) + 🔥 연속 기록.
- * ② 나의 답변 카드: 자유 입력 → [도감에 기록하기] CTA, "다른 질문 보기 ›".
- * ③ 최근 기록: 날짜와 함께 최근에 답한 질문이 쌓임. [전체 보기]로 전체 목록(수정 가능) 펼침.
+ * 나의 도감 — 나를 알아가는 공간.
+ * ① 100문 100답: 진행 바 + "오늘의 질문" 1개 카드(미답변 중 날짜 시드로 결정적 선택,
+ *    "다른 질문 보기"로 셔플 가능) + 내 답 모아보기(답한 질문 펼침/수정).
+ * ② 재미 테스트: 앞으로 열릴 자리 — 준비 중 카드 그리드.
  *
- * 저장: localStorage v3 — { text, at(ISO) } 형태로 날짜를 함께 기록해 연속 일수를 계산.
- *       v2(문자열) 데이터는 첫 로드 시 자동 마이그레이션. 계정 동기화는 후속 작업.
+ * 저장: 현재 localStorage (기기 저장). 계정 동기화는 백엔드 테이블/AP I 추가가 필요한
+ * 후속 작업으로, 화면에 "이 기기에만 저장" 안내를 명시해 기대치를 관리한다.
  */
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { DEX_QUESTIONS } from "@/lib/dex/questions";
 
-const STORAGE_KEY = "dex_answers_v3";
-const LEGACY_KEY = "dex_answers_v2";
+const STORAGE_KEY = "dex_answers_v2"; // 질문 세트 교체 시 버전 업 — 인덱스 기반 답 매칭이 어긋나지 않게
 
-interface AnswerRecord {
-  text: string;
-  at: string; // ISO 저장 시각 — 최근 기록/연속 일수 계산용
-}
-
-type Answers = Record<number, AnswerRecord>;
+type Answers = Record<number, string>; // 질문 인덱스 → 답
 
 function loadAnswers(): Answers {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as Answers;
-
-    // v2(문자열) → v3 마이그레이션: 날짜 정보가 없으므로 today로 보정하지 않고 빈 날짜 대신 저장 시점 기록
-    const legacy = localStorage.getItem(LEGACY_KEY);
-    if (legacy) {
-      const old = JSON.parse(legacy) as Record<number, string>;
-      const migrated: Answers = {};
-      for (const [k, v] of Object.entries(old)) {
-        if (typeof v === "string" && v.trim()) migrated[Number(k)] = { text: v, at: "" };
-      }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
-      return migrated;
-    }
-    return {};
+    return raw ? (JSON.parse(raw) as Answers) : {};
   } catch {
     return {};
   }
@@ -56,52 +37,18 @@ function saveAnswers(a: Answers) {
 
 /** 미답변 질문 중 날짜 시드로 하나 선택 (매일 같은 질문, 답하면 다음으로) */
 function pickToday(answers: Answers, offset: number): number | null {
-  const unanswered = DEX_QUESTIONS.map((_, i) => i).filter((i) => !answers[i]?.text?.trim());
+  const unanswered = DEX_QUESTIONS.map((_, i) => i).filter((i) => !answers[i]?.trim());
   if (unanswered.length === 0) return null;
   const today = new Date();
   const seed = today.getFullYear() * 1000 + today.getMonth() * 50 + today.getDate();
   return unanswered[(seed + offset) % unanswered.length];
 }
 
-function dayKey(iso: string): string {
-  const d = new Date(iso);
-  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-}
-
-/** 오늘(또는 어제)부터 거꾸로 이어지는 답변 일수 */
-function calcStreak(answers: Answers): number {
-  const days = new Set(
-    Object.values(answers)
-      .filter((a) => a.at)
-      .map((a) => dayKey(a.at)),
-  );
-  if (days.size === 0) return 0;
-
-  const cursor = new Date();
-  // 오늘 아직 안 썼으면 어제부터 센다
-  if (!days.has(dayKey(cursor.toISOString()))) cursor.setDate(cursor.getDate() - 1);
-
-  let streak = 0;
-  while (days.has(`${cursor.getFullYear()}-${cursor.getMonth()}-${cursor.getDate()}`)) {
-    streak += 1;
-    cursor.setDate(cursor.getDate() - 1);
-  }
-  return streak;
-}
-
-function formatDate(iso: string, lang: string): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return lang === "en"
-    ? d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
-    : `${d.getMonth() + 1}월 ${d.getDate()}일`;
-}
-
 const UPCOMING_TESTS = ["🎨 나의 감정 팔레트", "🌙 수면 성향 테스트", "🧭 위로 언어 찾기", "🍀 행운의 루틴"];
 
 export default function DexPage() {
   const router = useRouter();
-  const { t, language } = useI18n();
+  const { t } = useI18n();
   const [answers, setAnswers] = useState<Answers>({});
   const [hydrated, setHydrated] = useState(false);
   const [offset, setOffset] = useState(0);
@@ -119,26 +66,14 @@ export default function DexPage() {
   }, []);
 
   const answeredCount = useMemo(
-    () => Object.values(answers).filter((v) => v.text?.trim()).length,
+    () => Object.values(answers).filter((v) => v?.trim()).length,
     [answers],
   );
-  const streak = useMemo(() => calcStreak(answers), [answers]);
   const todayIdx = useMemo(() => (hydrated ? pickToday(answers, offset) : null), [answers, offset, hydrated]);
-
-  /** 최근 기록: 저장 시각 내림차순 상위 5개 */
-  const recent = useMemo(
-    () =>
-      Object.entries(answers)
-        .filter(([, a]) => a.text?.trim())
-        .sort(([, a], [, b]) => (b.at || "").localeCompare(a.at || ""))
-        .slice(0, 5)
-        .map(([idx, a]) => ({ idx: Number(idx), ...a })),
-    [answers],
-  );
 
   const submitAnswer = () => {
     if (todayIdx === null || draft.trim().length === 0) return;
-    const next: Answers = { ...answers, [todayIdx]: { text: draft.trim(), at: new Date().toISOString() } };
+    const next = { ...answers, [todayIdx]: draft.trim() };
     setAnswers(next);
     saveAnswers(next);
     setDraft("");
@@ -148,120 +83,70 @@ export default function DexPage() {
 
   const saveEdit = () => {
     if (editingIdx === null) return;
-    const prev = answers[editingIdx];
-    const next: Answers = {
-      ...answers,
-      [editingIdx]: { text: editDraft.trim(), at: prev?.at || new Date().toISOString() },
-    };
+    const next = { ...answers, [editingIdx]: editDraft.trim() };
     setAnswers(next);
     saveAnswers(next);
     setEditingIdx(null);
   };
 
   return (
-    <div className="pt-2 pb-8 dex2">
+    <div className="dex-page pt-2 pb-8">
       <div className="flex items-center justify-between mb-1">
         <button onClick={() => router.push("/")} className="text-sm opacity-40 hover:opacity-70">
           ← {t("common.back.home")}
         </button>
-        <h1 className="font-serif text-xl" style={{ color: "var(--deep-gray)" }}>🌱 {t("dex.title")}</h1>
+        <h1 className="font-serif text-xl" style={{ color: "var(--deep-gray)" }}>{t("dex.title")}</h1>
         <div className="w-8" />
       </div>
-      <p className="text-center text-sm opacity-45 mb-6">{t("dex.subtitle")}</p>
+      <p className="text-center text-xs opacity-40 mb-6">{t("dex.subtitle")}</p>
 
-      {/* ① 오늘의 질문 히어로 */}
-      <section className="dex2-hero mb-4" aria-labelledby="dex-today-q">
-        {hydrated && todayIdx === null ? (
-          <div role="status">
-            <p className="dex2-hero__eyebrow">{t("dex.todayQ")}</p>
-            <p id="dex-today-q" className="dex2-hero__q">🏆 {t("dex.allAnswered")}</p>
+      {/* ① 100문 100답 */}
+      <section className="diary-card p-5 mb-4 dex-page__collection">
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-sm font-medium" style={{ color: "var(--deep-gray)" }}>{t("dex.q100")}</p>
+          <span className="text-xs opacity-45">{t("dex.progress", { n: answeredCount })}</span>
+        </div>
+        <p className="text-xs opacity-45 mb-3">{t("dex.q100Desc")}</p>
+
+        <div className="dex-progress" role="progressbar" aria-valuenow={answeredCount} aria-valuemin={0} aria-valuemax={100}>
+          <div className="dex-progress__fill" style={{ width: `${answeredCount}%` }} />
+        </div>
+
+        {hydrated && (todayIdx === null ? (
+          <div className="dex-complete mt-4" role="status">
+            <p className="text-sm" style={{ color: "var(--deep-gray)" }}>🏆 {t("dex.allAnswered")}</p>
           </div>
         ) : (
-          <>
-            <p className="dex2-hero__eyebrow">
-              {t("dex.todayQ")}{todayIdx !== null ? ` · #${todayIdx + 1}` : ""}
-            </p>
-            <p id="dex-today-q" className="dex2-hero__q">
-              {todayIdx !== null ? DEX_QUESTIONS[todayIdx] : "…"}
-            </p>
-            <p className="dex2-hero__sub">{t("dex.heroSub")}</p>
-          </>
-        )}
-        <div className="dex2-hero__meta">
-          <span className="dex2-hero__count">{t("dex.count", { n: answeredCount })}</span>
-          <div
-            className="dex2-hero__bar"
-            role="progressbar"
-            aria-label={t("dex.q100")}
-            aria-valuenow={answeredCount}
-            aria-valuemin={0}
-            aria-valuemax={100}
-          >
-            <div className="dex2-hero__fill" style={{ width: `${answeredCount}%` }} />
+          <div className="dex-today mt-4">
+            <p className="dex-today__eyebrow">{t("dex.todayQ")} · #{todayIdx + 1}</p>
+            <p className="dex-today__q">{DEX_QUESTIONS[todayIdx]}</p>
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value.slice(0, 500))}
+              placeholder={t("dex.answerPlaceholder")}
+              rows={3}
+              className="w-full px-4 py-3 text-sm outline-none resize-none mt-3"
+              style={{ borderRadius: "var(--radius-md)", background: "var(--paper-white)", color: "var(--text-primary)" }}
+            />
+            <div className="flex gap-2 mt-3">
+              <button onClick={submitAnswer} disabled={draft.trim().length === 0} className="btn-primary flex-1 py-3 text-sm disabled:opacity-40">
+                {savedFlash ? `✓ ${t("dex.answered")}` : t("dex.saveAnswer")}
+              </button>
+              <button onClick={() => { setOffset((o) => o + 1); setDraft(""); }} className="px-4 py-3 text-sm rounded-full" style={{ background: "var(--warm-bg)", color: "var(--deep-gray)" }}>
+                {t("dex.skip")}
+              </button>
+            </div>
           </div>
-          {streak > 0 && <span className="dex2-chip">🔥 {t("dex.streak", { n: streak })}</span>}
-        </div>
-      </section>
+        ))}
 
-      {/* ② 나의 답변 */}
-      {hydrated && todayIdx !== null && (
-        <section className="diary-card p-5 mb-4">
-          <p className="text-sm font-medium mb-2" style={{ color: "var(--deep-gray)" }}>{t("dex.myAnswer")}</p>
-          <textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value.slice(0, 500))}
-            placeholder={t("dex.answerHint")}
-            rows={4}
-            aria-label={t("dex.myAnswer")}
-            className="w-full px-4 py-3 text-sm outline-none resize-none"
-            style={{ borderRadius: "var(--radius-md)", background: "var(--paper-white)", border: "1px solid var(--border-subtle)", color: "var(--text-primary)" }}
-          />
-          <p className="text-right text-xs opacity-40 mt-1">{draft.length} / 500</p>
-          <button
-            onClick={submitAnswer}
-            disabled={draft.trim().length === 0}
-            className="btn-primary w-full py-3 text-sm disabled:opacity-40 mt-2"
-          >
-            {savedFlash ? `✓ ${t("dex.answered")}` : `🪶 ${t("dex.record")}`}
-          </button>
-          <button
-            onClick={() => { setOffset((o) => o + 1); setDraft(""); }}
-            className="block mx-auto mt-3 text-sm opacity-55 hover:opacity-85"
-          >
-            {t("dex.skip")} ›
-          </button>
-        </section>
-      )}
-
-      {/* ③ 최근 기록 */}
-      <section className="diary-card p-5 mb-4">
-        <div className="flex items-center justify-between mb-1">
-          <p className="text-sm font-medium" style={{ color: "var(--deep-gray)" }}>{t("dex.recent")}</p>
-          <button onClick={() => setBrowsing((v) => !v)} className="text-xs opacity-55 hover:opacity-85">
-            {browsing ? t("dex.browseClose") : `${t("dex.viewAll")} ›`}
-          </button>
-        </div>
-        <p className="text-xs opacity-45 mb-3">{t("dex.recentDesc")}</p>
-
-        {!browsing && (
-          recent.length === 0 ? (
-            <p className="text-sm opacity-45">{t("dex.notAnswered")}</p>
-          ) : (
-            <ul className="dex2-recent">
-              {recent.map((r) => (
-                <li key={r.idx} className="dex2-recent__item">
-                  <span className="dex2-recent__date">{formatDate(r.at, language)}</span>
-                  <span className="dex2-recent__q">{DEX_QUESTIONS[r.idx]}</span>
-                </li>
-              ))}
-            </ul>
-          )
-        )}
+        <button onClick={() => setBrowsing((v) => !v)} className="text-xs underline opacity-50 hover:opacity-80 mt-4">
+          {browsing ? t("dex.browseClose") : t("dex.browse")}
+        </button>
 
         {browsing && (
-          <div className="dex-list mt-1">
+          <div className="dex-list mt-3">
             {DEX_QUESTIONS.map((q, i) => {
-              const a = answers[i]?.text?.trim();
+              const a = answers[i]?.trim();
               return (
                 <div key={i} className={`dex-list__item ${a ? "dex-list__item--done" : ""}`}>
                   <p className="dex-list__q">
@@ -273,7 +158,6 @@ export default function DexPage() {
                         value={editDraft}
                         onChange={(e) => setEditDraft(e.target.value.slice(0, 500))}
                         rows={2}
-                        aria-label={`#${i + 1}`}
                         className="w-full px-3 py-2 text-sm outline-none resize-none"
                         style={{ borderRadius: "var(--radius-md)", background: "var(--paper-white)", color: "var(--text-primary)" }}
                       />
@@ -298,11 +182,11 @@ export default function DexPage() {
           </div>
         )}
 
-        <p className="text-xs opacity-35 mt-4">{t("dex.localNote")}</p>
+        <p className="text-[11px] opacity-35 mt-4">{t("dex.localNote")}</p>
       </section>
 
-      {/* ④ 재미 테스트 (준비 중) */}
-      <section className="diary-card p-5">
+      {/* ② 재미 테스트 (준비 중) */}
+      <section className="diary-card p-5 dex-page__tests">
         <p className="text-sm font-medium mb-1" style={{ color: "var(--deep-gray)" }}>{t("dex.tests")}</p>
         <p className="text-xs opacity-45 mb-4">{t("dex.testsDesc")}</p>
         <div className="dex-tests">
