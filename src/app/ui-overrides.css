@@ -5177,3 +5177,95 @@ html[lang="en"] .home-shell .home-quote-card__text.hero-quote {
     left: 35px;
   }
 }
+
+
+/* --------------------------------------------------------------------------
+   Mobile navigation/account fixes
+   - Mobile uses BottomNav for primary navigation.
+   - The top account bar should not stay sticky while scrolling.
+   - Keep notifications/profile visible, with logout inside the profile menu.
+   -------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+  .chami-global-nav {
+    position: static !important;
+    top: auto !important;
+    z-index: 30;
+  }
+
+  .chami-global-nav + .site-main {
+    padding-top: 16px;
+  }
+
+  .chami-global-nav .chami-home-nav__inner {
+    width: min(100% - 28px, 100%);
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+  }
+
+  .chami-global-nav .chami-home-nav__logo {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: clamp(22px, 7vw, 28px);
+  }
+
+  .chami-global-nav .chami-home-nav__links {
+    display: none !important;
+  }
+
+  .chami-global-nav .chami-home-nav__actions {
+    flex: 0 0 auto;
+    gap: 6px;
+  }
+
+  .chami-global-nav .chami-home-nav__icon {
+    position: relative;
+    display: inline-grid !important;
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+    flex: 0 0 40px;
+    place-items: center;
+    border: 1px solid rgba(74, 52, 40, 0.1);
+    background: rgba(255, 255, 255, 0.58);
+  }
+
+  .chami-global-nav .chami-home-nav__icon--support {
+    display: none !important;
+  }
+
+  .chami-global-nav .chami-profile-menu__button {
+    min-height: 40px;
+    gap: 0;
+    padding: 2px;
+    border: 1px solid rgba(74, 52, 40, 0.1);
+    background: rgba(255, 255, 255, 0.58);
+  }
+
+  .chami-global-nav .chami-profile-menu__avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .chami-global-nav .chami-profile-menu__name,
+  .chami-global-nav .chami-profile-menu__button > svg {
+    display: none;
+  }
+
+  .chami-global-nav .chami-profile-menu__backdrop {
+    z-index: 70;
+  }
+
+  .chami-global-nav .chami-profile-menu__panel {
+    position: fixed;
+    top: calc(64px + env(safe-area-inset-top, 0px));
+    right: 14px;
+    z-index: 80;
+    min-width: 184px;
+  }
+}

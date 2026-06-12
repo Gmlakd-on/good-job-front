@@ -175,13 +175,13 @@ export default function Header() {
             <>
               <Link
                 href="/notifications"
-                className="chami-home-nav__icon"
+                className="chami-home-nav__icon chami-home-nav__icon--notifications"
                 aria-label={unreadCount > 0 ? t("nav.unread", { n: unreadCount }) : t("nav.notifications")}
               >
                 <BellIcon />
                 {unreadCount > 0 && <span className="chami-home-nav__badge">{unreadCount > 9 ? "9+" : unreadCount}</span>}
               </Link>
-              <Link href="/support" className="chami-home-nav__icon" aria-label="도움말">
+              <Link href="/support" className="chami-home-nav__icon chami-home-nav__icon--support" aria-label="도움말">
                 <HelpIcon />
               </Link>
 
@@ -204,11 +204,14 @@ export default function Header() {
                   <>
                     <div className="chami-profile-menu__backdrop" onClick={() => setMenuOpen(false)} />
                     <div className="chami-profile-menu__panel">
+                      <Link href="/notifications" onClick={() => setMenuOpen(false)}>
+                        {t("nav.notifications")}{unreadCount > 0 ? ` (${unreadCount > 9 ? "9+" : unreadCount})` : ""}
+                      </Link>
                       <Link href="/settings" onClick={() => setMenuOpen(false)}>
-                        마이페이지
+                        {t("nav.settings")}
                       </Link>
                       <button type="button" onClick={handleLogout}>
-                        로그아웃
+                        {t("nav.logout")}
                       </button>
                     </div>
                   </>
