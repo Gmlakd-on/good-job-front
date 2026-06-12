@@ -238,7 +238,7 @@ body::before {
 .school-shell::before { display: none; }
 
 /* ═══════════════════════════════════════════════
-   Site Header — Quiet, confident
+   Site Header — Clear desktop navigation
    ═══════════════════════════════════════════════ */
 
 .site-header {
@@ -246,6 +246,7 @@ body::before {
   top: 0;
   z-index: 40;
   transform: translateY(0);
+  box-shadow: 0 1px 0 rgba(74, 52, 40, 0.03);
   transition: transform 220ms ease, opacity 220ms ease, background 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
   will-change: transform;
 }
@@ -257,24 +258,115 @@ body::before {
 }
 
 .site-header__inner {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
+  gap: 20px;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1180px;
+  min-height: 68px;
   margin: 0 auto;
-  padding: 8px 20px;
+  padding: 10px 22px;
+}
+
+.site-header__brand {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: 42px;
+  color: var(--stamp-vermilion);
+  font-family: "Noto Serif KR", serif;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 .site-header__nav {
   display: none;
   align-items: center;
-  gap: 24px;
+  justify-self: center;
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  background: rgba(249, 243, 232, 0.78);
+  box-shadow: 0 8px 24px rgba(42, 36, 32, 0.05);
+}
+
+.site-header__nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 15px;
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  transition: background var(--duration-fast) ease, color var(--duration-fast) ease, transform var(--duration-fast) ease;
+}
+
+.site-header__nav-link:hover {
+  background: rgba(254, 252, 248, 0.86);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.site-header__nav-link--active {
+  background: var(--ink-dark);
+  color: var(--paper-white);
+  box-shadow: 0 6px 14px rgba(42, 36, 32, 0.14);
+}
+
+.site-header__actions {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 8px;
+}
+
+.site-header__icon-button,
+.site-header__profile-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: rgba(249, 243, 232, 0.54);
+  color: var(--text-secondary);
+  transition: background var(--duration-fast) ease, border-color var(--duration-fast) ease, transform var(--duration-fast) ease;
+}
+
+.site-header__icon-button:hover,
+.site-header__profile-button:hover {
+  border-color: var(--border-subtle);
+  background: var(--paper-cream);
+  transform: translateY(-1px);
+}
+
+.site-header__profile-button {
+  background: var(--paper-aged);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 800;
 }
 
 @media (min-width: 768px) {
-  .site-header__inner { padding: 9px 40px; }
+  .site-header__inner { padding: 10px 40px; }
   .site-header__nav { display: flex; }
+}
+
+@media (max-width: 767px) {
+  .site-header__inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 58px;
+    padding: 8px 16px;
+  }
 }
 
 /* ═══════════════════════════════════════════════
@@ -718,6 +810,17 @@ button.book-cover { cursor: pointer; }
   font-weight: 600;
 }
 
+.book-reader__meta--persona {
+  justify-content: flex-start;
+}
+
+.book-reader__persona-name {
+  font-family: 'Noto Serif KR', serif;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 700;
+}
+
 .book-reader__content,
 .book-reader__reply {
   color: var(--deep-gray);
@@ -742,6 +845,11 @@ button.book-cover { cursor: pointer; }
   background: var(--warm-highlight);
   padding: 4px 9px;
   font-size: 12px;
+}
+
+.book-reader__emotion--weather {
+  background: rgba(90, 110, 138, 0.16);
+  color: var(--cloth-indigo);
 }
 
 .book-reader__empty {

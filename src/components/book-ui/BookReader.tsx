@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { formatFullDate } from "@/lib/date";
-import { EMOTIONS, PERSONAS } from "@/types";
+import { EMOTIONS, PERSONAS, WEATHER_OPTIONS } from "@/types";
 
 interface BookReaderEmotion {
   emotion_code?: string;
@@ -19,6 +19,8 @@ export interface BookReaderEntry {
   id: string;
   content: string;
   created_at: string;
+  weather_code?: string | null;
+  weather_label?: string | null;
   diary_emotions?: BookReaderEmotion[];
   replies?: BookReaderReply[];
 }
@@ -34,7 +36,15 @@ function getEmotionLabel(emotion: BookReaderEmotion): string {
 
 function getPersonaLabel(personaCode?: string): string {
   const persona = PERSONAS.find((item) => item.code === personaCode);
-  return persona ? `${persona.emoji} ${persona.name}` : "AI 답장";
+  return persona?.name || "답장";
+}
+
+function getWeatherLabel(weatherCode?: string | null, weatherLabel?: string | null): string | null {
+  if (!weatherCode && !weatherLabel) return null;
+  const found = WEATHER_OPTIONS.find((item) => item.code === weatherCode);
+  const label = found?.label || weatherLabel;
+  if (!label) return null;
+  return `${found?.emoji ? `${found.emoji} ` : ""}${label}`;
 }
 
 export default function BookReader({ entries }: BookReaderProps) {
@@ -46,6 +56,7 @@ export default function BookReader({ entries }: BookReaderProps) {
 
   const entry = pages[pageIndex];
   const reply = entry?.replies?.[0];
+  const weatherLabel = getWeatherLabel(entry?.weather_code, entry?.weather_label);
   const hasPrevious = pageIndex > 0;
   const hasNext = pageIndex < pages.length - 1;
 
@@ -66,9 +77,14 @@ export default function BookReader({ entries }: BookReaderProps) {
             <time>{formatFullDate(entry.created_at)}</time>
           </div>
 
-          {entry.diary_emotions && entry.diary_emotions.length > 0 && (
-            <div className="book-reader__emotion-row" aria-label="선택한 감정">
-              {entry.diary_emotions.map((emotion) => (
+          {(weatherLabel || (entry.diary_emotions && entry.diary_emotions.length > 0)) && (
+            <div className="book-reader__emotion-row" aria-label="선택한 날씨와 감정">
+              {weatherLabel && (
+                <span className="book-reader__emotion book-reader__emotion--weather">
+                  {weatherLabel}
+                </span>
+              )}
+              {entry.diary_emotions?.map((emotion) => (
                 <span key={`${entry.id}-${emotion.emotion_code || emotion.emotion_label}`} className="book-reader__emotion">
                   {getEmotionLabel(emotion)}
                 </span>
@@ -81,9 +97,8 @@ export default function BookReader({ entries }: BookReaderProps) {
         </article>
 
         <aside className="book-reader__page book-reader__page--reply">
-          <div className="book-reader__meta">
-            <span className="book-reader__label">읽어준 사람</span>
-            <span>{getPersonaLabel(reply?.persona)}</span>
+          <div className="book-reader__meta book-reader__meta--persona">
+            <span className="book-reader__persona-name">{getPersonaLabel(reply?.persona)}</span>
           </div>
 
           {reply?.content ? (

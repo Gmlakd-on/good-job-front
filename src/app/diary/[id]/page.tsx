@@ -13,13 +13,15 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import AIInsightBadge from "@/components/AIInsightBadge";
 import { useToast } from "@/components/Toast";
 import { formatFullDate } from "@/lib/date";
-import { EMOTIONS, PERSONAS, type AiInsight } from "@/types";
+import { EMOTIONS, PERSONAS, WEATHER_OPTIONS, type AiInsight } from "@/types";
 
 interface DiaryDetail {
   id: string;
   content: string;
   status: string;
   risk_level: string;
+  weather_code?: string | null;
+  weather_label?: string | null;
   created_at: string;
   diary_emotions: { emotion_code: string; emotion_label: string }[];
   replies: { id: string; content: string; persona: string; risk_level: string }[];
@@ -124,6 +126,10 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
 
   const dateStr = formatFullDate(diary.created_at);
   const reply = diary.replies?.[0];
+  const weather = diary.weather_code
+    ? WEATHER_OPTIONS.find((item) => item.code === diary.weather_code)
+    : null;
+  const weatherLabel = weather?.label || diary.weather_label;
 
   return (
     <div className="pt-2">
@@ -136,6 +142,11 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
 
       {/* 감정 태그 */}
       <div className="flex gap-2 mb-3 flex-wrap">
+        {weatherLabel && (
+          <span className="text-sm px-3 py-1 rounded-full text-white" style={{ background: "var(--cloth-indigo)" }}>
+            {weather?.emoji} {weatherLabel}
+          </span>
+        )}
         {diary.diary_emotions?.map((e) => {
           const found = EMOTIONS.find((em) => em.code === e.emotion_code);
           return (

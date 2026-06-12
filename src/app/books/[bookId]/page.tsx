@@ -19,6 +19,8 @@ interface DiaryEntry {
   id: string;
   content: string;
   created_at: string;
+  weather_code?: string | null;
+  weather_label?: string | null;
   diary_emotions: { emotion_code?: string; emotion_label: string }[];
   replies?: { content?: string; persona?: string }[];
 }

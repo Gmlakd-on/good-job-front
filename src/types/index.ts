@@ -55,16 +55,46 @@ export interface EmotionOption {
 }
 
 export const EMOTIONS: EmotionOption[] = [
-  { code: "joy",        label: "기쁨",   emoji: "😊" },
-  { code: "calm",       label: "평온",   emoji: "🍃" },
-  { code: "anxiety",    label: "불안",   emoji: "😰" },
-  { code: "sadness",    label: "슬픔",   emoji: "🥲" },
-  { code: "loneliness", label: "외로움", emoji: "🌙" },
-  { code: "lethargy",   label: "무기력", emoji: "😶" },
-  { code: "anger",      label: "분노",   emoji: "😤" },
-  { code: "regret",     label: "후회",   emoji: "💭" },
-  { code: "gratitude",  label: "감사",   emoji: "🙏" },
-  { code: "exhaustion", label: "지침",   emoji: "😮‍💨" },
+  // 긍정 감정 10개
+  { code: "joy",          label: "기쁨",   emoji: "😊" },
+  { code: "happiness",    label: "행복",   emoji: "😄" },
+  { code: "calm",         label: "평온",   emoji: "🍃" },
+  { code: "gratitude",    label: "감사",   emoji: "🙏" },
+  { code: "excitement",   label: "설렘",   emoji: "✨" },
+  { code: "pride",        label: "뿌듯함", emoji: "🌟" },
+  { code: "hope",         label: "희망",   emoji: "🌱" },
+  { code: "love",         label: "사랑",   emoji: "💛" },
+  { code: "satisfaction", label: "만족",   emoji: "🙂" },
+  { code: "comfort",      label: "편안함", emoji: "🫖" },
+
+  // 부정 감정 10개
+  { code: "sadness",      label: "슬픔",   emoji: "🥲" },
+  { code: "anxiety",      label: "불안",   emoji: "😰" },
+  { code: "loneliness",   label: "외로움", emoji: "🌙" },
+  { code: "lethargy",     label: "무기력", emoji: "😶" },
+  { code: "exhaustion",   label: "지침",   emoji: "😮‍💨" },
+  { code: "anger",        label: "분노",   emoji: "😤" },
+  { code: "irritation",   label: "짜증",   emoji: "😣" },
+  { code: "frustration",  label: "답답함", emoji: "🫥" },
+  { code: "regret",       label: "후회",   emoji: "💭" },
+  { code: "fear",         label: "두려움", emoji: "😨" },
+];
+
+export interface WeatherOption {
+  code: string;
+  label: string;
+  emoji: string;
+}
+
+export const WEATHER_OPTIONS: WeatherOption[] = [
+  { code: "sunny",        label: "맑음",      emoji: "☀️" },
+  { code: "partly_cloudy", label: "구름 많음", emoji: "⛅" },
+  { code: "cloudy",       label: "흐림",      emoji: "☁️" },
+  { code: "rainy",        label: "비",        emoji: "🌧️" },
+  { code: "snowy",        label: "눈",        emoji: "❄️" },
+  { code: "windy",        label: "바람",      emoji: "🍃" },
+  { code: "hot",          label: "더움",      emoji: "🔥" },
+  { code: "cold",         label: "추움",      emoji: "🧣" },
 ];
 
 export interface Diary {
@@ -73,6 +103,8 @@ export interface Diary {
   content: string;
   status: DiaryStatus;
   risk_level: RiskLevel;
+  weather_code?: string | null;
+  weather_label?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -159,6 +191,7 @@ export interface AiReplyResult {
 export interface CreateDiaryRequest {
   content: string;
   emotions: { code: string; label: string }[];
+  weather?: { code: string; label: string } | null;
   persona?: string; // v1.0.0: 선택한 페르소나
 }
 

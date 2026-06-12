@@ -10,6 +10,13 @@ import type { User } from "@supabase/supabase-js";
 
 type AuthMode = "login" | "signup";
 
+const PRIMARY_NAV_ITEMS = [
+  { href: "/books", labelKey: "nav.bookshelf", icon: "📚" },
+  { href: "/exchange", labelKey: "nav.exchange", icon: "✉️" },
+  { href: "/report", labelKey: "nav.report", icon: "📊" },
+  { href: "/dex", labelKey: "nav.dexFull", icon: "✦" },
+] as const;
+
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
@@ -100,33 +107,36 @@ export default function Header() {
     <header
       className={`site-header ${navHidden ? "site-header--hidden" : ""}`}
       style={{
-        background: scrolled ? "rgba(254,252,248,0.92)" : "transparent",
-        backdropFilter: scrolled ? "blur(16px)" : "none",
-        borderBottom: scrolled ? "1px solid var(--border-hairline)" : "1px solid transparent",
+        background: scrolled ? "rgba(254,252,248,0.96)" : "rgba(254,252,248,0.9)",
+        backdropFilter: "blur(18px) saturate(1.1)",
+        borderBottom: "1px solid var(--border-hairline)",
       }}
     >
       <div className="site-header__inner">
-        <Link href="/" className="flex items-center gap-1.5" aria-label={t("nav.toHome")}>
-          <span className="font-bold text-base" style={{ color: "var(--stamp-vermilion)", fontFamily: "Noto Serif KR, serif", letterSpacing: "-0.02em" }}>
-            참 잘했어요
-          </span>
+        <Link href="/" className="site-header__brand" aria-label={t("nav.toHome")}>
+          <span>참 잘했어요</span>
         </Link>
 
         {/* 로그인 상태 - 내비 링크 */}
         {user && (
-          <nav className="site-header__nav">
-            <NavLink href="/books" label={t("nav.bookshelf")} />
-            <NavLink href="/exchange" label={t("nav.exchange")} />
-            <NavLink href="/report" label={t("nav.report")} />
-            <NavLink href="/dex" label={t("nav.dexFull")} />
+          <nav className="site-header__nav" aria-label={t("nav.mainMenu")}>
+            {PRIMARY_NAV_ITEMS.map((item) => (
+              <NavLink
+                key={item.href}
+                href={item.href}
+                label={t(item.labelKey)}
+                icon={item.icon}
+                active={pathname.startsWith(item.href)}
+              />
+            ))}
           </nav>
         )}
 
-        <div className="flex items-center gap-2">
+        <div className="site-header__actions">
           {user ? (
             <>
               {/* 알림 아이콘 */}
-              <Link href="/notifications" className="relative flex h-8 w-8 items-center justify-center rounded-md transition-all hover:bg-[rgba(74,52,40,0.04)]"
+              <Link href="/notifications" className="site-header__icon-button"
                 aria-label={unreadCount > 0 ? t("nav.unread", { n: unreadCount }) : t("nav.notifications")}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" style={{ color: "var(--text-secondary)" }}>
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -141,7 +151,7 @@ export default function Header() {
               </Link>
 
               {/* 설정 아이콘 */}
-              <Link href="/settings" className="flex h-8 w-8 items-center justify-center rounded-md transition-all hover:bg-[rgba(74,52,40,0.04)]" aria-label={t("nav.settings")}>
+              <Link href="/settings" className="site-header__icon-button" aria-label={t("nav.settings")}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" style={{ color: "var(--text-secondary)" }}>
                   <circle cx="12" cy="12" r="3" />
                   <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
@@ -151,8 +161,7 @@ export default function Header() {
               {/* 이메일 아바타 드롭다운 */}
               <div className="relative">
                 <button type="button" onClick={() => setMenuOpen(!menuOpen)}
-                  className="flex h-8 w-8 items-center justify-center rounded-md text-xs font-semibold transition-all"
-                  style={{ background: "var(--paper-aged)", color: "var(--text-primary)" }} aria-label={t("nav.menu")}>
+                  className="site-header__profile-button" aria-label={t("nav.menu")}>
                   {user.email?.charAt(0).toUpperCase() || "?"}
                 </button>
                 {menuOpen && (
@@ -167,6 +176,7 @@ export default function Header() {
                       <div className="p-1.5">
                         <MenuLink href="/books" label={t("nav.bookshelf")} onClick={() => setMenuOpen(false)} />
                         <MenuLink href="/exchange" label={t("nav.exchange")} onClick={() => setMenuOpen(false)} />
+                        <MenuLink href="/report" label={t("nav.report")} onClick={() => setMenuOpen(false)} />
                         <MenuLink href="/dex" label={t("nav.dexFull")} onClick={() => setMenuOpen(false)} />
                         <MenuLink href="/notifications" label={unreadCount > 0 ? `${t("nav.notifications")} (${unreadCount})` : t("nav.notifications")} onClick={() => setMenuOpen(false)} />
                         <MenuLink href="/settings" label={t("nav.settings")} onClick={() => setMenuOpen(false)} />
@@ -217,10 +227,25 @@ export default function Header() {
   );
 }
 
-function NavLink({ href, label }: { href: string; label: string }) {
+function NavLink({
+  href,
+  label,
+  icon,
+  active,
+}: {
+  href: string;
+  label: string;
+  icon: string;
+  active: boolean;
+}) {
   return (
-    <Link href={href} className="text-sm font-medium transition-colors hover:opacity-75" style={{ color: "var(--text-secondary)" }}>
-      {label}
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={`site-header__nav-link ${active ? "site-header__nav-link--active" : ""}`}
+    >
+      <span aria-hidden>{icon}</span>
+      <span>{label}</span>
     </Link>
   );
 }

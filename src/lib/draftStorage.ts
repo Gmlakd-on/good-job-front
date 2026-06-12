@@ -6,7 +6,7 @@
  * 서버 autosave(diaryId 기반)와는 별개로 동작한다.
  *
  * 저장 구조:
- *   diary_draft:{bookId} → { content, emotions, persona, editorState, updatedAt }
+ *   diary_draft:{bookId} → { content, emotions, weather, persona, editorState, updatedAt }
  */
 
 const PREFIX = "diary_draft:";
@@ -19,12 +19,18 @@ function hasSavedEditorState(editorState: unknown): boolean {
 }
 
 function hasDraftContent(data: Omit<DraftData, "updatedAt">): boolean {
-  return data.content.trim().length > 0 || hasSavedEditorState(data.editorState);
+  return (
+    data.content.trim().length > 0 ||
+    (Array.isArray(data.emotions) && data.emotions.length > 0) ||
+    Boolean(data.weather) ||
+    hasSavedEditorState(data.editorState)
+  );
 }
 
 export interface DraftData {
   content: string;
   emotions: string[];
+  weather?: string | null;
   persona: string;
   editorState?: unknown;
   updatedAt: number;

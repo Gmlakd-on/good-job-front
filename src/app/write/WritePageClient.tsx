@@ -9,6 +9,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { loadDraft, clearDraft, startDraftTimer } from "@/lib/draftStorage";
 import { saveLastBookId, clearLastBookId } from "@/lib/lastBook";
 import EmotionSelector from "@/components/EmotionSelector";
+import WeatherSelector from "@/components/WeatherSelector";
 import PersonaSelector from "@/components/PersonaSelector";
 import ReplyCard from "@/components/ReplyCard";
 import FeedbackButtons from "@/components/FeedbackButtons";
@@ -21,7 +22,7 @@ import ImmersiveEditor from "@/components/editor/ImmersiveEditor";
 import type { EditorSavePayload } from "@/lib/editor/serializer";
 import BookCover from "@/components/book-ui/BookCover";
 import { canWriteBook, type DiaryBook } from "@/components/book-ui/bookTypes";
-import { EMOTIONS, type AiInsight } from "@/types";
+import { EMOTIONS, WEATHER_OPTIONS, type AiInsight } from "@/types";
 import LoadingStep from "./_components/LoadingStep";
 import SelectedTags from "./_components/SelectedTags";
 
@@ -36,6 +37,7 @@ export default function WritePage() {
   const [book, setBook] = useState<DiaryBook | null>(null);
   const [step, setStep] = useState<Step>("emotion");
   const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
+  const [selectedWeather, setSelectedWeather] = useState<string | null>(null);
   const [selectedPersona, setSelectedPersona] = useState("warm_teacher");
   const [diaryContent, setDiaryContent] = useState("");
   const [replyContent, setReplyContent] = useState("");
@@ -52,11 +54,13 @@ export default function WritePage() {
   // Refs for draft timer access to current state
   const contentRef = useRef(diaryContent);
   const emotionsRef = useRef(selectedEmotions);
+  const weatherRef = useRef(selectedWeather);
   const personaRef = useRef(selectedPersona);
   const editorStateRef = useRef<EditorSavePayload | null>(null);
 
   useEffect(() => { contentRef.current = diaryContent; }, [diaryContent]);
   useEffect(() => { emotionsRef.current = selectedEmotions; }, [selectedEmotions]);
+  useEffect(() => { weatherRef.current = selectedWeather; }, [selectedWeather]);
   useEffect(() => { personaRef.current = selectedPersona; }, [selectedPersona]);
 
   const handleEditorStateChange = useCallback((editorState: EditorSavePayload) => {
@@ -106,7 +110,8 @@ export default function WritePage() {
       // Batch updates in microtask to avoid synchronous setState in effect
       queueMicrotask(() => {
         setDiaryContent(draft.content);
-        if (draft.emotions.length > 0) setSelectedEmotions(draft.emotions);
+        if (Array.isArray(draft.emotions) && draft.emotions.length > 0) setSelectedEmotions(draft.emotions);
+        if (draft.weather) setSelectedWeather(draft.weather);
         if (draft.persona) setSelectedPersona(draft.persona);
         if (hasDraftEditorState) {
           setInitialEditorState(draftEditorState);
@@ -125,6 +130,7 @@ export default function WritePage() {
     const stop = startDraftTimer(bookId, () => ({
       content: contentRef.current,
       emotions: emotionsRef.current,
+      weather: weatherRef.current,
       persona: personaRef.current,
       editorState: editorStateRef.current,
     }));
@@ -157,6 +163,12 @@ export default function WritePage() {
         const found = EMOTIONS.find((e) => e.code === code);
         return { code, label: found?.label || code };
       });
+      const selectedWeatherOption = selectedWeather
+        ? WEATHER_OPTIONS.find((item) => item.code === selectedWeather)
+        : null;
+      const weather = selectedWeatherOption
+        ? { code: selectedWeatherOption.code, label: selectedWeatherOption.label }
+        : null;
 
       const res = await fetch("/api/diaries", {
         method: "POST",
@@ -165,6 +177,7 @@ export default function WritePage() {
           diary_book_id: book.id,
           content: diaryContent,
           emotions,
+          weather,
           persona: selectedPersona,
           editor_state: editorStateRef.current
             ? {
@@ -278,6 +291,7 @@ export default function WritePage() {
             {t("w.emotionQ")}
           </h2>
           <EmotionSelector selected={selectedEmotions} onChange={setSelectedEmotions} />
+          <WeatherSelector selected={selectedWeather} onChange={setSelectedWeather} />
           <button onClick={() => { if (selectedEmotions.length === 0) { setError(t("w.pickEmotion")); return; } setError(""); setStep("persona"); }} className="btn-primary w-full mt-5">
             {t("w.toPersona")}
           </button>
@@ -288,7 +302,7 @@ export default function WritePage() {
       {step === "persona" && (
         <div className="write-page__step animate-fade-in-scale">
           <button onClick={() => setStep("emotion")} className="btn-ghost text-sm mb-4 -ml-1">{t("w.backEmotion")}</button>
-          <SelectedTags emotions={selectedEmotions} />
+          <SelectedTags emotions={selectedEmotions} weather={selectedWeather} />
           <PersonaSelector selected={selectedPersona} onChange={setSelectedPersona} />
           <div className="mt-4"><AITransparencyNote /></div>
           <button onClick={() => setStep("write")} className="btn-primary w-full mt-5">{t("w.startWrite")}</button>
@@ -299,7 +313,7 @@ export default function WritePage() {
         <div className="write-page__step write-page__step--editor">
           <div className="write-page__editor-top">
             <button onClick={() => setStep("persona")} className="btn-ghost text-sm">{t("w.back")}</button>
-            <SelectedTags emotions={selectedEmotions} persona={selectedPersona} compact />
+            <SelectedTags emotions={selectedEmotions} weather={selectedWeather} persona={selectedPersona} compact />
           </div>
           <ImmersiveEditor
             coverStyle={book.cover_style_id}
@@ -330,7 +344,7 @@ export default function WritePage() {
 
       {step === "reply" && (
         <div className="write-page__step animate-fade-in-scale">
-          <SelectedTags emotions={selectedEmotions} persona={selectedPersona} compact />
+          <SelectedTags emotions={selectedEmotions} weather={selectedWeather} persona={selectedPersona} compact />
           <div className="mb-4 p-4" style={{ borderRadius: "var(--radius-md)", background: "var(--cream-deep)", border: "1px solid var(--border-subtle)" }}>
             <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
               {diaryContent.length > 120 ? `${diaryContent.slice(0, 120)}…` : diaryContent}
