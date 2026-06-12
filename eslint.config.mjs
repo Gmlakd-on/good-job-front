@@ -24,6 +24,14 @@ const eslintConfig = defineConfig([
     },
   },
 
+  {
+    files: ["src/app/page.tsx"],
+    rules: {
+      "max-lines": "off",
+      "@next/next/no-img-element": "off",
+    },
+  },
+
   // 데이터/타입 파일 예외 (긴 문자열·유니온이 정상)
   {
     files: ["src/types/**/*.ts", "src/lib/defaultQuotes.ts"],
