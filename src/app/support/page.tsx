@@ -1,5 +1,8 @@
 const CRISIS_CONTACTS = [
-  { label: "자살예방상담전화", value: "109", note: "전화 및 문자 상담" },
+  { label: "자살예방 상담전화", value: "109", note: "24시간 운영" },
+  { label: "정신건강 위기상담", value: "1577-0199", note: "24시간 운영" },
+  { label: "청소년 고민/위기 상담", value: "1388", note: "24시간 운영" },
+  { label: "가정폭력 및 성폭력 상담", value: "1366", note: "24시간 운영" },
 ] as const;
 
 export default function SupportPage() {

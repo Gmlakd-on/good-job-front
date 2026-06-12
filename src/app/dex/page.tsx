@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -161,7 +162,6 @@ export default function DexPage() {
 
       <section className="dex-progress-hero" aria-label="100문 100답 진행률">
         <div className="dex-progress-hero__intro">
-          <span className="dex-progress-hero__sprout" aria-hidden="true">🌱</span>
           <div>
             <h2>{copy.progressTitle}</h2>
             <p>{copy.progressDesc}</p>
@@ -171,7 +171,14 @@ export default function DexPage() {
           <span style={{ width: `${progressPct}%` }} />
         </div>
         <strong>{answeredCount} / 100 {copy.answered}</strong>
-        <span className="dex-progress-hero__mascot" aria-hidden="true">🌱</span>
+        <Image
+          src="/illustrations/dex-progress-banner.png"
+          alt=""
+          width={520}
+          height={174}
+          className="dex-progress-hero__banner"
+          priority
+        />
       </section>
 
       <section className="dex-question-hero">
@@ -212,10 +219,13 @@ export default function DexPage() {
           )}
         </div>
         <div className="dex-question-hero__art" aria-hidden="true">
-          <span className="dex-open-book">📖</span>
-          <span className="dex-photo-card">🌅</span>
-          <span className="dex-leaf dex-leaf--one">🍃</span>
-          <span className="dex-leaf dex-leaf--two">🌿</span>
+          <Image
+            src="/illustrations/dex-question-banner.png"
+            alt=""
+            width={620}
+            height={207}
+            className="dex-question-hero__banner"
+          />
         </div>
       </section>
 

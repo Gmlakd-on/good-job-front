@@ -7,7 +7,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import AuthModal from "@/components/auth/AuthModal";
-import LanguageToggle from "@/components/LanguageToggle";
 import type { User } from "@supabase/supabase-js";
 
 type AuthMode = "login" | "signup";
@@ -208,12 +207,6 @@ export default function Header() {
                       <Link href="/settings" onClick={() => setMenuOpen(false)}>
                         마이페이지
                       </Link>
-                      <Link href="/books" onClick={() => setMenuOpen(false)}>
-                        내 책장
-                      </Link>
-                      <Link href="/notifications" onClick={() => setMenuOpen(false)}>
-                        알림{unreadCount > 0 ? ` ${unreadCount}` : ""}
-                      </Link>
                       <button type="button" onClick={handleLogout}>
                         로그아웃
                       </button>
@@ -224,7 +217,6 @@ export default function Header() {
             </>
           ) : (
             <>
-              <LanguageToggle />
               <button type="button" className="chami-home-nav__auth-button" onClick={() => openAuthModal("login")}>
                 {t("nav.login")}
               </button>

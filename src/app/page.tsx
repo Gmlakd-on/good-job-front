@@ -568,7 +568,7 @@ export default function HomePage() {
 
           <section className="chami-lower-grid" aria-label="홈 하단 바로가기">
             <article className="chami-mini-card chami-card chami-mini-card--exchange">
-              <div className="chami-mini-card__visual" aria-hidden="true">💌</div>
+              <div className="chami-mini-card__visual" aria-hidden="true"><Image src="/home-icons/exchange.png" alt="" width={72} height={72} /></div>
               <div>
                 <h2>교환일기</h2>
                 <p className="chami-mini-card__strong">{displayNickname ?? "친구"}님과 12일째</p>
@@ -580,7 +580,7 @@ export default function HomePage() {
             </article>
 
             <article className="chami-mini-card chami-card chami-mini-card--refresh">
-              <div className="chami-mini-card__visual" aria-hidden="true">🍃</div>
+              <div className="chami-mini-card__visual" aria-hidden="true"><Image src="/home-icons/refresh-card.png" alt="" width={72} height={72} /></div>
               <div>
                 <h2>환기 카드</h2>
                 <p>오늘의 감정에 맞는 작은 추천이 도착했어요.</p>
@@ -591,7 +591,7 @@ export default function HomePage() {
             </article>
 
             <article className="chami-mini-card chami-card chami-mini-card--report">
-              <div className="chami-mini-card__visual" aria-hidden="true">🧭</div>
+              <div className="chami-mini-card__visual" aria-hidden="true"><Image src="/home-icons/report.png" alt="" width={72} height={72} /></div>
               <div>
                 <h2>감정 리포트</h2>
                 <p>이번 주 마음의 흐름을 조용히 돌아봐요.</p>
@@ -601,18 +601,13 @@ export default function HomePage() {
               </button>
             </article>
 
-            <article className="chami-ad-card chami-card">
+            <article className="chami-ad-card chami-ad-card--placeholder chami-card" aria-label="광고 영역">
               <div className="chami-ad-card__label">
-                <span>광고 · 오늘의 추천</span>
+                <span>광고 영역</span>
                 <em>AD</em>
               </div>
-              <div className="chami-ad-card__body">
-                <div className="chami-ad-card__image" aria-hidden="true">🌼<br />🫖</div>
-                <div>
-                  <h2>나를 안아주는 시간, 한 잔의 위로</h2>
-                  <p>따뜻한 문장과 향긋한 차 한 잔으로 오늘의 나를 돌보세요.</p>
-                  <button type="button">자세히 보기 <span aria-hidden="true">›</span></button>
-                </div>
+              <div className="chami-ad-placeholder">
+                <p>광고가 노출될 자리입니다.</p>
               </div>
             </article>
           </section>
