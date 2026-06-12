@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import BookShelf from "@/components/book-ui/BookShelf";
 import type { DiaryBook } from "@/components/book-ui/bookTypes";
 import { getLastBookId } from "@/lib/lastBook";
 
 export default function BooksPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const searchParams = useSearchParams();
   const [books, setBooks] = useState<DiaryBook[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +31,7 @@ export default function BooksPage() {
         const res = await fetch("/api/diary-books");
         if (!res.ok) {
           const data = await res.json().catch(() => null);
-          throw new Error(data?.error || "일기장 조회에 실패했어요.");
+          throw new Error(data?.error || t("shelf.loadFail"));
         }
         const data = await res.json();
         const bookList: DiaryBook[] = data.books || [];
@@ -53,7 +55,7 @@ export default function BooksPage() {
           }
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "일기장 조회에 실패했어요.");
+        setError(err instanceof Error ? err.message : t("shelf.loadFail"));
       } finally {
         setLoading(false);
       }
@@ -65,7 +67,7 @@ export default function BooksPage() {
   if (loading) {
     return (
       <div className="pt-4">
-        <p className="font-hand text-lg opacity-45">책장 정리 중…</p>
+        <p className="font-hand text-lg opacity-45">{t("shelf.sorting")}</p>
       </div>
     );
   }
@@ -73,10 +75,10 @@ export default function BooksPage() {
   return (
     <div className="pt-4">
       <div className="mb-5 flex items-center justify-between">
-        <Link href="/" className="text-sm opacity-40 hover:opacity-70">← 홈</Link>
-        <h1 className="font-serif text-xl">내 일기장</h1>
+        <Link href="/" className="text-sm opacity-40 hover:opacity-70">← {t("common.back.home")}</Link>
+        <h1 className="font-serif text-xl">{t("shelf.title")}</h1>
         <Link href="/books/new" className="rounded-full bg-[var(--soft-accent)] px-3 py-1 text-sm text-white">
-          새 책
+          {t("shelf.newBook")}
         </Link>
       </div>
 
@@ -98,10 +100,10 @@ export default function BooksPage() {
             <path d="M30 14l2.2 5 5 2.2-5 2.2-2.2 5-2.2-5-5-2.2 5-2.2 2.2-5z" fill="rgba(217,164,86,0.7)" />
             <circle cx="150" cy="36" r="2.5" fill="rgba(217,164,86,0.55)" />
           </svg>
-          <p className="empty-shelf__title">책장이 비어 있어요</p>
-          <p className="empty-shelf__sub">표지를 고르고 첫 권을 꽂아볼까요?<br />30개의 일기가 모이면 한 권이 완성돼요.</p>
+          <p className="empty-shelf__title">{t("shelf.emptyTitle")}</p>
+          <p className="empty-shelf__sub">{t("shelf.emptySub1")}<br />{t("shelf.emptySub2")}</p>
           <Link href="/books/new" className="empty-shelf__cta">
-            첫 일기장 만들기
+            {t("shelf.emptyCta")}
           </Link>
         </div>
       ) : (

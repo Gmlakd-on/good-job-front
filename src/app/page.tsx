@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import MascotHero from "@/components/home/MascotHero";
 import TryItDemo from "@/components/home/TryItDemo";
 import AuthModal from "@/components/auth/AuthModal";
@@ -18,6 +19,7 @@ interface Quote {
 type AuthMode = "login" | "signup";
 
 export default function HomePage() {
+  const { t } = useI18n();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
@@ -73,7 +75,7 @@ export default function HomePage() {
       .then((response) => response.json())
       .then((data) => setQuote(data.quote))
       .catch(() =>
-        setQuote({ id: "default", quote_text: "오늘 하루도 수고했어요.", author: "참 잘했어요" }),
+        setQuote({ id: "default", quote_text: t("home.quoteDefault"), author: "참 잘했어요" }),
       );
   }, []);
 
@@ -101,14 +103,14 @@ export default function HomePage() {
     openAuthModal("signup", "/write");
   }, [openAuthModal, router, user]);
 
-  const quoteText = quote ? `“${quote.quote_text}”` : "오늘의 명언을 불러오는 중이에요.";
+  const quoteText = quote ? `“${quote.quote_text}”` : t("home.quoteLoading");
   const quoteAuthor = quote?.author?.trim() || "참 잘했어요";
 
   return (
     <div className="home-shell">
       <header className={`home-nav ${navHidden ? "home-nav--hidden" : ""}`}>
         <div className="home-nav__inner">
-          <Link href="/" className="home-nav__logo" aria-label="참 잘했어요 홈">
+          <Link href="/" className="home-nav__logo" aria-label={t("home.logoAria")}>
             참 잘했어요
           </Link>
 
@@ -121,19 +123,19 @@ export default function HomePage() {
                     className="home-nav__button home-nav__button--ghost"
                     onClick={() => openAuthModal("login", "/books")}
                   >
-                    로그인
+                    {t("home.login")}
                   </button>
                   <button
                     type="button"
                     className="home-nav__button home-nav__button--solid"
                     onClick={() => openAuthModal("signup", "/books")}
                   >
-                    회원가입
+                    {t("home.signup")}
                   </button>
                 </>
               ) : (
                 <Link href="/books" className="home-nav__button home-nav__button--solid">
-                  내 책장
+                  {t("home.myShelf")}
                 </Link>
               )}
             </div>
@@ -142,29 +144,29 @@ export default function HomePage() {
       </header>
 
       <main>
-        <section className="home-hero" aria-label="오늘의 명언">
+        <section className="home-hero" aria-label={t("home.quoteLabel")}>
           <div className="home-hero__inner">
             <div className="home-hero__quote-zone">
               <figure
                 className="home-quote-card"
                 tabIndex={0}
-                aria-label={`오늘의 명언. ${quoteText} — ${quoteAuthor}`}
+                aria-label={`${t("home.quoteLabel")}. ${quoteText} — ${quoteAuthor}`}
               >
                 <blockquote className="home-quote-card__quote">
                   <p className="home-quote-card__text">{quoteText}</p>
                 </blockquote>
                 <figcaption className="home-quote-card__author">— {quoteAuthor}</figcaption>
                 <div className="home-quote-card__meta" aria-hidden="true">
-                  <span>오늘의 명언</span>
+                  <span>{t("home.quoteLabel")}</span>
                 </div>
               </figure>
 
-              <div className="home-hero__ctas" aria-label="빠른 이동">
+              <div className="home-hero__ctas" aria-label={t("home.quickNav")}>
                 <button type="button" className="home-hero__cta home-hero__cta--primary" onClick={enterWrite}>
-                  일기 쓰기
+                  {t("home.ctaWrite")}
                 </button>
                 <button type="button" className="home-hero__cta home-hero__cta--secondary" onClick={enterBooks}>
-                  내 책장 보기
+                  {t("home.ctaShelf")}
                 </button>
               </div>
             </div>
@@ -179,27 +181,27 @@ export default function HomePage() {
         {/* 로그인 전: 가입 없이 표지 고르기 → 적기 → 답장 체험 */}
         {authChecked && !user && <TryItDemo />}
 
-        <section className="home-feature-section" aria-label="주요 기능">
+        <section className="home-feature-section" aria-label={t("home.featuresAria")}>
           <div className="home-feature-grid">
             <FeatureCard
               icon="📮"
-              title="교환일기"
-              description="친구 또는 모르는 누군가와 안전하게 일기를 주고받아요."
-              badges={["친구 교환", "랜덤 교환"]}
+              title={t("home.feat.xch.title")}
+              description={t("home.feat.xch.desc")}
+              badges={[t("home.feat.xch.b1"), t("home.feat.xch.b2")]}
               onClick={() => user ? router.push("/exchange") : openAuthModal("login", "/exchange")}
             />
             <FeatureCard
               icon="📔"
-              title="내 일기장"
-              description="오늘의 마음과 답장을 한 권의 기록으로 차곡차곡 모아요."
-              badges={["AI 답장", "책장"]}
+              title={t("home.feat.books.title")}
+              description={t("home.feat.books.desc")}
+              badges={[t("home.feat.books.b1"), t("home.feat.books.b2")]}
               onClick={enterBooks}
             />
             <FeatureCard
               icon="🧭"
-              title="감정 리포트"
-              description="내가 자주 느끼는 감정의 흐름을 조용히 돌아봐요."
-              badges={["패턴", "회복"]}
+              title={t("home.feat.report.title")}
+              description={t("home.feat.report.desc")}
+              badges={[t("home.feat.report.b1"), t("home.feat.report.b2")]}
               onClick={() => user ? router.push("/report") : openAuthModal("login", "/report")}
             />
           </div>

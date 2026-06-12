@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import ReplyCard from "@/components/ReplyCard";
 import FeedbackButtons from "@/components/FeedbackButtons";
 import SafetyNotice from "@/components/SafetyNotice";
@@ -28,6 +29,7 @@ interface DiaryDetail {
 export default function DiaryDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const { t } = useI18n();
   const { showToast } = useToast();
   const [diary, setDiary] = useState<DiaryDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,10 +67,10 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
     setDeleting(true);
     const res = await fetch(`/api/diaries/${id}`, { method: "DELETE" });
     if (res.ok) {
-      showToast("일기가 삭제되었어요.", "info");
+      showToast(t("dd.deleted"), "info");
       router.push("/diaries");
     } else {
-      showToast("삭제에 실패했어요.", "error");
+      showToast(t("dd.deleteFail"), "error");
     }
     setDeleting(false);
   };
@@ -92,10 +94,10 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
       const data = await res.json();
       setDiary((prev) => prev ? { ...prev, content: data.diary.content } : prev);
       setEditing(false);
-      showToast("일기가 수정되었어요.", "success");
+      showToast(t("dd.edited"), "success");
     } else {
       const data = await res.json();
-      showToast(data.error || "수정에 실패했어요.", "error");
+      showToast(data.error || t("dd.editFail"), "error");
     }
     setSaving(false);
   };
@@ -103,7 +105,7 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
   if (loading) {
     return (
       <div className="pt-2">
-        <button className="text-sm opacity-40 mb-6">← 일기장으로</button>
+        <button className="text-sm opacity-40 mb-6">← {t("common.toBook")}</button>
         <DiaryDetailSkeleton />
       </div>
     );
@@ -112,9 +114,9 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
   if (!diary) {
     return (
       <div className="pt-4 text-center">
-        <p className="opacity-50">일기를 찾을 수 없어요.</p>
+        <p className="opacity-50">{t("dd.notFound")}</p>
         <button onClick={() => router.push("/diaries")} className="mt-4 text-sm opacity-50 hover:opacity-80">
-          ← 일기장으로
+          ← {t("common.toBook")}
         </button>
       </div>
     );
@@ -129,7 +131,7 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
         onClick={() => router.push("/diaries")}
         className="text-sm opacity-40 mb-6 hover:opacity-70"
       >
-        ← 일기장으로
+        ← {t("common.toBook")}
       </button>
 
       {/* 감정 태그 */}
@@ -161,14 +163,14 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
                 onClick={handleStartEdit}
                 className="text-xs opacity-30 hover:opacity-50 transition-opacity"
               >
-                고치기
+                {t("dd.edit")}
               </button>
             )}
             <button
               onClick={() => setShowDeleteConfirm(true)}
               className="text-xs opacity-30 hover:opacity-50 transition-opacity"
             >
-              삭제
+              {t("dd.delete")}
             </button>
           </div>
         </div>
@@ -190,7 +192,7 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
                   className="text-xs px-4 py-1.5 rounded-full"
                   style={{ background: "var(--warm-bg-deep)" }}
                 >
-                  취소
+                  {t("common.cancel")}
                 </button>
                 <button
                   onClick={handleSaveEdit}
@@ -198,7 +200,7 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
                   className="text-xs px-4 py-1.5 rounded-full text-white"
                   style={{ background: "var(--soft-accent)", opacity: saving ? 0.5 : 1 }}
                 >
-                  {saving ? "저장 중…" : "저장"}
+                  {saving ? t("dd.saving") : t("dd.save")}
                 </button>
               </div>
             </div>
@@ -213,10 +215,10 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
       {/* 삭제 확인 */}
       <ConfirmDialog
         open={showDeleteConfirm}
-        title="일기 지우기"
-        message="이 일기를 지울까요? 지운 일기는 복구할 수 없어요."
-        confirmLabel="지우기"
-        cancelLabel="취소"
+        title={t("dd.confirmTitle")}
+        message={t("dd.confirmMsg")}
+        confirmLabel={t("dd.confirmYes")}
+        cancelLabel={t("common.cancel")}
         danger
         loading={deleting}
         onConfirm={handleDelete}

@@ -61,12 +61,30 @@ export default function CoverShelf({ selected, onSelect }: CoverShelfProps) {
     };
   }, [updateArrows]);
 
-  // 선택된 표지가 보이도록 마운트 시 스크롤
-  useEffect(() => {
+  /**
+   * 표지를 레일 가운데로 — 레일의 가로 스크롤만 움직인다.
+   * (주의: scrollIntoView는 페이지(세로) 스크롤까지 함께 움직여서,
+   *  홈/일기장 만들기 페이지가 접속하자마자 선반 위치로 점프하는 버그의 원인이었음.
+   *  반드시 rail.scrollTo로 가로축만 제어할 것.)
+   */
+  const centerCover = useCallback((id: CoverStyleId, smooth: boolean) => {
     const rail = railRef.current;
-    if (!rail || !selected) return;
-    const el = rail.querySelector<HTMLElement>(`[data-cover-id="${selected}"]`);
-    el?.scrollIntoView({ inline: "center", block: "nearest" });
+    if (!rail) return;
+    const el = rail.querySelector<HTMLElement>(`[data-cover-id="${id}"]`);
+    if (!el) return;
+    const railRect = rail.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    const target =
+      rail.scrollLeft + (elRect.left - railRect.left) - (rail.clientWidth - elRect.width) / 2;
+    rail.scrollTo({
+      left: Math.max(0, Math.min(target, rail.scrollWidth - rail.clientWidth)),
+      behavior: smooth ? "smooth" : "auto",
+    });
+  }, []);
+
+  // 선택된 표지가 보이도록 마운트 시 레일만 정렬 (페이지 스크롤은 건드리지 않음)
+  useEffect(() => {
+    if (selected) centerCover(selected, false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -84,9 +102,7 @@ export default function CoverShelf({ selected, onSelect }: CoverShelfProps) {
       : Math.min(COVERS.length - 1, current + 1);
     const cover = COVERS[next];
     onSelect(cover.id);
-    railRef.current
-      ?.querySelector<HTMLElement>(`[data-cover-id="${cover.id}"]`)
-      ?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+    centerCover(cover.id, true);
   };
 
   return (
@@ -130,9 +146,9 @@ export default function CoverShelf({ selected, onSelect }: CoverShelfProps) {
               data-cover-id={cover.id}
               tabIndex={isSelected || (!selected && cover.id === COVERS[0].id) ? 0 : -1}
               className={`cover-shelf__item ${isSelected ? "cover-shelf__item--selected" : ""}`}
-              onClick={(event) => {
+              onClick={() => {
                 onSelect(cover.id);
-                event.currentTarget.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+                centerCover(cover.id, true);
               }}
             >
               <span className="cover-shelf__image-box">

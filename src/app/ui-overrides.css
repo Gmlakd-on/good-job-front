@@ -712,3 +712,504 @@
     -webkit-backdrop-filter: blur(8px);
   }
 }
+
+/* ── 13. 감정 리포트: 데스크톱 2단 그리드 + 차트 마감 ── */
+.report-period {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.report-period__btn {
+  font-size: 12px;
+  padding: 6px 18px;
+  border-radius: 999px;
+  background: var(--card-bg, #fffdf8);
+  color: var(--deep-gray, #4a4039);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.report-period__btn--active {
+  background: var(--soft-accent, #d98e73);
+  border-color: transparent;
+  color: #fff;
+}
+
+.report-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.report-side,
+.report-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 요약 카드: 기록 수 + 연속 기록을 한 카드에서 좌우로 */
+.report-summary {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 18px 12px;
+  text-align: center;
+}
+
+.report-summary__stat { flex: 1; }
+
+.report-summary__num {
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1.1;
+  color: var(--deep-gray, #4a4039);
+  margin-bottom: 4px;
+}
+
+.report-summary__unit {
+  font-size: 14px;
+  margin-left: 2px;
+  opacity: 0.5;
+}
+
+.report-summary__label { font-size: 11px; opacity: 0.45; }
+
+.report-summary__divider {
+  width: 1px;
+  margin: 4px 8px;
+  background: rgba(0, 0, 0, 0.07);
+}
+
+/* 감정 분포 바 */
+.report-bar {
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--warm-bg-deep, #efe5d6);
+}
+
+.report-bar__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--soft-accent, #d98e73);
+  opacity: 0.75;
+  transition: width 0.5s ease;
+}
+
+.report-bar__fill--top { opacity: 1; }
+
+/* 최근 2주 바 차트 */
+.report-days {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 3px;
+}
+
+.report-days__col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.report-days__count {
+  font-size: 9px;
+  line-height: 1;
+  margin-bottom: 3px;
+  min-height: 9px;
+  opacity: 0.35;
+}
+
+.report-days__bar {
+  width: 100%;
+  max-width: 26px;
+  border-radius: 4px 4px 0 0;
+  background: var(--warm-bg-deep, #efe5d6);
+  transition: height 0.3s ease;
+}
+
+.report-days__bar--filled { background: var(--soft-accent, #d98e73); }
+
+.report-days__col--today .report-days__bar {
+  outline: 1.5px solid var(--stamp-vermilion, #c4553a);
+  outline-offset: 1px;
+}
+
+.report-days__col--today .report-days__weekday { color: var(--stamp-vermilion, #c4553a); opacity: 1; }
+
+.report-days__weekday {
+  font-size: 9px;
+  margin-top: 4px;
+  opacity: 0.4;
+}
+
+.report-days__date {
+  font-size: 8px;
+  min-height: 10px;
+  opacity: 0.3;
+}
+
+/* 데스크톱: 좌측 요약 사이드(sticky) + 우측 차트 영역 */
+@media (min-width: 1024px) {
+  .report-grid {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    align-items: start;
+    gap: 20px;
+  }
+
+  .report-side {
+    position: sticky;
+    top: 88px; /* 헤더 높이 + 여유 */
+  }
+
+  .report-summary { padding: 24px 12px; }
+  .report-summary__num { font-size: 36px; }
+  .report-days__bar { max-width: 34px; }
+}
+
+/* ── 14. 교환일기: 세션 카드 · 진행 점 · 친구 초대 마감 ── */
+.xch-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.xch-card:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+  transform: translateY(-1px);
+}
+
+.xch-card--past { opacity: 0.62; }
+
+.xch-card__avatar {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--soft-accent, #d98e73);
+}
+
+.xch-card--past .xch-card__avatar { background: var(--warm-bg-deep, #d8cbb8); color: var(--deep-gray, #4a4039); }
+
+.xch-card__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+
+.xch-card__name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--deep-gray, #4a4039);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.xch-card__meta { font-size: 11px; opacity: 0.45; }
+
+.xch-card__days {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 5px;
+}
+
+.xch-card__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--warm-bg-deep, #efe5d6);
+}
+
+.xch-card__dot--past { background: var(--soft-accent, #d98e73); }
+
+.xch-card__dot--today {
+  background: var(--stamp-vermilion, #c4553a);
+  box-shadow: 0 0 0 2px rgba(196, 85, 58, 0.18);
+}
+
+.xch-card__day-label {
+  font-size: 10px;
+  margin-left: 4px;
+  opacity: 0.5;
+  color: var(--deep-gray, #4a4039);
+}
+
+.xch-card__arrow { font-size: 12px; opacity: 0.35; flex: none; }
+
+.xch-hub-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 6px;
+}
+
+/* 세션 상단 진행 점 */
+.xch-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-bottom: 18px;
+}
+
+/* 오늘 작성 완료 카드 */
+.xch-done {
+  border-left: 3px solid var(--soft-accent, #d98e73);
+}
+
+/* Day별 묶음 */
+.xch-day { display: flex; flex-direction: column; gap: 8px; }
+
+.xch-day__label {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.4;
+  padding: 4px 6px 0;
+  color: var(--deep-gray, #4a4039);
+}
+
+/* 친구 초대 */
+.xch-received__badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-left: 4px;
+  border-radius: 999px;
+  font-size: 11px;
+  color: #fff;
+  background: var(--stamp-vermilion, #c4553a);
+  vertical-align: 2px;
+}
+
+.xch-profile-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.xch-input--invalid {
+  box-shadow: inset 0 0 0 1.5px rgba(196, 85, 58, 0.55);
+}
+
+.xch-hint--invalid {
+  color: var(--stamp-vermilion, #c4553a);
+}
+
+/* 데스크톱: 세션 카드 호버 외 추가 여백 보정 없음 — 980px 본문 폭 그대로 사용 */
+
+/* ── 15. 랜덤 매칭 흐름 ── */
+.xch-offer-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-left: 3px solid var(--stamp-vermilion, #c4553a);
+}
+
+.xch-offer__eyebrow {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--stamp-vermilion, #c4553a);
+  margin-bottom: 6px;
+}
+
+.xch-offer__emotions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.xch-offer__emotion {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--warm-bg, #f3ead9);
+  color: var(--deep-gray, #4a4039);
+}
+
+.xch-offer__preview {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: var(--radius-md, 12px);
+  background: var(--cream-deep, #f1e7d4);
+  border-left: 3px solid var(--soft-accent, #d98e73);
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--deep-gray, #4a4039);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.xch-offer__waiting {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md, 12px);
+  background: var(--warm-bg, #f3ead9);
+}
+
+/* 짝 찾는 중 — 부드러운 펄스 점 */
+.xch-wait__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.xch-wait__pulse {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--soft-accent, #d98e73);
+  animation: xch-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes xch-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(217, 142, 115, 0.45); }
+  55% { box-shadow: 0 0 0 7px rgba(217, 142, 115, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xch-wait__pulse { animation: none; }
+}
+
+/* 일기 선택 목록 */
+.xch-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.xch-pick__item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+  padding: 11px 13px;
+  border-radius: var(--radius-md, 12px);
+  background: var(--warm-bg, #f3ead9);
+  border: 1.5px solid transparent;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.xch-pick__item--active {
+  border-color: var(--soft-accent, #d98e73);
+  background: var(--cream-deep, #f1e7d4);
+}
+
+.xch-pick__date {
+  font-size: 11px;
+  opacity: 0.5;
+  color: var(--deep-gray, #4a4039);
+}
+
+.xch-pick__excerpt {
+  font-size: 13px;
+  color: var(--deep-gray, #4a4039);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 데스크톱: 일기 선택을 2열로 — 980px 폭 활용 */
+@media (min-width: 1024px) {
+  .xch-pick {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ── 16. 교환일기 세션: 관리 패널 · 연장 투표 ── */
+.xch-manage-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--deep-gray, #4a4039);
+  opacity: 0.5;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.xch-manage-btn:hover,
+.xch-manage-btn[aria-expanded="true"] {
+  opacity: 0.9;
+  background: var(--warm-bg, #f3ead9);
+}
+
+.xch-manage__item {
+  text-align: left;
+  font-size: 13px;
+  padding: 11px 13px;
+  border-radius: var(--radius-md, 12px);
+  background: var(--warm-bg, #f3ead9);
+  color: var(--deep-gray, #4a4039);
+  transition: background 0.15s ease;
+}
+
+.xch-manage__item:hover { background: var(--cream-deep, #f1e7d4); }
+
+.xch-reason {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
+  font-size: 13px;
+  padding: 10px 13px;
+  border-radius: var(--radius-md, 12px);
+  background: var(--warm-bg, #f3ead9);
+  color: var(--deep-gray, #4a4039);
+  border: 1.5px solid transparent;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.xch-reason--active {
+  border-color: var(--soft-accent, #d98e73);
+  background: var(--cream-deep, #f1e7d4);
+}
+
+.xch-reason__safe {
+  flex: none;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(122, 158, 126, 0.18);
+  color: #5d7a61;
+}
+
+.xch-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--deep-gray, #4a4039);
+  opacity: 0.75;
+  cursor: pointer;
+}
+
+.xch-check input { accent-color: var(--soft-accent, #d98e73); }
+
+.xch-ext {
+  border-left: 3px solid var(--stamp-vermilion, #c4553a);
+}

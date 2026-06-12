@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import DiaryListItem from "@/components/DiaryListItem";
 import DiaryStats from "@/components/DiaryStats";
 import { DiaryListSkeleton } from "@/components/Skeletons";
@@ -20,6 +21,7 @@ interface DiaryRow {
 
 export default function DiariesPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [diaries, setDiaries] = useState<DiaryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [emotionFilter, setEmotionFilter] = useState<string | null>(null);
@@ -48,7 +50,7 @@ export default function DiariesPage() {
       <div className="pt-4">
         <div className="flex items-center justify-between mb-6">
           <div className="w-8" />
-          <h1 className="font-serif text-xl" style={{ color: "var(--deep-gray)" }}>내 일기장</h1>
+          <h1 className="font-serif text-xl" style={{ color: "var(--deep-gray)" }}>{t("shelf.title")}</h1>
           <div className="w-8" />
         </div>
         <DiaryListSkeleton count={4} />
@@ -60,12 +62,12 @@ export default function DiariesPage() {
     <div className="pt-4">
       <div className="flex items-center justify-between mb-4">
         <button onClick={() => router.push("/")} className="text-sm opacity-40 hover:opacity-70">
-          ← 홈
+          ← {t("common.back.home")}
         </button>
         <h1 className="font-serif text-xl" style={{ color: "var(--deep-gray)" }}>
-          내 일기장
+          {t("shelf.title")}
         </h1>
-        <Link href="/write" className="text-xl opacity-40 hover:opacity-70" aria-label="새 일기 쓰기">
+        <Link href="/write" className="text-xl opacity-40 hover:opacity-70" aria-label={t("dl.writeAria")}>
           +
         </Link>
       </div>
@@ -80,7 +82,7 @@ export default function DiariesPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="책상 서랍 속 일기 검색…"
+            placeholder={t("dl.searchPlaceholder")}
             className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
             style={{ background: "var(--card-bg)", color: "var(--deep-gray)", border: "1px solid rgba(231,199,182,0.2)" }}
           />
@@ -98,7 +100,7 @@ export default function DiariesPage() {
               color: emotionFilter === null ? "white" : "var(--deep-gray)",
             }}
           >
-            전체
+            {t("dl.all")}
           </button>
           {EMOTIONS.map((e) => {
             const hasAny = diaries.some((d) =>
@@ -139,18 +141,18 @@ export default function DiariesPage() {
         return filtered.length === 0 && diaries.length > 0 ? (
           <div className="diary-card p-6 text-center">
             <p className="text-sm opacity-50">
-              {searchQuery.trim() ? "검색 결과가 없어요." : "이 감정의 일기가 아직 없어요."}
+              {searchQuery.trim() ? t("dl.noSearch") : t("dl.noEmotion")}
             </p>
           </div>
         ) : filtered.length === 0 ? (
         <div className="diary-card p-8 text-center">
-          <p className="text-sm opacity-50 mb-4">아직 적은 일기가 없어요.</p>
+          <p className="text-sm opacity-50 mb-4">{t("dl.noneYet")}</p>
           <Link
             href="/write"
             className="inline-block px-6 py-2 rounded-full text-sm text-white"
             style={{ background: "var(--soft-accent)" }}
           >
-            첫 일기 쓰기
+            {t("dl.firstCta")}
           </Link>
         </div>
       ) : (
@@ -163,7 +165,7 @@ export default function DiariesPage() {
               const date = new Date(d.created_at);
               const isToday = dateKey === dateKeys.today;
               const isYesterday = dateKey === dateKeys.yesterday;
-              const dateLabel = isToday ? "오늘" : isYesterday ? "어제" : `${date.getMonth() + 1}월 ${date.getDate()}일`;
+              const dateLabel = isToday ? t("dl.today") : isYesterday ? t("dl.yesterday") : t("dl.dateMD", { m: date.getMonth() + 1, d: date.getDate() });
 
               return (
                 <div key={d.id}>
@@ -187,7 +189,7 @@ export default function DiariesPage() {
               onClick={() => exportDiaries(diaries)}
               className="text-xs opacity-30 hover:opacity-50 transition-opacity"
             >
-              내 일기장 텍스트로 내보내기
+              {t("dl.export")}
             </button>
           </div>
         </>

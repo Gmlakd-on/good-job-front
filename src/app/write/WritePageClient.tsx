@@ -5,6 +5,7 @@ import type { User } from "@supabase/supabase-js";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { loadDraft, clearDraft, startDraftTimer } from "@/lib/draftStorage";
 import { saveLastBookId, clearLastBookId } from "@/lib/lastBook";
 import EmotionSelector from "@/components/EmotionSelector";
@@ -28,6 +29,7 @@ type Step = "emotion" | "persona" | "write" | "loading" | "reply" | "crisis";
 
 export default function WritePage() {
   const router = useRouter();
+  const { t } = useI18n();
   const searchParams = useSearchParams();
   const bookId = searchParams.get("bookId");
 
@@ -142,9 +144,9 @@ export default function WritePage() {
   // ── Submit handler ──
   async function handleSubmit() {
     if (!book) return;
-    if (!canWriteBook(book)) { setError("이 일기장에는 더 이상 작성할 수 없어요."); return; }
-    if (selectedEmotions.length === 0) { setError("감정을 하나 이상 선택해주세요."); return; }
-    if (diaryContent.trim().length === 0) { setError("일기를 적어주세요."); return; }
+    if (!canWriteBook(book)) { setError(t("w.bookFullInline")); return; }
+    if (selectedEmotions.length === 0) { setError(t("w.pickEmotion")); return; }
+    if (diaryContent.trim().length === 0) { setError(t("w.writeSomething")); return; }
 
     setError("");
     setAiInsight(null);
@@ -174,7 +176,7 @@ export default function WritePage() {
       });
       const data = await res.json();
 
-      if (!res.ok) { setError(data.error || "오류가 발생했어요."); setStep("write"); return; }
+      if (!res.ok) { setError(data.error || t("w.genericError")); setStep("write"); return; }
 
       setRiskLevel(data.riskLevel);
       setAiInsight(data.ai || null);
@@ -192,7 +194,7 @@ export default function WritePage() {
         setReplyId("");
       }
       setStep("reply");
-    } catch { setError("네트워크 오류가 발생했어요."); setStep("write"); }
+    } catch { setError(t("w.networkError")); setStep("write"); }
   }
 
   // AI 답장 재시도
@@ -206,11 +208,11 @@ export default function WritePage() {
         body: JSON.stringify({ persona: selectedPersona }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error || "답글 생성에 실패했어요."); setStep("reply"); return; }
+      if (!res.ok) { setError(data.error || t("w.replyFail")); setStep("reply"); return; }
       if (data.reply) { setReplyContent(data.reply.content); setReplyId(data.reply.id); }
       setAiInsight(data.ai || null);
       setStep("reply");
-    } catch { setError("네트워크 오류가 발생했어요."); setStep("reply"); }
+    } catch { setError(t("w.networkError")); setStep("reply"); }
   }
 
   async function handleFeedback(targetReplyId: string, isHelpful: boolean) {
@@ -225,7 +227,7 @@ export default function WritePage() {
   if (!book) return (
     <div className="pt-16 text-center">
       <div className="inline-block animate-chami-bounce" style={{ fontSize: 40 }}>📖</div>
-      <p className="mt-3 text-base" style={{ color: "var(--text-muted)" }}>일기장 여는 중…</p>
+      <p className="mt-3 text-base" style={{ color: "var(--text-muted)" }}>{t("w.opening")}</p>
     </div>
   );
 
@@ -235,16 +237,16 @@ export default function WritePage() {
       <div className="flex flex-col items-center pt-8 text-center">
         <BookCover title={book.title} coverStyleId={book.cover_style_id} coverVariant={book.cover_variant} size="md" />
         <p className="mt-4 text-lg" style={{ color: "var(--text-primary)" }}>
-          이 일기장은 더 이상 작성할 수 없어요.
+          {t("w.bookFullTitle")}
         </p>
         <div className="mt-4 flex gap-3">
           <Link href="/books/new" className="inline-flex font-medium text-sm text-white"
             style={{ padding: "12px 24px", borderRadius: "var(--radius-full)", background: "var(--accent)", boxShadow: "0 4px 12px rgba(201, 123, 90, 0.3)" }}>
-            새 일기장 만들기
+            {t("w.newBookCta")}
           </Link>
           <Link href="/books" className="inline-flex font-medium text-sm"
             style={{ padding: "12px 24px", borderRadius: "var(--radius-full)", background: "var(--cream-deep)", color: "var(--text-primary)", border: "1px solid var(--border-subtle)" }}>
-            책장으로
+            {t("common.toShelf")}
           </Link>
         </div>
       </div>
@@ -260,7 +262,7 @@ export default function WritePage() {
           <select
             className="write-book-switch"
             value={book.id}
-            aria-label="일기장 바꾸기"
+            aria-label={t("w.switchBookAria")}
             onChange={(e) => router.replace(`/write?bookId=${e.target.value}`)}
           >
             {activeBooks.map((b) => (
@@ -273,11 +275,11 @@ export default function WritePage() {
       {step === "emotion" && (
         <div className="write-page__step animate-fade-in-scale">
           <h2 className="font-serif text-xl mb-5 font-medium" style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
-            오늘 어떤 마음이었어요?
+            {t("w.emotionQ")}
           </h2>
           <EmotionSelector selected={selectedEmotions} onChange={setSelectedEmotions} />
-          <button onClick={() => { if (selectedEmotions.length === 0) { setError("감정을 하나 이상 선택해주세요."); return; } setError(""); setStep("persona"); }} className="btn-primary w-full mt-5">
-            읽어줄 사람 고르기
+          <button onClick={() => { if (selectedEmotions.length === 0) { setError(t("w.pickEmotion")); return; } setError(""); setStep("persona"); }} className="btn-primary w-full mt-5">
+            {t("w.toPersona")}
           </button>
           {error && <p className="mt-3 text-sm text-center" style={{ color: "var(--chami-heart)" }}>{error}</p>}
         </div>
@@ -285,18 +287,18 @@ export default function WritePage() {
 
       {step === "persona" && (
         <div className="write-page__step animate-fade-in-scale">
-          <button onClick={() => setStep("emotion")} className="btn-ghost text-sm mb-4 -ml-1">← 감정 다시 고르기</button>
+          <button onClick={() => setStep("emotion")} className="btn-ghost text-sm mb-4 -ml-1">{t("w.backEmotion")}</button>
           <SelectedTags emotions={selectedEmotions} />
           <PersonaSelector selected={selectedPersona} onChange={setSelectedPersona} />
           <div className="mt-4"><AITransparencyNote /></div>
-          <button onClick={() => setStep("write")} className="btn-primary w-full mt-5">기록 시작</button>
+          <button onClick={() => setStep("write")} className="btn-primary w-full mt-5">{t("w.startWrite")}</button>
         </div>
       )}
 
       {step === "write" && (
         <div className="write-page__step write-page__step--editor">
           <div className="write-page__editor-top">
-            <button onClick={() => setStep("persona")} className="btn-ghost text-sm">← 뒤로</button>
+            <button onClick={() => setStep("persona")} className="btn-ghost text-sm">{t("w.back")}</button>
             <SelectedTags emotions={selectedEmotions} persona={selectedPersona} compact />
           </div>
           <ImmersiveEditor
@@ -308,7 +310,7 @@ export default function WritePage() {
             onSubmit={handleSubmit}
           />
           <button onClick={handleSubmit} disabled={diaryContent.trim().length === 0} className="btn-primary w-full mt-4" style={{ opacity: diaryContent.trim().length === 0 ? 0.5 : 1 }}>
-            답장 받기
+            {t("w.getReply")}
           </button>
           {error && <p className="mt-3 text-sm text-center" style={{ color: "var(--chami-heart)" }}>{error}</p>}
         </div>
@@ -321,7 +323,7 @@ export default function WritePage() {
           <SafetyNotice variant="crisis" />
           <Link href="/" className="mt-6 inline-flex font-medium text-sm"
             style={{ padding: "12px 24px", borderRadius: "var(--radius-full)", background: "var(--cream-deep)", color: "var(--text-primary)", border: "1px solid var(--border-subtle)" }}>
-            홈으로
+            {t("common.toHome")}
           </Link>
         </div>
       )}
@@ -344,15 +346,15 @@ export default function WritePage() {
           {/* AI 답장 실패 — 재시도 UI */}
           {!replyContent && !safetyMessage && (
             <div className="mb-4 p-5 text-center" style={{ borderRadius: "var(--radius-lg)", background: "var(--cream-deep)", border: "1px solid var(--border-subtle)" }}>
-              <p className="text-sm mb-1" style={{ color: "var(--text-primary)" }}>일기는 안전하게 저장되었어요.</p>
-              <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>답글 생성에 일시적인 문제가 있었어요.</p>
+              <p className="text-sm mb-1" style={{ color: "var(--text-primary)" }}>{t("w.savedSafe")}</p>
+              <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>{t("w.replyHiccup")}</p>
               <button
                 type="button"
                 onClick={handleRetryReply}
                 className="text-sm font-medium text-white px-5 py-2.5"
                 style={{ borderRadius: "var(--radius-full)", background: "var(--accent)", boxShadow: "0 4px 12px rgba(201, 123, 90, 0.3)" }}
               >
-                답글 다시 받기
+                {t("w.retryReply")}
               </button>
             </div>
           )}
@@ -367,11 +369,11 @@ export default function WritePage() {
           <div className="mt-6 flex justify-center gap-3">
             <Link href={`/books/${book.id}`} className="font-medium text-sm"
               style={{ padding: "10px 20px", borderRadius: "var(--radius-full)", background: "var(--cream-deep)", color: "var(--text-primary)", border: "1px solid var(--border-subtle)" }}>
-              일기장으로
+              {t("common.toBook")}
             </Link>
             <Link href="/books" className="font-medium text-sm text-white"
               style={{ padding: "10px 20px", borderRadius: "var(--radius-full)", background: "var(--accent)", boxShadow: "0 4px 12px rgba(201, 123, 90, 0.3)" }}>
-              책장으로
+              {t("common.toShelf")}
             </Link>
           </div>
         </div>
