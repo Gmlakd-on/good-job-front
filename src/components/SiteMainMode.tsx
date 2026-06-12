@@ -3,11 +3,12 @@
 import { useLayoutEffect } from "react";
 import { usePathname } from "next/navigation";
 
-const FULL_WIDTH_PREFIXES = ["/", "/books", "/diaries", "/diary", "/exchange", "/report", "/dex"] as const;
+const FULL_WIDTH_ROUTES = ["/", "/books", "/exchange", "/report", "/dex", "/support"] as const;
 
-function shouldUseFullWidthMain(pathname: string) {
-  if (pathname === "/") return true;
-  return FULL_WIDTH_PREFIXES.some((prefix) => prefix !== "/" && (pathname === prefix || pathname.startsWith(`${prefix}/`)));
+function isFullWidthRoute(pathname: string | null): boolean {
+  if (!pathname) return false;
+
+  return FULL_WIDTH_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 }
 
 export default function SiteMainMode() {
@@ -17,7 +18,7 @@ export default function SiteMainMode() {
     const main = document.getElementById("site-main");
     if (!main) return;
 
-    main.classList.toggle("site-main--full", shouldUseFullWidthMain(pathname));
+    main.classList.toggle("site-main--full", isFullWidthRoute(pathname));
 
     return () => {
       main.classList.remove("site-main--full");
