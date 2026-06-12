@@ -7,6 +7,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { DEX_QUESTIONS } from "@/lib/dex/questions";
 
 const STORAGE_KEY = "dex_answers_v2";
+const CUSTOM_QUESTIONS_KEY = "dex_custom_questions_v1";
 
 type Answers = Record<number, string>;
 
@@ -33,8 +34,25 @@ function saveAnswers(answers: Answers) {
   }
 }
 
-function pickToday(answers: Answers, offset: number): number | null {
-  const unanswered = DEX_QUESTIONS.map((_, index) => index).filter((index) => !answers[index]?.trim());
+function loadCustomQuestions(): string[] {
+  try {
+    const raw = localStorage.getItem(CUSTOM_QUESTIONS_KEY);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomQuestions(questions: string[]) {
+  try {
+    localStorage.setItem(CUSTOM_QUESTIONS_KEY, JSON.stringify(questions));
+  } catch {
+    // localStorage 사용이 불가능한 환경에서는 화면 상태만 유지한다.
+  }
+}
+
+function pickToday(questions: string[], answers: Answers, offset: number): number | null {
+  const unanswered = questions.map((_, index) => index).filter((index) => !answers[index]?.trim());
   if (unanswered.length === 0) return null;
 
   const today = new Date();
@@ -46,8 +64,10 @@ export default function DexPage() {
   const router = useRouter();
   const { language, t } = useI18n();
   const [answers, setAnswers] = useState<Answers>({});
+  const [customQuestions, setCustomQuestions] = useState<string[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [offset, setOffset] = useState(0);
+  const [forcedIdx, setForcedIdx] = useState<number | null>(null);
   const [draft, setDraft] = useState("");
   const [savedFlash, setSavedFlash] = useState(false);
   const [browsing, setBrowsing] = useState(false);
@@ -77,7 +97,7 @@ export default function DexPage() {
       testsTitle: "Small self-discovery cards",
       notAnswered: "Not answered yet",
       localNote: "Saved on this device for now. Account sync can be connected later.",
-      allAnswered: "You answered all 100 questions. What a wonderful collection!",
+      allAnswered: "You answered every question. What a wonderful collection!",
       testStatus: "Coming soon",
       tests: [
         { icon: "🎨", title: "My emotion palette", description: "Express your feelings in colors." },
@@ -108,7 +128,7 @@ export default function DexPage() {
       testsTitle: "나를 알아가는 작은 카드",
       notAnswered: "아직 답하지 않았어요",
       localNote: "현재 답변은 이 기기에 저장돼요. 계정 동기화는 후속 작업으로 연결할 수 있어요.",
-      allAnswered: "100개의 질문을 모두 채웠어요. 멋진 나의 도감이 완성됐어요!",
+      allAnswered: "모든 질문을 다 채웠어요. 멋진 나의 도감이 완성됐어요!",
       testStatus: "준비 중",
       tests: [
         { icon: "🎨", title: "나의 감정 팔레트", description: "내 감정을 색으로 표현해봐요." },
@@ -120,15 +140,24 @@ export default function DexPage() {
 
   useEffect(() => {
     setAnswers(loadAnswers());
+    setCustomQuestions(loadCustomQuestions());
     setHydrated(true);
   }, []);
+
+  // 기본 100문 + AI 추천으로 추가된 질문 = 전체 도감 질문 (추가될 때마다 101문, 102문…으로 늘어난다)
+  const allQuestions = useMemo(() => [...DEX_QUESTIONS, ...customQuestions], [customQuestions]);
+  const totalQuestions = allQuestions.length;
 
   const answeredCount = useMemo(
     () => Object.values(answers).filter((value) => value?.trim()).length,
     [answers],
   );
-  const progressPct = Math.min(answeredCount, 100);
-  const todayIdx = useMemo(() => (hydrated ? pickToday(answers, offset) : null), [answers, hydrated, offset]);
+  const progressPct = totalQuestions > 0 ? Math.min((answeredCount / totalQuestions) * 100, 100) : 0;
+  const todayIdx = useMemo(() => {
+    if (!hydrated) return null;
+    if (forcedIdx !== null) return forcedIdx;
+    return pickToday(allQuestions, answers, offset);
+  }, [allQuestions, answers, forcedIdx, hydrated, offset]);
 
   const submitAnswer = () => {
     if (todayIdx === null || draft.trim().length === 0) return;
@@ -137,8 +166,27 @@ export default function DexPage() {
     setAnswers(nextAnswers);
     saveAnswers(nextAnswers);
     setDraft("");
+    setForcedIdx(null);
     setSavedFlash(true);
     window.setTimeout(() => setSavedFlash(false), 2000);
+  };
+
+  // AI 추천 질문으로 바로 기록: 도감에 없는 질문이면 새 번호로 추가(100문 -> 101문)하고 그 질문을 펼친다
+  const startAiQuestion = () => {
+    const existingIdx = allQuestions.indexOf(copy.aiQuestion);
+
+    if (existingIdx >= 0) {
+      setForcedIdx(existingIdx);
+    } else {
+      const nextCustom = [...customQuestions, copy.aiQuestion];
+      setCustomQuestions(nextCustom);
+      saveCustomQuestions(nextCustom);
+      setForcedIdx(DEX_QUESTIONS.length + nextCustom.length - 1);
+    }
+
+    setDraft("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.setTimeout(() => document.getElementById("dex-answer")?.focus(), 350);
   };
 
   const saveEdit = () => {
@@ -163,14 +211,14 @@ export default function DexPage() {
       <section className="dex-progress-hero" aria-label="100문 100답 진행률">
         <div className="dex-progress-hero__intro">
           <div>
-            <h2>{copy.progressTitle}</h2>
+            <h2>{language === "en" ? `${totalQuestions} Questions, ${totalQuestions} Answers` : `${totalQuestions}문 ${totalQuestions}답`}</h2>
             <p>{copy.progressDesc}</p>
           </div>
         </div>
-        <div className="dex-progress-hero__bar" role="progressbar" aria-valuenow={answeredCount} aria-valuemin={0} aria-valuemax={100}>
+        <div className="dex-progress-hero__bar" role="progressbar" aria-valuenow={answeredCount} aria-valuemin={0} aria-valuemax={totalQuestions}>
           <span style={{ width: `${progressPct}%` }} />
         </div>
-        <strong>{answeredCount} / 100 {copy.answered}</strong>
+        <strong>{answeredCount} / {totalQuestions} {copy.answered}</strong>
         <Image
           src="/illustrations/dex-progress-banner.png"
           alt=""
@@ -190,7 +238,7 @@ export default function DexPage() {
           ) : (
             <>
               <p className="dex-question-hero__eyebrow">{copy.todayQuestion} · #{todayIdx === null ? "-" : todayIdx + 1}</p>
-              <h2>{todayIdx === null ? "" : DEX_QUESTIONS[todayIdx]}</h2>
+              <h2>{todayIdx === null ? "" : allQuestions[todayIdx]}</h2>
               <label className="sr-only" htmlFor="dex-answer">{copy.answerHint}</label>
               <textarea
                 id="dex-answer"
@@ -207,6 +255,7 @@ export default function DexPage() {
                 <button
                   type="button"
                   onClick={() => {
+                    setForcedIdx(null);
                     setOffset((current) => current + 1);
                     setDraft("");
                   }}
@@ -245,13 +294,7 @@ export default function DexPage() {
             <p>{copy.aiDesc}</p>
             <blockquote>“{copy.aiQuestion}”</blockquote>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              setDraft(copy.aiQuestion);
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }}
-          >
+          <button type="button" onClick={startAiQuestion}>
             ✎ {copy.aiAction}
           </button>
         </article>
@@ -259,11 +302,11 @@ export default function DexPage() {
 
       {browsing && (
         <section className="dex-answer-drawer" aria-label="저장된 답변 목록">
-          {DEX_QUESTIONS.map((question, index) => {
+          {allQuestions.map((question, index) => {
             const answer = answers[index]?.trim();
 
             return (
-              <article key={question} className={`dex-answer-item ${answer ? "dex-answer-item--done" : ""}`}>
+              <article key={`${index}-${question}`} className={`dex-answer-item ${answer ? "dex-answer-item--done" : ""}`}>
                 <p><span>#{index + 1}</span>{question}</p>
                 {editingIdx === index ? (
                   <div className="dex-answer-item__edit">

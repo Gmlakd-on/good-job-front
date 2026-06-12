@@ -77,16 +77,9 @@ export default function ExchangeHubPage() {
       friendDesc: "Search a friend ID and start a one-on-one diary.",
       randomTitle: "Random exchange",
       randomDesc: "Quietly exchange with someone new.",
-      codeTitle: "Enter invite code",
-      codeDesc: "Enter the ID a friend sent you and start exchanging.",
       lockTitle: "Only one exchange at a time",
       lockDesc: "Finish your current exchange before starting a new one. Ending without a reason may cause a matching penalty.",
       lockMore: "Learn more",
-      guideTitle: "AI Exchange Guide",
-      guideDesc: "Get tone ideas for today’s entry and reply.",
-      guideQuestion: "When was the warmest moment of your day?",
-      guideHint: "How about starting with this question?",
-      guideAction: "See AI reply tone ideas",
       archive: "Archive",
       archiveEmpty: "No saved exchanges yet",
       archiveDesc: "Active {active} · Past {past}",
@@ -117,16 +110,9 @@ export default function ExchangeHubPage() {
       friendDesc: "친구 아이디를 검색해 1:1 교환을 시작해요.",
       randomTitle: "랜덤 교환",
       randomDesc: "새로운 한 사람과 조용히 교환해요.",
-      codeTitle: "초대 코드 입력",
-      codeDesc: "친구가 보낸 아이디를 입력하고 교환을 시작해요.",
       lockTitle: "교환은 한 번에 한 명과만 가능해요",
       lockDesc: "지금 진행 중인 교환이 끝나야 새로운 연결을 만들 수 있어요. 특별한 이유 없는 중단은 매칭 페널티가 생길 수 있어요.",
       lockMore: "자세히 보기",
-      guideTitle: "AI 교환 가이드",
-      guideDesc: "오늘의 대화와 응답의 톤 아이디어를 제안해요.",
-      guideQuestion: "오늘 하루 중 가장 따뜻했던 순간은 언제였나요?",
-      guideHint: "이 질문으로 시작해보면 어떨까요?",
-      guideAction: "AI 추천 답장 톤 보기",
       archive: "보관함",
       archiveEmpty: "아직 보관된 교환일기가 없어요",
       archiveDesc: "진행 {active}권 · 지난 {past}권",
@@ -325,9 +311,6 @@ export default function ExchangeHubPage() {
           </div>
         )}
 
-        <div className="exchange-current-card__image" aria-hidden="true">
-          <Image src="/home-icons/exchange.png" alt="" width={168} height={168} priority />
-        </div>
       </section>
 
       <section className="exchange-connect-section" aria-label={copy.newConnection}>
@@ -353,14 +336,6 @@ export default function ExchangeHubPage() {
             </span>
             <b aria-hidden="true">→</b>
           </Link>
-          <button type="button" onClick={openFriendModal} className="exchange-connect-card exchange-connect-card--code">
-            <span className="exchange-connect-card__image" aria-hidden="true">🎟️</span>
-            <span>
-              <strong>{copy.codeTitle}</strong>
-              <em>{copy.codeDesc}</em>
-            </span>
-            <b aria-hidden="true">→</b>
-          </button>
         </div>
       </section>
 
@@ -373,7 +348,7 @@ export default function ExchangeHubPage() {
         <Link href="/exchange/friends">{copy.lockMore} ›</Link>
       </section>
 
-      <section className="exchange-bottom-grid">
+      <section className="exchange-bottom-grid exchange-bottom-grid--single">
         <Link href="/exchange/archive" className="exchange-archive-card">
           <div className="exchange-archive-card__head">
             <span aria-hidden="true">🗂️</span>
@@ -394,27 +369,6 @@ export default function ExchangeHubPage() {
             <span aria-hidden="true">📁</span> {copy.archiveAll} <b aria-hidden="true">›</b>
           </span>
         </Link>
-
-        <aside className="exchange-guide-card" aria-label={copy.guideTitle}>
-          <div className="exchange-guide-card__head">
-            <span className="exchange-guide-card__badge" aria-hidden="true">AI</span>
-            <h2>{copy.guideTitle} ✦</h2>
-          </div>
-          <p>{copy.guideDesc}</p>
-          <blockquote>
-            “{copy.guideQuestion}”
-            <small>{copy.guideHint}</small>
-          </blockquote>
-          {slot ? (
-            <button type="button" onClick={() => router.push(`/exchange/${slot.id}`)}>
-              ✎ {copy.guideAction} →
-            </button>
-          ) : (
-            <button type="button" onClick={openFriendModal}>
-              ✎ {copy.guideAction} →
-            </button>
-          )}
-        </aside>
       </section>
 
       {friendModalOpen && (

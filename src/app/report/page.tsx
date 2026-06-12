@@ -276,12 +276,7 @@ export default function ReportPage() {
       ) : (
         <>
           <section className="report-reading-cards report-reading-cards--reference">
-            <article className="report-reading-card">
-              <span>{copy.mostThisWeek}</span>
-              <strong>{topMeta ? `${topMeta.emoji} ${topMeta.label}` : copy.noData}</strong>
-              <p>{topMeta ? `${topEmotionPct}% ${copy.pctTail}` : copy.noDataDesc}</p>
-            </article>
-            <article className="report-reading-card">
+            <article className="report-reading-card report-reading-card--repeat">
               <span>{copy.repeated}</span>
               <strong>{repeatedMeta ? `${repeatedMeta.emoji} ${repeatedMeta.label}` : copy.noData}</strong>
               <p>{repeatedMeta ? copy.repeatedDesc : copy.notEnough}</p>

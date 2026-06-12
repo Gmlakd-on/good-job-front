@@ -150,7 +150,7 @@
 /* 중단 3개 인사이트 카드 */
 .report-reading-cards--reference {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
   margin-bottom: 20px;
 }
@@ -193,17 +193,7 @@
   pointer-events: none;
 }
 
-.report-page--reference .report-reading-card:nth-child(1)::after {
-  content: "";
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  background: conic-gradient(var(--ref-accent) 0 16%, rgba(236, 224, 205, 0.85) 16% 100%);
-  -webkit-mask: radial-gradient(circle at center, transparent 17px, #000 18px);
-  mask: radial-gradient(circle at center, transparent 17px, #000 18px);
-}
-
-.report-page--reference .report-reading-card:nth-child(2)::after {
+.report-page--reference .report-reading-card--repeat::after {
   content: "⟳";
   color: var(--ref-accent);
   font-size: 46px;
@@ -590,11 +580,11 @@
 
 .exchange-connect-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
 
-.exchange-connect-grid--two { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.exchange-connect-grid--two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
 .exchange-connect-card {
   display: grid;
@@ -641,10 +631,6 @@
 }
 
 .exchange-connect-card--green .exchange-connect-card__image { background: rgba(126, 155, 114, 0.16); }
-.exchange-connect-card--code .exchange-connect-card__image {
-  background: rgba(236, 186, 66, 0.18);
-  font-size: 28px;
-}
 
 /* 안내 바: 교환은 한 번에 한 명과만 */
 .exchange-lock-note {
