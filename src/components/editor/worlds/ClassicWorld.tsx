@@ -27,7 +27,7 @@ const ClassicWorld = forwardRef<WorldComponentHandle, ClassicWorldProps>(
       rendererRef.current = renderer;
 
       const config: WorldRendererConfig = {
-        id: "2000",
+        id: "1950",
         width,
         height,
         devicePixelRatio,

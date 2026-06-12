@@ -27,7 +27,7 @@ const KitschWorld = forwardRef<WorldComponentHandle, KitschWorldProps>(
       rendererRef.current = renderer;
 
       const config: WorldRendererConfig = {
-        id: "1980",
+        id: "2000",
         width,
         height,
         devicePixelRatio,

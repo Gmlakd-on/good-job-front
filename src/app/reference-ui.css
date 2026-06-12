@@ -99,10 +99,10 @@
   box-shadow: 0 6px 14px rgba(226, 96, 63, 0.3);
 }
 
-/* 상단 4개 통계 카드 */
+/* 상단 요약 통계 카드 */
 .report-stat-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
   margin-bottom: 20px;
 }

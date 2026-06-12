@@ -27,7 +27,7 @@ const SketchWorld = forwardRef<WorldComponentHandle, SketchWorldProps>(
       rendererRef.current = renderer;
 
       const config: Config = {
-        id: "1950",
+        id: "1980",
         width,
         height,
         devicePixelRatio,

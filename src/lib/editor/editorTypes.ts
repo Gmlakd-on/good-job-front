@@ -215,7 +215,7 @@ export const WORLDS: Record<CoverStyleId, WorldConfig> = {
     canvasEnabled: true,
     tools: [
       { id: "color_pen", label: "컬러펜", icon: "🖊", category: "primary", color: "#e44d8a" },
-      { id: "sticker_stamp", label: "도장", icon: "⭐", category: "variant" },
+      { id: "sticker_stamp", label: "스티커", icon: "💖", category: "variant" },
       { id: "eraser", label: "지우개", icon: "🧹", category: "utility" },
     ],
     textStyle: {

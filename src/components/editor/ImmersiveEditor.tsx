@@ -35,10 +35,10 @@ const worldComponents: Record<
 > = {
   stone:   () => import("./worlds/StoneWorld"),
   archive: () => import("./worlds/ArchiveWorld"),
-  "1950":  () => import("./worlds/SketchWorld"),
-  "1980":  () => import("./worlds/KitschWorld"),
+  "1950":  () => import("./worlds/ClassicWorld"),
+  "1980":  () => import("./worlds/SketchWorld"),
   "1990":  () => import("./worlds/PopWorld"),
-  "2000":  () => import("./worlds/ClassicWorld"),
+  "2000":  () => import("./worlds/KitschWorld"),
   "2010":  () => import("./worlds/MinimalWorld"),
 };
 
@@ -100,6 +100,7 @@ export default function ImmersiveEditor({
   const worldRef = useRef<WorldComponentHandle>(null);
   const restoredEditorStateRef = useRef(false);
   const [canvasSize, setCanvasSize] = useState({ w: 800, h: 600 });
+  const [selectedStickerId, setSelectedStickerId] = useState("heart");
   const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
 
   // Lazy world component
@@ -197,10 +198,29 @@ export default function ImmersiveEditor({
         color: toolDef.color ?? world.textStyle.color,
         size: toolDef.size ?? 3,
         opacity: toolDef.opacity ?? 1,
-        custom: {},
+        custom: toolDef.id === "sticker_stamp" ? { stickerId: selectedStickerId } : {},
       });
+      if (world.canvasEnabled) actions.setMode("draw");
     },
-    [world, actions],
+    [world, actions, selectedStickerId],
+  );
+
+  const handleSelectSticker = useCallback(
+    (stickerId: string) => {
+      setSelectedStickerId(stickerId);
+      const stickerTool = world.tools.find((tool) => tool.id === "sticker_stamp");
+      if (!stickerTool) return;
+
+      actions.setTool({
+        id: stickerTool.id,
+        color: stickerTool.color ?? world.textStyle.color,
+        size: stickerTool.size ?? 32,
+        opacity: stickerTool.opacity ?? 1,
+        custom: { stickerId },
+      });
+      actions.setMode("draw");
+    },
+    [actions, world],
   );
 
   // ── Keyboard shortcuts ──
@@ -295,6 +315,8 @@ export default function ImmersiveEditor({
         soundEnabled={state.soundEnabled}
         onToggleSound={actions.toggleSound}
         worldId={coverStyle}
+        selectedStickerId={selectedStickerId}
+        onSelectSticker={handleSelectSticker}
       />
     </div>
   );

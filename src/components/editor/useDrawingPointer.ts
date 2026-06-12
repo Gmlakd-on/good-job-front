@@ -20,9 +20,9 @@ const ERASE_STYLES: Record<CoverStyleId, "dust" | "fade" | "peel" | "dissolve" |
   stone:   "dust",
   archive: "fade",
   "1950":  "fade",
-  "1980":  "peel",
+  "1980":  "clean",
   "1990":  "dissolve",
-  "2000":  "clean",
+  "2000":  "peel",
   "2010":  "clean",
 };
 
@@ -97,7 +97,8 @@ export function useDrawingPointer(
         const stroke = renderer.endStroke();
         if (stroke) {
           actions.addStroke(stroke);
-          playSound(coverStyle, "stroke_end");
+          playSound(coverStyle, "sticker_place");
+          triggerHaptic(coverStyle, "sticker_place");
         }
         isDrawing.current = false;
       }

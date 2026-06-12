@@ -4893,3 +4893,126 @@ html[lang="en"] .home-shell .home-quote-card__text.hero-quote {
     grid-row: 1;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Global navigation responsive stability
+   - Keep the top navigation intact on tablet and narrow desktop widths.
+   - The mobile app-style bottom bar remains responsible below 768px.
+   -------------------------------------------------------------------------- */
+.chami-global-nav .chami-home-nav__inner,
+.chami-global-nav .chami-home-nav__links,
+.chami-global-nav .chami-home-nav__actions,
+.chami-global-nav .chami-profile-menu,
+.chami-global-nav .chami-profile-menu__button {
+  min-width: 0;
+}
+
+.chami-global-nav .chami-home-nav__inner {
+  box-sizing: border-box;
+}
+
+@media (min-width: 1024px) and (max-width: 1280px) {
+  .chami-global-nav .chami-home-nav__inner {
+    width: min(100% - 40px, 1180px);
+    grid-template-columns: minmax(145px, auto) minmax(0, 1fr) minmax(230px, auto);
+    gap: clamp(12px, 1.5vw, 20px);
+  }
+
+  .chami-global-nav .chami-home-nav__logo {
+    font-size: clamp(24px, 2.25vw, 30px);
+  }
+
+  .chami-global-nav .chami-home-nav__links {
+    gap: clamp(8px, 1.25vw, 16px);
+  }
+
+  .chami-global-nav .chami-home-nav__link {
+    min-width: clamp(78px, 7.8vw, 96px);
+    gap: 5px;
+    font-size: clamp(14px, 1.35vw, 16px);
+  }
+
+  .chami-global-nav .chami-home-nav__link svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .chami-global-nav .chami-home-nav__actions {
+    gap: 8px;
+  }
+
+  .chami-global-nav .chami-profile-menu__name {
+    max-width: 76px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .chami-global-nav .chami-home-nav__inner {
+    width: min(100% - 32px, 100%);
+    min-height: auto;
+    padding: 10px 0 0;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px 16px;
+  }
+
+  .chami-global-nav .chami-home-nav__logo {
+    min-width: 0;
+    font-size: clamp(24px, 3vw, 30px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .chami-global-nav .chami-home-nav__actions {
+    justify-self: end;
+    gap: 8px;
+  }
+
+  .chami-global-nav .chami-profile-menu__name {
+    max-width: 82px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chami-global-nav .chami-home-nav__links {
+    position: static;
+    grid-column: 1 / -1;
+    width: 100%;
+    max-width: 100%;
+    justify-content: flex-start;
+    gap: 10px;
+    margin: 0;
+    padding: 0 0 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-padding-inline: 2px;
+    scrollbar-width: none;
+  }
+
+  .chami-global-nav .chami-home-nav__links::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chami-global-nav .chami-home-nav__link {
+    flex: 0 0 auto;
+    min-width: max-content;
+    min-height: 42px;
+    padding: 0 13px;
+    border: 1px solid rgba(74, 52, 40, 0.08);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+  }
+
+  .chami-global-nav .chami-home-nav__link::after {
+    display: none;
+  }
+
+  .chami-global-nav .chami-home-nav__link--active {
+    border-color: rgba(239, 74, 50, 0.22);
+    background: rgba(239, 74, 50, 0.08);
+  }
+}

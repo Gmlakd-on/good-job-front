@@ -255,16 +255,6 @@ export default function ReportPage() {
           <span>{copy.streak}</span>
           <strong>{language === "ko" ? `${streak}일` : `${streak} days`}</strong>
         </article>
-        <article className="report-stat-card">
-          <span className="report-stat-card__icon report-stat-card__icon--yellow" aria-hidden="true">{topMeta?.emoji ?? "🙂"}</span>
-          <span>{copy.topEmotion}</span>
-          <strong>{topMeta ? `${topMeta.label} ${topEmotionPct}%` : copy.noData}</strong>
-        </article>
-        <article className="report-stat-card">
-          <span className="report-stat-card__icon report-stat-card__icon--leaf" aria-hidden="true">🌱</span>
-          <span>{copy.recovered}</span>
-          <strong>{streak > 0 ? (language === "ko" ? `연속 ${streak}일 기록` : `${streak} day streak`) : copy.recoveredValue}</strong>
-        </article>
       </section>
 
       {filtered.length === 0 ? (
