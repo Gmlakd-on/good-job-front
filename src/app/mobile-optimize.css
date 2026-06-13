@@ -260,10 +260,23 @@
     font-size: 17px;
   }
 
-  /* 책 선반 — 가로 스크롤 */
+  /* 책 선반 — 가로 스크롤 (touch-action & overflow는 ui-overrides에서 처리) */
   .cover-shelf__rail {
     padding: 16px 16px 0 !important;
     gap: 14px !important;
+    /* 모바일 가로 스크롤 명시적 허용 */
+    overflow-x: auto !important;
+    touch-action: pan-x !important;
+  }
+
+  /* 모바일에서 화살표는 숨김 (터치 스크롤로 충분) */
+  .cover-shelf__arrow {
+    display: none !important;
+  }
+
+  /* wrapper — 모바일은 화살표 없으니 padding 불필요 */
+  .cover-shelf-wrapper {
+    padding: 0 !important;
   }
 
   .cover-shelf__item {

@@ -35,12 +35,28 @@
 /* ── 2. 표지 선반 (CoverShelf) ─────────────────── */
 .cover-shelf {
   position: relative;
+  /* 화살표 버튼이 삐져나와도 잘리지 않도록 */
+  overflow: visible;
 }
+
+/* cover-shelf-wrapper가 overflow hidden이면 화살표가 잘림 → visible로 */
+.cover-shelf-wrapper {
+  overflow: visible;
+  /* 화살표 영역(양쪽 28px)만큼 내부 여백으로 처리 */
+  padding: 0 28px;
+  box-sizing: border-box;
+}
+
+/* 화살표를 -14px → padding 활용 0px 기준으로 변경하여 오버플로우 없앰 */
+.cover-shelf__arrow--left { left: -24px; }
+.cover-shelf__arrow--right { right: -24px; }
+
 
 .cover-shelf__rail {
   display: flex;
   gap: 18px;
   overflow-x: auto;
+  overflow-y: hidden;
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
   scroll-padding-inline: 12px;
@@ -48,6 +64,13 @@
   /* 선반 위에 책이 '서 있는' 느낌: 아래쪽 그림자가 보드에 닿도록 */
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  /* 스크롤 컨테이너가 레일 안으로만 한정되도록 */
+  cursor: grab;
+}
+
+.cover-shelf__rail:active {
+  cursor: grabbing;
 }
 
 .cover-shelf__rail::-webkit-scrollbar {
@@ -177,8 +200,8 @@
   transform: none;
 }
 
-.cover-shelf__arrow--left { left: -14px; }
-.cover-shelf__arrow--right { right: -14px; }
+.cover-shelf__arrow--left { /* left set above */ }
+.cover-shelf__arrow--right { /* right set above */ }
 
 @media (hover: hover) and (pointer: fine) {
   .cover-shelf__arrow { display: flex; }
@@ -1824,9 +1847,16 @@
   display: flex;
   gap: 28px;
   overflow-x: auto;
+  overflow-y: hidden;
   scroll-snap-type: x mandatory;
   scroll-padding-inline: calc((100% - 260px) / 2);
   padding: 8px 4px 24px;
+  touch-action: pan-x;
+  cursor: grab;
+}
+
+.cover-shelf__rail.cover-carousel:active {
+  cursor: grabbing;
 }
 
 .cover-shelf__item.cover-card {

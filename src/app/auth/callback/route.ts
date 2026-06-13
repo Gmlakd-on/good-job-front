@@ -1,7 +1,10 @@
-export const runtime = "edge";
+// edge → nodejs: @supabase/ssr의 쿠키 세팅이 Edge Runtime에서 불안정
+// (특히 카카오 OAuth redirect 후 세션이 클라이언트에 전달되지 않는 문제)
+export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { createServerClient } from "@supabase/ssr";
+import { getSupabasePublicKey, getSupabaseUrl } from "@/lib/supabase/env";
 
 function getSafeNextPath(value: string | null) {
   if (!value) return "/";
@@ -9,37 +12,65 @@ function getSafeNextPath(value: string | null) {
   return value;
 }
 
-function redirectToRequestOrigin(request: NextRequest, path: string) {
-  return NextResponse.redirect(new URL(path, request.url));
-}
-
-function authErrorRedirect(request: NextRequest, message?: string | null) {
-  const url = new URL("/auth", request.url);
-  url.searchParams.set("error", "auth_failed");
-  if (message) url.searchParams.set("message", message);
-  return NextResponse.redirect(url);
-}
-
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const next = getSafeNextPath(searchParams.get("next"));
   const code = searchParams.get("code");
-  const providerError = searchParams.get("error_description") || searchParams.get("error");
+  const providerError =
+    searchParams.get("error_description") || searchParams.get("error");
 
+  // OAuth 공급자가 에러를 보낸 경우
   if (providerError) {
-    return authErrorRedirect(request, providerError);
+    const url = new URL("/auth", request.url);
+    url.searchParams.set("error", "auth_failed");
+    url.searchParams.set("message", providerError);
+    return NextResponse.redirect(url);
   }
 
   if (!code) {
-    return authErrorRedirect(request, "인증 코드가 돌아오지 않았어요. Redirect URL 설정을 확인해주세요.");
+    const url = new URL("/auth", request.url);
+    url.searchParams.set("error", "auth_failed");
+    url.searchParams.set(
+      "message",
+      "인증 코드가 돌아오지 않았어요. Redirect URL 설정을 확인해주세요."
+    );
+    return NextResponse.redirect(url);
   }
 
-  const supabase = await createServerSupabase();
+  // 응답 객체를 먼저 만들고, supabase 클라이언트가 이 응답에 쿠키를 직접 set
+  const response = NextResponse.redirect(new URL(next, request.url));
+
+  const supabase = createServerClient(
+    getSupabaseUrl(),
+    getSupabasePublicKey(),
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, {
+              ...options,
+              // SameSite=Lax 필수: OAuth redirect가 cross-site POST이므로
+              sameSite: "lax",
+              httpOnly: true,
+              secure: process.env.NODE_ENV === "production",
+            })
+          );
+        },
+      },
+    }
+  );
+
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    return authErrorRedirect(request, error.message);
+    const url = new URL("/auth", request.url);
+    url.searchParams.set("error", "auth_failed");
+    url.searchParams.set("message", error.message);
+    return NextResponse.redirect(url);
   }
 
-  return redirectToRequestOrigin(request, next);
+  return response;
 }

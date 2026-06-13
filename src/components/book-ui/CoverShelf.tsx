@@ -108,6 +108,7 @@ export default function CoverShelf({ selected, onSelect }: CoverShelfProps) {
   return (
     <div
       className={`cover-shelf ${canLeft ? "cover-shelf--can-left" : ""} ${canRight ? "cover-shelf--can-right" : ""}`}
+      style={{ overflow: "visible" }}
     >
       <button
         type="button"
@@ -134,6 +135,15 @@ export default function CoverShelf({ selected, onSelect }: CoverShelfProps) {
         role="radiogroup"
         aria-label={t("book.cover.shelfAria")}
         onKeyDown={handleKeyDown}
+        style={{
+          /* 터치/마우스 가로 스크롤을 OS가 처리하도록 허용 */
+          touchAction: "pan-x",
+          /* 가로 스크롤 보장 */
+          overflowX: "auto",
+          overflowY: "hidden",
+          /* 자식이 잘리지 않도록 */
+          WebkitOverflowScrolling: "touch",
+        }}
       >
         {COVERS.map((cover) => {
           const isSelected = selected === cover.id;

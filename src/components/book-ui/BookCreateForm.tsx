@@ -56,7 +56,7 @@ export default function BookCreateForm({ loading = false, onSubmit }: BookCreate
   const selectedStyle = true;
 
   return (
-    <div className="book-create grid gap-5">
+    <div className="book-create grid gap-5" style={{ overflow: "visible" }}>
       {/* 1. 표지 선반 */}
       <div className="cover-shelf-wrapper">
         <p className="font-serif text-lg mb-1 px-1">{t("book.cover.heading")}</p>

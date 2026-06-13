@@ -487,7 +487,7 @@ const ko = {
   "w.newBookCta": "새 일기장 만들기",
   "w.switchBookAria": "일기장 바꾸기",
   "w.emotionQ": "오늘 어떤 마음이었어요?",
-  "w.toPersona": "읽어줄 사람 고르기",
+  "w.toPersona": "읽어줄 존재 고르기",
   "w.backEmotion": "← 감정 다시 고르기",
   "w.startWrite": "기록 시작",
   "w.back": "← 뒤로",
