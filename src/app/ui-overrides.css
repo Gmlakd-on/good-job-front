@@ -200,8 +200,8 @@
   transform: none;
 }
 
-.cover-shelf__arrow--left { /* left set above */ }
-.cover-shelf__arrow--right { /* right set above */ }
+.cover-shelf__arrow--left { left: 8px; }
+.cover-shelf__arrow--right { right: 8px; }
 
 @media (hover: hover) and (pointer: fine) {
   .cover-shelf__arrow { display: flex; }
