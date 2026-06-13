@@ -1,21 +1,10 @@
 "use client";
 
-/**
- * 일기장 만들기 폼.
- * 변경점:
- * - '고서 색상' 선택 제거: 표지 이미지가 색상에 따라 바뀌지 않아 의미 없는 선택이었음.
- *   cover_variant는 항상 null로 전송 (백엔드 CoverVariant 타입이 null 허용).
- * - 표지 선반은 좌우 스크롤형 CoverShelf 사용.
- * - 데스크톱(≥768px)에서는 이름/분량 입력을 2열로 배치해 세로 depth를 줄임.
- * - 모든 라벨은 언어 설정(useI18n)에 따라 번역.
- */
 import { useState } from "react";
 import CoverShelf from "./CoverShelf";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { DictKey } from "@/lib/i18n/dictionary";
-
-type CoverStyleId = "stone" | "archive" | "1950" | "1980" | "1990" | "2000" | "2010";
-type CoverVariant = null;
+import type { CoverStyleId, CoverVariant } from "./bookTypes";
 
 interface BookCreateFormProps {
   loading?: boolean;
@@ -47,35 +36,55 @@ const COVER_DESC_KEYS: Record<CoverStyleId, DictKey> = {
   "2010": "cover.2010.desc",
 };
 
-export default function BookCreateForm({ loading = false, onSubmit }: BookCreateFormProps) {
+export default function BookCreateForm({
+  loading = false,
+  onSubmit,
+}: BookCreateFormProps) {
   const { t } = useI18n();
   const [title, setTitle] = useState("");
   const [coverStyleId, setCoverStyleId] = useState<CoverStyleId>("archive");
   const [maxEntries, setMaxEntries] = useState<30 | 50 | 100 | 365>(30);
 
-  const selectedStyle = true;
-
   return (
-    <div className="book-create grid gap-5" style={{ overflow: "visible" }}>
-      {/* 1. 표지 선반 */}
-      <div className="cover-shelf-wrapper">
+    <div
+      className="book-create"
+      style={{
+        display: "grid",
+        gap: 20,
+        width: "100%",
+        overflow: "visible",
+      }}
+    >
+      <section style={{ minWidth: 0, overflow: "visible" }}>
         <p className="font-serif text-lg mb-1 px-1">{t("book.cover.heading")}</p>
         <p className="text-sm opacity-55 mb-3 px-1">{t("book.cover.sub")}</p>
-        <CoverShelf selected={coverStyleId} onSelect={setCoverStyleId} />
-        {selectedStyle && (
-          <p className="cover-shelf__selected-desc">{t(COVER_DESC_KEYS[coverStyleId])}</p>
-        )}
-      </div>
 
-      {/* 2. 이름 + 분량 (데스크톱 2열) */}
-      <div className="book-create__fields">
+        <CoverShelf selected={coverStyleId} onSelect={setCoverStyleId} />
+
+        <p
+          style={{
+            marginTop: 12,
+            textAlign: "center",
+            fontSize: 13,
+            opacity: 0.62,
+          }}
+        >
+          {t(COVER_DESC_KEYS[coverStyleId])}
+        </p>
+      </section>
+
+      <div
+        style={{
+          display: "grid",
+          gap: 16,
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
+        }}
+      >
         <div className="diary-card p-5">
           <label className="block">
             <span className="font-serif text-lg">{t("book.title.label")}</span>
             <p className="mt-1 text-sm opacity-55">
-              {selectedStyle
-                ? t("book.title.sub", { cover: t(COVER_LABEL_KEYS[coverStyleId]) })
-                : t("book.title.subDefault")}
+              {t("book.title.sub", { cover: t(COVER_LABEL_KEYS[coverStyleId]) })}
             </p>
             <input
               value={title}
@@ -91,11 +100,15 @@ export default function BookCreateForm({ loading = false, onSubmit }: BookCreate
             <span className="font-serif text-lg">{t("book.maxEntries.label")}</span>
             <select
               value={maxEntries}
-              onChange={(event) => setMaxEntries(Number(event.target.value) as 30 | 50 | 100 | 365)}
+              onChange={(event) =>
+                setMaxEntries(Number(event.target.value) as 30 | 50 | 100 | 365)
+              }
               className="mt-3 w-full rounded-2xl border border-[rgba(122,86,56,0.18)] bg-[rgba(255,248,232,0.68)] px-4 py-3 outline-none"
             >
               {([30, 50, 100, 365] as const).map((n) => (
-                <option key={n} value={n}>{t("book.maxEntries.unit", { n })}</option>
+                <option key={n} value={n}>
+                  {t("book.maxEntries.unit", { n })}
+                </option>
               ))}
             </select>
           </label>
@@ -103,16 +116,16 @@ export default function BookCreateForm({ loading = false, onSubmit }: BookCreate
         </div>
       </div>
 
-      {/* 3. 만들기 */}
       <button
         type="button"
         disabled={loading || !title.trim()}
         onClick={() => {
           if (!title.trim()) return;
+
           onSubmit({
             title: title.trim(),
             cover_style_id: coverStyleId,
-            cover_variant: null, // 색상 변형 제거: 표지 이미지에 영향이 없어 항상 null
+            cover_variant: null,
             max_entries: maxEntries,
           });
         }}
@@ -126,13 +139,14 @@ export default function BookCreateForm({ loading = false, onSubmit }: BookCreate
 
 function getPlaceholder(id: CoverStyleId): string {
   const map: Record<CoverStyleId, string> = {
-    stone:   "예: 아주 오래된 마음, 바위 위의 기록",
+    stone: "예: 아주 오래된 마음, 바위 위의 기록",
     archive: "예: 지난 마음 수집본, 오래된 기록함",
-    "1950":  "예: 나의 밤 기록장, 오늘의 조각",
-    "1980":  "예: 그림 옆의 하루, 연필 자국",
-    "1990":  "예: 오늘의 반짝임, 핑크 노트",
-    "2000":  "예: 반짝 스티커북, 보라빛 하루",
-    "2010":  "예: 오늘, 조용한 기록, 하루의 문장",
+    "1950": "예: 나의 밤 기록장, 오늘의 조각",
+    "1980": "예: 그림 옆의 하루, 연필 자국",
+    "1990": "예: 오늘의 반짝임, 핑크 노트",
+    "2000": "예: 반짝 스티커북, 보라빛 하루",
+    "2010": "예: 오늘, 조용한 기록, 하루의 문장",
   };
+
   return map[id] || "예: 나의 일기장";
 }

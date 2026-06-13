@@ -46,9 +46,11 @@ export default function NewBookPage() {
         body: JSON.stringify(payload),
       });
 
-      const data = (await res.json().catch(() => null)) as ApiErrorResponse & {
-        book?: { id?: string };
-      } | null;
+      const data = (await res.json().catch(() => null)) as
+        | (ApiErrorResponse & {
+            book?: { id?: string };
+          })
+        | null;
 
       if (!res.ok) {
         const message = data?.error || `일기장 생성에 실패했어요. (${res.status})`;
@@ -74,7 +76,15 @@ export default function NewBookPage() {
   }
 
   return (
-    <div className="book-new-page pt-4">
+    <div
+      className="book-new-page"
+      style={{
+        width: "min(100%, 980px)",
+        margin: "0 auto",
+        boxSizing: "border-box",
+        padding: "16px clamp(16px, 3vw, 28px) 72px",
+      }}
+    >
       <div className="mb-5 flex items-center justify-between">
         <Link href="/books" className="text-sm opacity-40 hover:opacity-70">
           {t("book.new.backToShelf")}
@@ -88,7 +98,9 @@ export default function NewBookPage() {
           <p>{error}</p>
           {errorDetails && (
             <details className="mt-3 rounded-xl bg-white/70 p-3 text-xs text-[rgba(62,50,42,0.72)]">
-              <summary className="cursor-pointer font-medium">개발자 오류 정보 보기</summary>
+              <summary className="cursor-pointer font-medium">
+                개발자 오류 정보 보기
+              </summary>
               <pre className="mt-2 max-h-44 overflow-auto whitespace-pre-wrap break-words">
                 {errorDetails}
               </pre>
