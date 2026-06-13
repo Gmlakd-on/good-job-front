@@ -1,5 +1,5 @@
 // edge → nodejs: @supabase/ssr의 쿠키 세팅이 Edge Runtime에서 불안정
-// (특히 카카오 OAuth redirect 후 세션이 클라이언트에 전달되지 않는 문제)
+// 특히 OAuth redirect 후 세션 쿠키가 클라이언트에 정상 반영되지 않는 문제를 피하기 위해 nodejs 사용
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // 응답 객체를 먼저 만들고, supabase 클라이언트가 이 응답에 쿠키를 직접 set
+  // 응답 객체를 먼저 만들고, Supabase가 이 응답에 세션 쿠키를 직접 설정하게 한다.
   const response = NextResponse.redirect(new URL(next, request.url));
 
   const supabase = createServerClient(
@@ -50,13 +50,7 @@ export async function GET(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, {
-              ...options,
-              // SameSite=Lax 필수: OAuth redirect가 cross-site POST이므로
-              sameSite: "lax",
-              httpOnly: true,
-              secure: process.env.NODE_ENV === "production",
-            })
+            response.cookies.set(name, value, options)
           );
         },
       },
