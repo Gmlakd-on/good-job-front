@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { apiGetJson, invalidateApiCache } from "@/lib/apiCache";
 import MascotHero from "@/components/home/MascotHero";
 import TryItDemo from "@/components/home/TryItDemo";
 import AuthModal from "@/components/auth/AuthModal";
@@ -191,8 +192,7 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    fetch(`/api/quotes?language=${language}`, { cache: "no-store" })
-      .then((response) => response.json())
+    apiGetJson<{ quote: Quote }>(`/api/quotes?language=${language}`, { ttlMs: 60 * 60_000 })
       .then((data) => setQuote(data.quote))
       .catch(() =>
         setQuote({
@@ -273,33 +273,24 @@ export default function HomePage() {
 
     try {
       const [profileResponse, affirmationResponse] = await Promise.all([
-        fetch("/api/profile", { cache: "no-store" }),
-        fetch("/api/daily-affirmation", { cache: "no-store" }),
+        apiGetJson<{ profile?: Profile }>("/api/profile", { ttlMs: 30_000 }),
+        apiGetJson<{ dailyAffirmation?: DailyAffirmation; streakCount?: number }>("/api/daily-affirmation", { ttlMs: 10_000 }),
       ]);
 
-      if (profileResponse.ok) {
-        const data = (await profileResponse.json()) as { profile?: Profile };
-        const nextProfile = data.profile ?? { nickname: null };
-        setProfile(nextProfile);
-        const nickname = nextProfile.nickname?.trim() ?? "";
-        if (!nickname) {
-          setNicknameInput("");
-          setNicknameModalOpen(true);
-        }
+      const nextProfile = profileResponse.profile ?? { nickname: null };
+      setProfile(nextProfile);
+      const nickname = nextProfile.nickname?.trim() ?? "";
+      if (!nickname) {
+        setNicknameInput("");
+        setNicknameModalOpen(true);
       }
 
-      if (affirmationResponse.ok) {
-        const data = (await affirmationResponse.json()) as {
-          dailyAffirmation?: DailyAffirmation;
-          streakCount?: number;
-        };
-        if (data.dailyAffirmation) {
-          setDailyAffirmation(data.dailyAffirmation);
-          setAffirmationDraft(data.dailyAffirmation.completed ? data.dailyAffirmation.text : "");
-          setFeedStarted(Boolean(data.dailyAffirmation.feedStartedAt && !data.dailyAffirmation.completed));
-        }
-        setStreakCount(data.streakCount ?? 0);
+      if (affirmationResponse.dailyAffirmation) {
+        setDailyAffirmation(affirmationResponse.dailyAffirmation);
+        setAffirmationDraft(affirmationResponse.dailyAffirmation.completed ? affirmationResponse.dailyAffirmation.text : "");
+        setFeedStarted(Boolean(affirmationResponse.dailyAffirmation.feedStartedAt && !affirmationResponse.dailyAffirmation.completed));
       }
+      setStreakCount(affirmationResponse.streakCount ?? 0);
     } catch {
       setAffirmationError("홈 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
     }
@@ -389,6 +380,7 @@ export default function HomePage() {
       });
 
       if (response.ok) {
+        invalidateApiCache("/api/daily-affirmation");
         const data = (await response.json()) as {
           dailyAffirmation?: DailyAffirmation;
           streakCount?: number;
@@ -430,6 +422,7 @@ export default function HomePage() {
         return;
       }
 
+      invalidateApiCache("/api/daily-affirmation");
       if (data.dailyAffirmation) {
         setDailyAffirmation(data.dailyAffirmation);
         setAffirmationDraft(data.dailyAffirmation.text);
@@ -478,6 +471,7 @@ export default function HomePage() {
           return;
         }
 
+        invalidateApiCache("/api/profile");
         setProfile((prev) => ({ ...(prev ?? {}), ...(data.profile ?? {}), nickname }));
         setNicknameModalOpen(false);
       } catch {

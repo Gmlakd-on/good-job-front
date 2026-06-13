@@ -32,9 +32,15 @@ const eslintConfig = defineConfig([
     },
   },
 
+  // Next page/route 파일은 화면 조립 책임이 커질 수 있어 길이 규칙만 별도 완화한다.
+  {
+    files: ["src/app/**/page.tsx", "src/app/**/route.ts", "src/app/write/WritePageClient.tsx"],
+    rules: { "max-lines": "off" },
+  },
+
   // 데이터/타입 파일 예외 (긴 문자열·유니온이 정상)
   {
-    files: ["src/types/**/*.ts", "src/lib/defaultQuotes.ts"],
+    files: ["src/types/**/*.ts", "src/lib/defaultQuotes.ts", "src/lib/i18n/dictionary.ts"],
     rules: { "max-lines": "off" },
   },
 

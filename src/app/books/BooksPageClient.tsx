@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import BookShelf from "@/components/book-ui/BookShelf";
 import type { DiaryBook } from "@/components/book-ui/bookTypes";
 import { getLastBookId } from "@/lib/lastBook";
+import { apiGetJson } from "@/lib/apiCache";
 
 export default function BooksPage() {
   const router = useRouter();
@@ -28,12 +29,7 @@ export default function BooksPage() {
       }
 
       try {
-        const res = await fetch("/api/diary-books");
-        if (!res.ok) {
-          const data = await res.json().catch(() => null);
-          throw new Error(data?.error || t("shelf.loadFail"));
-        }
-        const data = await res.json();
+        const data = await apiGetJson<{ books?: DiaryBook[] }>("/api/diary-books", { ttlMs: 10_000 });
         const bookList: DiaryBook[] = data.books || [];
         setBooks(bookList);
 

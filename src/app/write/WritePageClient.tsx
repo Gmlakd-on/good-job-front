@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { apiGetJson, invalidateApiCache } from "@/lib/apiCache";
 import { loadDraft, clearDraft, startDraftTimer } from "@/lib/draftStorage";
 import { saveLastBookId, clearLastBookId } from "@/lib/lastBook";
 import EmotionSelector from "@/components/EmotionSelector";
@@ -75,11 +76,11 @@ export default function WritePage() {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }: { data: { user: User | null } }) => {
       if (!data.user) { router.push("/auth"); return; }
-      fetch("/api/profile").then((res) => res.json()).then((data) => {
+      apiGetJson<{ profile?: { preferred_persona?: string } }>("/api/profile", { ttlMs: 30_000 }).then((data) => {
         if (data.profile?.preferred_persona) setSelectedPersona(data.profile.preferred_persona);
       }).catch(() => {});
       // 일기장 전환 셀렉트용 — 활성 일기장 목록
-      fetch("/api/diary-books").then((res) => res.json()).then((data) => {
+      apiGetJson<{ books?: DiaryBook[] }>("/api/diary-books", { ttlMs: 10_000 }).then((data) => {
         const list: DiaryBook[] = (data.books || []).filter((b: DiaryBook) => b.status === "active");
         setActiveBooks(list);
       }).catch(() => {});
@@ -91,10 +92,8 @@ export default function WritePage() {
     async function loadBook() {
       if (!bookId) { router.replace("/books"); return; }
       try {
-        const res = await fetch(`/api/diary-books/${bookId}`);
-        const data = await res.json().catch(() => ({}));
-        if (res.status === 401) { router.replace("/auth"); return; }
-        if (!res.ok || !data.book) { clearLastBookId(); router.replace("/books"); return; }
+        const data = await apiGetJson<{ book?: DiaryBook }>(`/api/diary-books/${bookId}`, { ttlMs: 10_000 });
+        if (!data.book) { clearLastBookId(); router.replace("/books"); return; }
         setBook(data.book);
         saveLastBookId(data.book.id); // 다음 "쓰기"는 이 일기장으로 바로 진입
       } catch { router.replace("/books"); }
@@ -197,6 +196,8 @@ export default function WritePage() {
 
       if (!res.ok) { setError(data.error || t("w.genericError")); setStep("write"); return; }
 
+      invalidateApiCache("/api/diaries");
+      invalidateApiCache("/api/diary-books");
       setRiskLevel(data.riskLevel);
       setAiInsight(data.ai || null);
       if (data.diary?.id) setDiaryId(data.diary.id);

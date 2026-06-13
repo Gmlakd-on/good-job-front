@@ -261,39 +261,6 @@
     font-size: 17px;
   }
 
-  /* 책 선반 — 가로 스크롤 (touch-action & overflow는 ui-overrides에서 처리) */
-  .cover-shelf__rail {
-    padding: 16px 16px 0 !important;
-    gap: 14px !important;
-    /* 모바일 가로 스크롤 명시적 허용 */
-    overflow-x: auto !important;
-    touch-action: pan-x !important;
-  }
-
-  /* 모바일에서 화살표는 숨김 (터치 스크롤로 충분) */
-  .cover-shelf__arrow {
-    display: none !important;
-  }
-
-  /* wrapper — 모바일은 화살표 없으니 padding 불필요 */
-  .cover-shelf-wrapper {
-    padding: 0 !important;
-  }
-
-  .cover-shelf__item {
-    width: 140px !important;
-    padding: 10px 8px 12px !important;
-    border-radius: 14px !important;
-  }
-
-  .cover-shelf__image-box {
-    height: 120px !important;
-  }
-
-  .cover-shelf__board {
-    margin: -4px 10px 0 !important;
-  }
-
   /* 책 카드 (BookCard) */
   .book-cover--md {
     width: 110px !important;
@@ -680,10 +647,6 @@
    31. 책 만들기 폼 (BookCreateForm)
    ────────────────────────────────────────── */
 @media (max-width: 767px) {
-  .book-create__fields {
-    gap: 14px !important;
-  }
-
   .preview-scene {
     padding: 20px 16px !important;
     border-radius: 16px !important;
@@ -698,30 +661,5 @@
     padding: 14px !important;
     font-size: 15px !important;
     border-radius: 12px !important;
-  }
-}
-
-/* ──────────────────────────────────────────
-   32. 표지 선택 (CoverShelf / cover-picker)
-       모바일에서 그리드 2열 유지
-   ────────────────────────────────────────── */
-@media (max-width: 767px) {
-  /* 표지 선택 그리드 — 2열 고정 */
-  .cover-picker {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
-  }
-
-  .cover-picker__item {
-    padding: 10px 8px 12px !important;
-    border-radius: 14px !important;
-  }
-
-  .cover-picker__image-box {
-    height: 110px !important;
-  }
-
-  .cover-picker__label {
-    font-size: 13px !important;
   }
 }

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import BookCreateForm from "@/components/book-ui/BookCreateForm";
 import type { CoverStyleId, CoverVariant } from "@/components/book-ui/bookTypes";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { invalidateApiCache } from "@/lib/apiCache";
 
 type ApiErrorResponse = {
   error?: string;
@@ -62,6 +63,7 @@ export default function NewBookPage() {
         throw new Error("일기장 생성 응답이 올바르지 않아요.");
       }
 
+      invalidateApiCache("/api/diary-books");
       router.push(`/write?bookId=${data.book.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "일기장 생성에 실패했어요.");

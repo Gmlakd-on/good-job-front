@@ -15,6 +15,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { apiGetJson, invalidateApiCache } from "@/lib/apiCache";
 import { DICTIONARIES, type DictKey, type Language } from "./dictionary";
 
 const STORAGE_KEY = "gj.language";
@@ -57,10 +58,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/settings", { cache: "no-store" });
-        if (!res.ok) return; // 비로그인 등 — 캐시/기본값 유지
-        const data = await res.json();
-        const serverLang = data?.settings?.language;
+        const data = await apiGetJson<{ settings?: { language?: unknown } }>("/api/settings", { ttlMs: 60_000 });
+        const serverLang = data.settings?.language;
         if (!cancelled && isLanguage(serverLang)) {
           setLanguageState(serverLang);
           window.localStorage.setItem(STORAGE_KEY, serverLang);
@@ -88,6 +87,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ language: lang }),
       });
+      invalidateApiCache("/api/settings");
     } catch {
       /* 계정 저장 실패해도 화면 언어는 유지 */
     }

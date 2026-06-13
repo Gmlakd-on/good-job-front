@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { apiGetJson, invalidateApiCache } from "@/lib/apiCache";
 import AuthModal from "@/components/auth/AuthModal";
 import type { User } from "@supabase/supabase-js";
 
@@ -46,11 +47,8 @@ export default function Header() {
 
   const fetchUnread = useCallback(async () => {
     try {
-      const res = await fetch("/api/notifications", { cache: "no-store" });
-      if (res.ok) {
-        const d = (await res.json()) as { unreadCount?: number };
-        setUnreadCount(d.unreadCount || 0);
-      }
+      const data = await apiGetJson<{ unreadCount?: number }>("/api/notifications", { ttlMs: 5_000 });
+      setUnreadCount(data.unreadCount || 0);
     } catch {
       // 읽지 않은 알림 수는 보조 정보라 실패해도 화면은 유지합니다.
     }
@@ -58,11 +56,8 @@ export default function Header() {
 
   const fetchProfile = useCallback(async () => {
     try {
-      const res = await fetch("/api/profile", { cache: "no-store" });
-      if (res.ok) {
-        const data = (await res.json()) as { profile?: Profile };
-        setProfile(data.profile ?? null);
-      }
+      const data = await apiGetJson<{ profile?: Profile }>("/api/profile", { ttlMs: 30_000 });
+      setProfile(data.profile ?? null);
     } catch {
       setProfile(null);
     }
@@ -87,6 +82,7 @@ export default function Header() {
         void fetchUnread();
         void fetchProfile();
       } else {
+        invalidateApiCache();
         setUnreadCount(0);
         setProfile(null);
       }
@@ -139,6 +135,7 @@ export default function Header() {
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
+    invalidateApiCache();
     setMenuOpen(false);
     setUnreadCount(0);
     router.push("/");
