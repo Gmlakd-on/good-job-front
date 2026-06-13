@@ -18,11 +18,10 @@ export const railStyle: CSSProperties = {
   overflowY: "hidden",
   padding: "14px 54px 26px",
   boxSizing: "border-box",
-  scrollBehavior: "smooth",
   scrollSnapType: "none",
   overscrollBehaviorX: "contain",
   WebkitOverflowScrolling: "touch",
-  touchAction: "pan-y",
+  touchAction: "pan-x pan-y",
   cursor: "grab",
 };
 

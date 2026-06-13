@@ -1,11 +1,15 @@
 "use client";
 
-import { useCallback, useRef, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
+import {
+  useCallback,
+  useRef,
+  type PointerEvent as ReactPointerEvent,
+  type RefObject,
+} from "react";
 
 interface DragState {
   pointerId: number;
   startX: number;
-  startY: number;
   startScrollLeft: number;
   isDragging: boolean;
 }
@@ -31,7 +35,11 @@ export function useHorizontalDragScroll<T extends HTMLElement>({
       if (!state || state.pointerId !== event.pointerId) return;
 
       const target = scrollRef.current;
-      if (target && typeof target.hasPointerCapture === "function" && target.hasPointerCapture(event.pointerId)) {
+      if (
+        target &&
+        typeof target.hasPointerCapture === "function" &&
+        target.hasPointerCapture(event.pointerId)
+      ) {
         target.releasePointerCapture(event.pointerId);
       }
 
@@ -40,19 +48,18 @@ export function useHorizontalDragScroll<T extends HTMLElement>({
       target?.classList.remove("is-dragging");
       onDragEnd?.(!didCancel && state.isDragging);
     },
-    [onDragEnd, scrollRef],
+    [onDragEnd, scrollRef]
   );
 
   const onPointerDown = useCallback(
     (event: ReactPointerEvent<T>) => {
       const target = scrollRef.current;
       if (!target) return;
-      if (event.pointerType === "mouse" && event.button !== 0) return;
+      if (event.pointerType !== "mouse" || event.button !== 0) return;
 
       dragStateRef.current = {
         pointerId: event.pointerId,
         startX: event.clientX,
-        startY: event.clientY,
         startScrollLeft: target.scrollLeft,
         isDragging: false,
       };
@@ -61,7 +68,7 @@ export function useHorizontalDragScroll<T extends HTMLElement>({
         target.setPointerCapture(event.pointerId);
       }
     },
-    [scrollRef],
+    [scrollRef]
   );
 
   const onPointerMove = useCallback(
@@ -71,11 +78,9 @@ export function useHorizontalDragScroll<T extends HTMLElement>({
       if (!state || !target || state.pointerId !== event.pointerId) return;
 
       const deltaX = event.clientX - state.startX;
-      const deltaY = event.clientY - state.startY;
 
       if (!state.isDragging) {
-        const isHorizontalIntent = Math.abs(deltaX) > Math.abs(deltaY);
-        if (Math.abs(deltaX) < DRAG_THRESHOLD_PX || !isHorizontalIntent) return;
+        if (Math.abs(deltaX) < DRAG_THRESHOLD_PX) return;
 
         state.isDragging = true;
         target.style.cursor = "grabbing";
@@ -86,21 +91,21 @@ export function useHorizontalDragScroll<T extends HTMLElement>({
       target.scrollLeft = state.startScrollLeft - deltaX;
       onDragMove?.();
     },
-    [onDragMove, scrollRef],
+    [onDragMove, scrollRef]
   );
 
   const onPointerUp = useCallback(
     (event: ReactPointerEvent<T>) => {
       finishDrag(event);
     },
-    [finishDrag],
+    [finishDrag]
   );
 
   const onPointerCancel = useCallback(
     (event: ReactPointerEvent<T>) => {
       finishDrag(event, true);
     },
-    [finishDrag],
+    [finishDrag]
   );
 
   return {
