@@ -341,6 +341,18 @@ export default function HomePage() {
 
   const currentAffirmationText = isAffirmationCompleted ? dailyAffirmation?.text?.trim() ?? "" : "";
 
+  useEffect(() => {
+    if (!affirmationEditing || isAffirmationCompleted) return;
+    if (!window.matchMedia("(max-width: 760px)").matches) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [affirmationEditing, isAffirmationCompleted]);
+
   const guardAuth = useCallback(
     (next: string, mode: AuthMode = "login") => {
       if (!user) {
@@ -437,6 +449,11 @@ export default function HomePage() {
     }
   }, [affirmationDraft, guardAuth]);
 
+  const closeAffirmationEditor = useCallback(() => {
+    setAffirmationEditing(false);
+    setAffirmationError("");
+  }, []);
+
   const saveNickname = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -489,6 +506,34 @@ export default function HomePage() {
   const adsenseHomeSlot = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_HOME_SLOT ?? "";
   const canRenderAdsenseSlot = Boolean(adsenseClientId && adsenseHomeSlot);
 
+  const renderAffirmationEditor = (guideId: string, className = "chami-affirmation-editor") => (
+    <div className={className}>
+      <div className="chami-affirmation-editor__field">
+        <p id={guideId} className="chami-affirmation-editor__guide">
+          <span>따라 적어봐요</span>
+          {affirmationSuggestion}
+        </p>
+        <textarea
+          value={affirmationDraft}
+          onChange={(event) => setAffirmationDraft(event.target.value)}
+          placeholder="위 문장을 천천히 따라 적거나, 나만의 확언을 적어보세요."
+          maxLength={120}
+          aria-label="오늘의 확언 입력"
+          aria-describedby={guideId}
+        />
+      </div>
+      <button
+        type="button"
+        className="chami-spoon-button"
+        onClick={completeAffirmationFeed}
+        disabled={affirmationSaving}
+      >
+        <span aria-hidden="true">🥄</span>
+        {affirmationSaving ? "먹이는 중" : "참이에게 주기"}
+      </button>
+    </div>
+  );
+
   if (authChecked && user) {
     return (
       <div className="chami-home">
@@ -512,31 +557,7 @@ export default function HomePage() {
                 <div className="chami-affirmation-box__content">
                   <p className="chami-affirmation-box__eyebrow">오늘의 확언</p>
                   {affirmationEditing && !isAffirmationCompleted ? (
-                    <div className="chami-affirmation-editor">
-                      <div className="chami-affirmation-editor__field">
-                        <p id="affirmation-copy-guide" className="chami-affirmation-editor__guide">
-                          <span>따라 적어봐요</span>
-                          {affirmationSuggestion}
-                        </p>
-                        <textarea
-                          value={affirmationDraft}
-                          onChange={(event) => setAffirmationDraft(event.target.value)}
-                          placeholder="위 문장을 천천히 따라 적거나, 나만의 확언을 적어보세요."
-                          maxLength={120}
-                          aria-label="오늘의 확언 입력"
-                          aria-describedby="affirmation-copy-guide"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        className="chami-spoon-button"
-                        onClick={completeAffirmationFeed}
-                        disabled={affirmationSaving}
-                      >
-                        <span aria-hidden="true">🥄</span>
-                        {affirmationSaving ? "먹이는 중" : "참이에게 주기"}
-                      </button>
-                    </div>
+                    renderAffirmationEditor("affirmation-copy-guide")
                   ) : isAffirmationCompleted ? (
                     <p className="chami-affirmation-box__text">{currentAffirmationText}</p>
                   ) : (
@@ -666,6 +687,31 @@ export default function HomePage() {
                 {nicknameSaving ? "저장 중" : "시작하기"}
               </button>
             </form>
+          </div>
+        )}
+
+        {affirmationEditing && !isAffirmationCompleted && (
+          <div className="chami-affirmation-modal" role="dialog" aria-modal="true" aria-labelledby="affirmation-modal-title">
+            <div className="chami-affirmation-modal__card">
+              <button
+                type="button"
+                className="chami-affirmation-modal__close"
+                onClick={closeAffirmationEditor}
+                aria-label="확언 입력 닫기"
+              >
+                ×
+              </button>
+              <div className="chami-affirmation-modal__mascot" aria-hidden="true">
+                <Image src="/mascot/mascot-idle.png" alt="" width={82} height={82} />
+              </div>
+              <p className="chami-affirmation-modal__eyebrow">참이에게 긍정 확언 먹이 주기</p>
+              <h2 id="affirmation-modal-title">오늘 나에게 들려줄 한 문장</h2>
+              <p className="chami-affirmation-modal__description">
+                아래 문장을 따라 적거나, 지금 필요한 말을 직접 적어주세요.
+              </p>
+              {renderAffirmationEditor("affirmation-modal-copy-guide", "chami-affirmation-editor chami-affirmation-editor--modal")}
+              {affirmationError && <p className="chami-form-error">{affirmationError}</p>}
+            </div>
           </div>
         )}
 

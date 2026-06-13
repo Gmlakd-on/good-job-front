@@ -2960,6 +2960,10 @@ body { overflow-x: hidden; }
   font-weight: 800;
 }
 
+.chami-affirmation-modal {
+  display: none;
+}
+
 .chami-note-card__buttons {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 0.72fr);
@@ -3441,7 +3445,110 @@ body { overflow-x: hidden; }
   .chami-note-card,
   .chami-mascot-card { padding: 24px 20px; border-radius: 24px; }
   .chami-note-card__quote { font-size: clamp(30px, 10vw, 42px); }
+  .chami-affirmation-box--editing { display: none; }
   .chami-affirmation-editor { grid-template-columns: 1fr; }
+  .chami-affirmation-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 18px 14px max(18px, env(safe-area-inset-bottom));
+    background: rgba(47, 33, 27, 0.38);
+    backdrop-filter: blur(8px);
+  }
+  .chami-affirmation-modal__card {
+    position: relative;
+    width: min(100%, 420px);
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border: 1px solid rgba(213, 162, 90, 0.28);
+    border-radius: 28px;
+    background:
+      radial-gradient(circle at 50% -8%, rgba(255, 232, 165, 0.54), transparent 42%),
+      linear-gradient(180deg, rgba(255, 253, 247, 0.99), rgba(255, 246, 229, 0.98));
+    padding: 30px 20px 22px;
+    box-shadow: 0 -18px 54px rgba(47, 33, 27, 0.24);
+  }
+  .chami-affirmation-modal__close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: inline-grid;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.76);
+    color: #6c5548;
+    font-size: 28px;
+    line-height: 1;
+    box-shadow: 0 8px 20px rgba(74, 52, 40, 0.1);
+  }
+  .chami-affirmation-modal__mascot {
+    display: grid;
+    width: 86px;
+    height: 86px;
+    margin: 0 auto 8px;
+    place-items: center;
+    border-radius: 999px;
+    background: rgba(255, 244, 207, 0.82);
+  }
+  .chami-affirmation-modal__mascot img {
+    width: 76px;
+    height: 76px;
+    object-fit: contain;
+  }
+  .chami-affirmation-modal__eyebrow {
+    margin: 0 0 4px;
+    text-align: center;
+    color: #7d944b;
+    font-size: 13px;
+    font-weight: 900;
+  }
+  .chami-affirmation-modal__card h2 {
+    margin: 0;
+    text-align: center;
+    color: #2f211b;
+    font-family: "Noto Serif KR", Georgia, serif;
+    font-size: 24px;
+    line-height: 1.35;
+    letter-spacing: -0.05em;
+  }
+  .chami-affirmation-modal__description {
+    margin: 8px 0 18px;
+    text-align: center;
+    color: #78695e;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.5;
+    word-break: keep-all;
+  }
+  .chami-affirmation-editor--modal .chami-affirmation-editor__guide {
+    margin: 0 0 8px;
+    color: #725f52;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.45;
+    word-break: keep-all;
+  }
+  .chami-affirmation-editor--modal .chami-affirmation-editor__guide span {
+    display: block;
+    margin-bottom: 2px;
+    color: #8f6d51;
+    font-size: 12px;
+  }
+  .chami-affirmation-editor--modal textarea {
+    min-height: 118px;
+    font-size: 16px;
+  }
+  .chami-affirmation-editor--modal .chami-spoon-button {
+    min-height: 54px;
+    width: 100%;
+    font-size: 17px;
+  }
   .chami-note-card__buttons { grid-template-columns: 1fr; }
   .chami-mascot-card { min-height: 400px; }
   .chami-mascot-stage { min-height: 190px; }
