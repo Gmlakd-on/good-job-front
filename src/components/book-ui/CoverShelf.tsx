@@ -2,11 +2,11 @@
 
 /**
  * 표지 선반.
- * - 터치: 기본 좌우 스와이프
- * - 마우스: 드래그해서 좌우 이동
- * - 휠: 선반 위에서 세로 휠을 좌우 스크롤로 변환
- * - 버튼: 좌우 화살표로 카드 단위 이동
- * - 키보드: ←/→ 로 표지 선택 이동
+ * - /books/new 생성 화면에서 사용하는 가로 표지 선택 UI
+ * - 데스크톱: 마우스 드래그, 휠, 좌우 버튼 지원
+ * - 모바일/트랙패드: 기본 가로 스와이프 지원
+ * - 기존 scroll-snap mandatory로 인해 "붙잡히는" 느낌이 나는 문제를 막기 위해
+ *   이 컴포넌트에서는 snap을 inline style로 완화한다.
  */
 import Image from "next/image";
 import {
@@ -15,6 +15,7 @@ import {
   useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   type WheelEvent as ReactWheelEvent,
 } from "react";
@@ -79,24 +80,26 @@ interface CoverShelfProps {
   onSelect: (id: CoverStyleId) => void;
 }
 
-type DragState = {
+interface DragState {
   active: boolean;
+  pointerId: number | null;
   startX: number;
   startScrollLeft: number;
   moved: boolean;
-  pointerId: number | null;
+}
+
+const INITIAL_DRAG_STATE: DragState = {
+  active: false,
+  pointerId: null,
+  startX: 0,
+  startScrollLeft: 0,
+  moved: false,
 };
 
 export default function CoverShelf({ selected, onSelect }: CoverShelfProps) {
   const { t } = useI18n();
   const railRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<DragState>({
-    active: false,
-    startX: 0,
-    startScrollLeft: 0,
-    moved: false,
-    pointerId: null,
-  });
+  const dragRef = useRef<DragState>(INITIAL_DRAG_STATE);
   const suppressClickRef = useRef(false);
 
   const [canLeft, setCanLeft] = useState(false);
@@ -107,6 +110,7 @@ export default function CoverShelf({ selected, onSelect }: CoverShelfProps) {
     if (!rail) return;
 
     const maxLeft = Math.max(0, rail.scrollWidth - rail.clientWidth);
+
     setCanLeft(rail.scrollLeft > 4);
     setCanRight(maxLeft > 4 && rail.scrollLeft < maxLeft - 4);
   }, []);
@@ -169,8 +173,9 @@ export default function CoverShelf({ selected, onSelect }: CoverShelfProps) {
       centerCover(selected, false);
     });
 
-    return () => window.cancelAnimationFrame(raf);
-    // selected가 바뀔 때마다 강제 중앙 정렬하면 사용자가 직접 스크롤 중일 때 튈 수 있어 최초/외부 변경만 부드럽게 처리
+    return () => {
+      window.cancelAnimationFrame(raf);
+    };
   }, [centerCover, selected]);
 
   const getScrollStep = useCallback(() => {
@@ -184,7 +189,7 @@ export default function CoverShelf({ selected, onSelect }: CoverShelfProps) {
     const gap =
       Number.parseFloat(styles.columnGap) ||
       Number.parseFloat(styles.gap) ||
-      0;
+      28;
 
     return firstItem.offsetWidth + gap;
   }, []);
@@ -225,30 +230,45 @@ export default function CoverShelf({ selected, onSelect }: CoverShelfProps) {
     centerCover(cover.id, true);
   };
 
+  const normalizeWheelDelta = (event: ReactWheelEvent<HTMLDivElement>) => {
+    const rawDelta =
+      Math.abs(event.deltaX) > Math.abs(event.deltaY)
+        ? event.deltaX
+        : event.deltaY;
+
+    if (event.deltaMode === 1) {
+      return rawDelta * 16;
+    }
+
+    if (event.deltaMode === 2) {
+      return rawDelta * 320;
+    }
+
+    return rawDelta;
+  };
+
   const handleWheel = (event: ReactWheelEvent<HTMLDivElement>) => {
     const rail = railRef.current;
     if (!rail) return;
 
-    const maxLeft = rail.scrollWidth - rail.clientWidth;
+    if (event.ctrlKey || event.metaKey) return;
+
+    const maxLeft = Math.max(0, rail.scrollWidth - rail.clientWidth);
     if (maxLeft <= 4) return;
 
-    // 트랙패드의 순수 가로 제스처는 브라우저 기본 동작에 맡김
-    if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
-
-    const delta = event.deltaY;
+    const delta = normalizeWheelDelta(event);
     if (!delta) return;
 
-    const wantsRight = delta > 0;
-    const canMove = wantsRight
-      ? rail.scrollLeft < maxLeft - 2
-      : rail.scrollLeft > 2;
+    const nextLeft = Math.max(0, Math.min(rail.scrollLeft + delta, maxLeft));
 
-    if (!canMove) return;
+    if (Math.abs(nextLeft - rail.scrollLeft) < 1) {
+      return;
+    }
 
     event.preventDefault();
 
-    rail.scrollBy({
-      left: delta,
+    rail.scrollTo({
+      left: nextLeft,
       behavior: "auto",
     });
 
@@ -259,19 +279,25 @@ export default function CoverShelf({ selected, onSelect }: CoverShelfProps) {
     const rail = railRef.current;
     if (!rail) return;
 
-    // 터치는 브라우저 기본 swipe가 더 자연스러워서 마우스 드래그만 직접 처리
+    // 터치는 브라우저 기본 스와이프가 가장 자연스럽다.
     if (event.pointerType === "touch") return;
+
+    // 마우스 왼쪽 버튼만 드래그 처리
     if (event.button !== 0) return;
 
     dragRef.current = {
       active: true,
+      pointerId: event.pointerId,
       startX: event.clientX,
       startScrollLeft: rail.scrollLeft,
       moved: false,
-      pointerId: event.pointerId,
     };
 
-    rail.setPointerCapture?.(event.pointerId);
+    try {
+      rail.setPointerCapture(event.pointerId);
+    } catch {
+      // 일부 브라우저에서 이미 capture 상태면 예외가 날 수 있어 무시
+    }
   };
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -287,33 +313,31 @@ export default function CoverShelf({ selected, onSelect }: CoverShelfProps) {
       suppressClickRef.current = true;
     }
 
-    if (drag.moved) {
-      event.preventDefault();
-    }
+    if (!drag.moved) return;
+
+    event.preventDefault();
 
     rail.scrollLeft = drag.startScrollLeft - dx;
     updateArrows();
   };
 
-  const endDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+  const finishDrag = (event?: ReactPointerEvent<HTMLDivElement>) => {
     const rail = railRef.current;
     const drag = dragRef.current;
 
     if (!drag.active) return;
 
     if (rail && drag.pointerId !== null) {
-      rail.releasePointerCapture?.(drag.pointerId);
+      try {
+        rail.releasePointerCapture(drag.pointerId);
+      } catch {
+        // 이미 release 된 경우 무시
+      }
     }
 
     const moved = drag.moved;
 
-    dragRef.current = {
-      active: false,
-      startX: 0,
-      startScrollLeft: 0,
-      moved: false,
-      pointerId: null,
-    };
+    dragRef.current = INITIAL_DRAG_STATE;
 
     if (moved) {
       window.setTimeout(() => {
@@ -324,9 +348,13 @@ export default function CoverShelf({ selected, onSelect }: CoverShelfProps) {
     }
 
     updateArrows();
+
+    if (event && moved) {
+      event.preventDefault();
+    }
   };
 
-  const handleClickCapture = (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleClickCapture = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (!suppressClickRef.current) return;
 
     event.preventDefault();
@@ -338,7 +366,10 @@ export default function CoverShelf({ selected, onSelect }: CoverShelfProps) {
       className={`cover-shelf ${canLeft ? "cover-shelf--can-left" : ""} ${
         canRight ? "cover-shelf--can-right" : ""
       }`}
-      style={{ overflow: "visible" }}
+      style={{
+        overflow: "visible",
+        maxWidth: "100%",
+      }}
     >
       <button
         type="button"
@@ -389,14 +420,18 @@ export default function CoverShelf({ selected, onSelect }: CoverShelfProps) {
         onWheel={handleWheel}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
+        onPointerUp={finishDrag}
+        onPointerCancel={finishDrag}
+        onLostPointerCapture={finishDrag}
         onClickCapture={handleClickCapture}
         style={{
-          touchAction: "pan-x",
           overflowX: "auto",
           overflowY: "hidden",
+          maxWidth: "100%",
           WebkitOverflowScrolling: "touch",
+          overscrollBehaviorX: "contain",
+          touchAction: "pan-x",
+          scrollSnapType: "none",
           userSelect: "none",
         }}
       >
@@ -445,11 +480,10 @@ export default function CoverShelf({ selected, onSelect }: CoverShelfProps) {
           );
         })}
 
-        {/* 마지막 표지도 완전히 보이도록 끝 여백 확보 */}
         <span
           aria-hidden="true"
           style={{
-            flex: "0 0 clamp(48px, 14vw, 280px)",
+            flex: "0 0 24px",
             pointerEvents: "none",
           }}
         />
