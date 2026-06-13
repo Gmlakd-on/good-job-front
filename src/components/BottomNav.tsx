@@ -117,6 +117,7 @@ export default function BottomNav() {
               key={item.href}
               type="button"
               onClick={goWrite}
+              aria-label="일기 쓰기"
               className="flex flex-col items-center justify-center -mt-3"
             >
               <div

@@ -176,6 +176,7 @@ export default function Header() {
               <Link
                 href="/notifications"
                 className="chami-home-nav__icon chami-home-nav__icon--notifications"
+                style={{ position: "relative" }}
                 aria-label={unreadCount > 0 ? t("nav.unread", { n: unreadCount }) : t("nav.notifications")}
               >
                 <BellIcon />

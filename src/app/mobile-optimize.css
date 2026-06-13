@@ -1,0 +1,713 @@
+/* ═══════════════════════════════════════════════════════════════
+   mobile-optimize.css
+   모바일 전용 UI 최적화 — 데스크톱/아이패드 현상태 그대로 유지
+   breakpoint: max-width 767px (BottomNav 표시 기준과 동일)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ──────────────────────────────────────────
+   1. 뷰포트 & 기본 레이아웃
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* 가로 스크롤 차단 */
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* 기본 site-main — 좌우 패딩 축소, 하단 BottomNav 여백 보정 */
+  .site-main {
+    padding: 12px 16px calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  /* 홈 풀블리드는 그대로 */
+  .site-main--full {
+    padding: 0 !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   2. 상단 헤더 (chami-global-nav)
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* 헤더 내부 패딩 */
+  .chami-global-nav .chami-home-nav__inner {
+    padding: 8px 16px;
+    min-height: 56px;
+  }
+
+  /* 로고 크기 */
+  .chami-global-nav .chami-home-nav__logo {
+    font-size: clamp(18px, 5vw, 22px);
+    flex-shrink: 0;
+  }
+
+  /* 알림 배지 */
+  .chami-home-nav__badge {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--stamp-vermilion);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 900;
+    line-height: 16px;
+    text-align: center;
+  }
+}
+
+/* ──────────────────────────────────────────
+   3. BottomNav 터치 타겟 & 레이블
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .bottom-nav {
+    padding: 4px 0 calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .bottom-nav__item {
+    /* 터치 타겟 최소 44px */
+    min-height: 48px;
+    padding: 4px 12px;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .bottom-nav__icon {
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  /* 쓰기 버튼 — 가운데 돌출 액션 버튼 */
+  .bottom-nav .bottom-nav__item--write {
+    margin-top: -14px;
+  }
+}
+
+/* ──────────────────────────────────────────
+   4. 일기 목록 (DiaryListItem)
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* 카드 간격 */
+  .diary-list-item {
+    margin-bottom: 10px;
+  }
+
+  /* 터치 영역 충분히 확보 */
+  .diary-list-item article {
+    padding: 14px 14px 12px !important;
+  }
+
+  /* 날짜/감정 행 폰트 */
+  .diary-list-item time,
+  .diary-list-item .diary-list-item__date {
+    font-size: 11px;
+  }
+
+  /* 본문 미리보기 줄 수 제한 — 너무 길면 잘라냄 */
+  .diary-list-item__preview {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* ──────────────────────────────────────────
+   5. 감정/날씨 선택기 (EmotionSelector, WeatherSelector)
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* 태그 그리드 — 2열 고정으로 여유 있게 */
+  .emotion-selector__grid,
+  .write-page__step .flex.flex-wrap {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  /* 각 감정 버튼 — 전체 너비, 충분한 터치 */
+  .emotion-selector__grid button,
+  .write-page__step .flex.flex-wrap button {
+    width: 100% !important;
+    min-height: 48px !important;
+    justify-content: flex-start !important;
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   6. 글쓰기 페이지 (WritePage)
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .write-page {
+    padding: 12px 0 !important;
+  }
+
+  .write-page__topbar {
+    padding: 0 16px;
+    margin-bottom: 12px;
+  }
+
+  .write-page__step {
+    padding-top: 16px !important;
+    padding-bottom: 100px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .write-page__step-title {
+    font-size: 17px !important;
+    margin-bottom: 20px !important;
+    padding: 0 16px;
+  }
+
+  /* 제출/다음 버튼 — 화면 하단 고정 느낌으로 */
+  .write-page__next-btn,
+  .write-page__submit-btn {
+    margin: 16px 16px 0 !important;
+    width: calc(100% - 32px) !important;
+    padding: 15px !important;
+    font-size: 15px !important;
+    border-radius: var(--radius-sm) !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   7. 에디터 (ImmersiveEditor)
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .immersive-editor {
+    border-radius: 0 !important;
+    min-height: 300px !important;
+  }
+
+  .immersive-editor__textarea {
+    font-size: 16px !important; /* iOS 줌 방지 */
+    line-height: 1.85 !important;
+    padding: 4px 16px 16px !important;
+    min-height: 220px !important;
+  }
+
+  /* 도구 버튼 — 터치 타겟 */
+  .editor-toolbar__tool-btn {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .editor-toolbar__action-btn {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  /* 스티커 피커 스크롤 */
+  .editor-toolbar__sticker-picker {
+    padding-bottom: 12px;
+  }
+
+  /* write-page--editor 단계: 에디터 전체 화면 활용 */
+  .write-page__step--editor {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .write-page__editor-top {
+    padding: 0 16px;
+    margin-bottom: 8px;
+  }
+}
+
+/* ──────────────────────────────────────────
+   8. 상태바 (WriteStatusBar)
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .write-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 16px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+}
+
+/* ──────────────────────────────────────────
+   9. 답글 카드 (ReplyCard)
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .reply-paper {
+    transform: none !important; /* 모바일에서 기울기 제거 */
+    border-radius: var(--radius-md) !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   10. 일기장 (Books / BookShelf)
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* 책 목록 페이지 상단 바 */
+  .books-page__topbar {
+    padding: 0 16px 12px;
+    gap: 0;
+  }
+
+  .books-page__topbar h1 {
+    font-size: 17px;
+  }
+
+  /* 책 선반 — 가로 스크롤 */
+  .cover-shelf__rail {
+    padding: 16px 16px 0 !important;
+    gap: 14px !important;
+  }
+
+  .cover-shelf__item {
+    width: 140px !important;
+    padding: 10px 8px 12px !important;
+    border-radius: 14px !important;
+  }
+
+  .cover-shelf__image-box {
+    height: 120px !important;
+  }
+
+  .cover-shelf__board {
+    margin: -4px 10px 0 !important;
+  }
+
+  /* 책 카드 (BookCard) */
+  .book-cover--md {
+    width: 110px !important;
+    height: 168px !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   11. 교환일기 허브 페이지
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* 교환일기 섹션 카드 패딩 최적화 */
+  .exchange-hub-page .chami-card,
+  .exchange-hub-section {
+    border-radius: 18px !important;
+    padding: 18px 16px !important;
+  }
+
+  /* 친구 검색 입력 */
+  .exchange-search-input,
+  .exchange-hub-page input[type="text"] {
+    font-size: 16px !important; /* iOS 줌 방지 */
+  }
+}
+
+/* ──────────────────────────────────────────
+   12. 설정 페이지
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* 설정 목록 행 — 터치 타겟 */
+  .settings-menu-row,
+  .settings-page .settings-row {
+    min-height: 52px !important;
+    padding: 14px 16px !important;
+  }
+
+  /* 섹션 헤더 */
+  .settings-section-title {
+    padding: 0 16px;
+    font-size: 12px;
+  }
+}
+
+/* ──────────────────────────────────────────
+   13. 감정 리포트 페이지
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* 상단 헤더 3열 → 단일 열 */
+  .report-reference-header {
+    grid-template-columns: auto 1fr auto !important;
+    gap: 10px !important;
+    align-items: center !important;
+    margin-bottom: 16px !important;
+  }
+
+  .report-reference-header__refresh {
+    padding: 9px 14px !important;
+    font-size: 13px !important;
+  }
+
+  /* 통계 카드 2열 유지하되 패딩 축소 */
+  .report-stat-grid {
+    gap: 12px !important;
+  }
+
+  .report-stat-card {
+    padding: 16px 14px !important;
+  }
+
+  .report-stat-card__icon {
+    width: 46px !important;
+    height: 46px !important;
+    font-size: 22px !important;
+  }
+
+  /* 인사이트 카드 — 1열로 */
+  .report-reading-cards--reference {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .report-page--reference .report-reading-card {
+    padding: 18px 16px !important;
+    border-radius: 18px !important;
+  }
+
+  /* 기간 탭 */
+  .report-page--reference .report-period {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .report-page--reference .report-period__btn {
+    flex: 1;
+    text-align: center;
+    padding: 8px 10px !important;
+    font-size: 13px !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   14. 나의 도감 (Dex)
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .dex-page--reference .dex-grid,
+  .dex-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .dex-card {
+    padding: 14px 12px !important;
+    border-radius: 16px !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   15. 알림 페이지
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .notif-item,
+  .notifications-item {
+    min-height: 60px;
+    padding: 14px 16px !important;
+    align-items: flex-start;
+  }
+}
+
+/* ──────────────────────────────────────────
+   16. 모달 & 다이얼로그
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* 인증 모달 — 하단 시트처럼 */
+  .auth-modal__card {
+    position: fixed !important;
+    inset: auto 0 0 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 24px 24px 0 0 !important;
+    padding: 28px 24px calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  /* 컨펌 다이얼로그 */
+  .confirm-dialog {
+    width: min(92vw, 380px) !important;
+    border-radius: 20px !important;
+    padding: 24px !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   17. 폼 요소 공통
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* 모든 입력 필드 — iOS 자동 줌 방지 */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="number"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  /* 라운드 입력 */
+  .auth-gate__input,
+  .auth-modal input {
+    padding: 14px 16px !important;
+    border-radius: var(--radius-sm) !important;
+  }
+
+  /* 버튼 패딩 상향 */
+  .auth-gate__btn,
+  .auth-modal button[type="submit"],
+  .btn-primary,
+  .write-page__next-btn,
+  .write-page__submit-btn {
+    min-height: 50px !important;
+    padding: 14px 20px !important;
+    font-size: 15px !important;
+    border-radius: var(--radius-sm) !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   18. 퍼스나 선택기 (PersonaSelector)
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* 페르소나 목록 — 2열 그리드 */
+  .persona-selector__list,
+  .write-page__step .persona-list {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  .persona-selector__item {
+    min-height: 72px !important;
+    padding: 12px !important;
+    border-radius: 14px !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   19. 북 리더 (BookReader)
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* 이미 globals.css에서 1열 처리되나, 추가 패딩 보정 */
+  .book-reader__page {
+    padding: 18px 16px !important;
+  }
+
+  .book-reader__content,
+  .book-reader__reply {
+    font-size: 14px !important;
+    line-height: 1.85 !important;
+  }
+
+  .book-reader__frame {
+    border-radius: 18px !important;
+  }
+
+  .book-reader__button {
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   20. 홈 히어로 (mobile < 620px 이미 처리됨)
+       추가: 620px ~ 767px 구간 보정
+   ────────────────────────────────────────── */
+@media (min-width: 621px) and (max-width: 767px) {
+  .home-hero__inner {
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 0.45fr) !important;
+    min-height: 300px !important;
+    padding: 20px 16px 0 !important;
+  }
+
+  .home-quote-card__text {
+    font-size: clamp(20px, 4.5vw, 26px) !important;
+  }
+
+  .home-hero__mascot,
+  .mascot-hero {
+    width: clamp(190px, 30vw, 240px) !important;
+  }
+
+  .home-feature-section {
+    padding: 16px 16px calc(96px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   21. 토스트 / 스낵바
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .toast,
+  .snackbar {
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 16px !important;
+    right: 16px !important;
+    width: auto !important;
+    border-radius: 14px !important;
+    font-size: 14px !important;
+    padding: 12px 16px !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   22. 다이어리 통계 (DiaryStats)
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .diary-stats {
+    padding: 14px !important;
+    border-radius: 14px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .diary-stats__grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   23. 검색 입력 (diaries 페이지)
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .diaries-search input {
+    font-size: 16px !important;
+    padding: 12px 16px !important;
+    border-radius: 12px !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   24. 안전 공지 (SafetyNotice)
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .safety-notice {
+    border-radius: 14px !important;
+    padding: 14px !important;
+    font-size: 13px !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   25. 스켈레톤 / 로딩 화면
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .diary-list-skeleton__item {
+    border-radius: var(--radius-sm) !important;
+    height: 80px !important;
+    margin-bottom: 10px !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   26. 오버플로우 방지 (전역)
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* 가로 넘침 방지 */
+  .chami-home,
+  .chami-home-main,
+  .site-layout {
+    overflow-x: hidden !important;
+  }
+
+  /* 텍스트 줄바꿈 */
+  h1, h2, h3, h4, p {
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+}
+
+/* ──────────────────────────────────────────
+   27. 푸터 — 모바일에서 간소화
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .site-footer,
+  footer.site-footer {
+    display: none !important; /* BottomNav로 대체, 모바일에서 불필요 */
+  }
+}
+
+/* ──────────────────────────────────────────
+   28. 언어 토글 위치 보정
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .language-toggle {
+    font-size: 12px !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   29. 성능 최적화 — 모바일에서 paper grain 끄기
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* SVG 노이즈 필터는 모바일 GPU에 부하를 줄 수 있음 */
+  body::before {
+    display: none;
+  }
+}
+
+/* ──────────────────────────────────────────
+   30. ConfirmDialog — 모바일 바텀시트
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .confirm-dialog__overlay {
+    align-items: flex-end !important;
+  }
+
+  .confirm-dialog__box {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 24px 24px 0 0 !important;
+    padding: 24px 20px calc(20px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   31. 책 만들기 폼 (BookCreateForm)
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .book-create__fields {
+    gap: 14px !important;
+  }
+
+  .preview-scene {
+    padding: 20px 16px !important;
+    border-radius: 16px !important;
+  }
+
+  .preview-scene__input,
+  .preview-scene__textarea {
+    font-size: 16px !important;
+  }
+
+  .preview-scene__cta {
+    padding: 14px !important;
+    font-size: 15px !important;
+    border-radius: 12px !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   32. 표지 선택 (CoverShelf / cover-picker)
+       모바일에서 그리드 2열 유지
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* 표지 선택 그리드 — 2열 고정 */
+  .cover-picker {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .cover-picker__item {
+    padding: 10px 8px 12px !important;
+    border-radius: 14px !important;
+  }
+
+  .cover-picker__image-box {
+    height: 110px !important;
+  }
+
+  .cover-picker__label {
+    font-size: 13px !important;
+  }
+}
