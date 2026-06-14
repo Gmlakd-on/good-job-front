@@ -616,7 +616,7 @@ export default function HomePage() {
               <div>
                 <h2>교환일기</h2>
                 <p className="chami-mini-card__strong">{displayNickname ?? "친구"}님과 12일째</p>
-                <p>매일의 기록이, 우리의 관계까지 만들어 줍니다.</p>
+                <p>매일의 기록이 모여, 우리가 서로에게 가장 다정한 세계가 됩니다.</p>
               </div>
               <button type="button" onClick={() => (guardAuth("/exchange") ? router.push("/exchange") : undefined)}>
                 교환일기 쓰기 <span aria-hidden="true">›</span>

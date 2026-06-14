@@ -1,12 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type AuthMode = "login" | "signup";
 type OAuthProvider = "google" | "kakao" | `custom:${string}`;
 
 const KAKAO_AUTH_PROVIDER = (process.env.NEXT_PUBLIC_KAKAO_AUTH_PROVIDER || "kakao") as OAuthProvider;
+
+const IN_APP_BROWSER_PATTERNS = [
+  /KAKAOTALK/i,
+  /Instagram/i,
+  /FBAN|FBAV|FB_IAB|FB4A|FBIOS/i,
+  /Line\//i,
+  /NAVER\(inapp/i,
+  /DaumApps/i,
+  /Twitter/i,
+  /LinkedInApp/i,
+  /MicroMessenger/i,
+  /; wv\)/i,
+];
 
 function getAuthRedirectOrigin() {
   // OAuth redirect는 사용자가 지금 접속한 도메인으로 돌려보내는 게 가장 안전하다.
@@ -24,6 +37,28 @@ function getSafeNextPath(value: string) {
   return value;
 }
 
+function isInAppBrowser() {
+  if (typeof navigator === "undefined") return false;
+
+  const userAgent = navigator.userAgent || "";
+  return IN_APP_BROWSER_PATTERNS.some((pattern) => pattern.test(userAgent));
+}
+
+function canUseAndroidIntent() {
+  if (typeof navigator === "undefined") return false;
+  return /Android/i.test(navigator.userAgent || "");
+}
+
+function buildChromeIntentUrl(currentUrl: string) {
+  try {
+    const url = new URL(currentUrl);
+    const path = `${url.host}${url.pathname}${url.search}${url.hash}`;
+    return `intent://${path}#Intent;scheme=${url.protocol.replace(":", "")};package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(currentUrl)};end`;
+  } catch {
+    return currentUrl;
+  }
+}
+
 interface SocialAuthPanelProps {
   mode: AuthMode;
   next?: string;
@@ -39,10 +74,41 @@ export default function SocialAuthPanel({
 }: SocialAuthPanelProps) {
   const [error, setError] = useState(initialError);
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
+  const [inAppBrowser, setInAppBrowser] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    setInAppBrowser(isInAppBrowser());
+  }, []);
+
+  const openInExternalBrowser = async () => {
+    if (typeof window === "undefined") return;
+
+    const currentUrl = window.location.href;
+
+    if (canUseAndroidIntent()) {
+      window.location.href = buildChromeIntentUrl(currentUrl);
+      return;
+    }
+
+    try {
+      await navigator.clipboard?.writeText(currentUrl);
+      setCopied(true);
+      setError("주소를 복사했어요. Safari나 Chrome 주소창에 붙여넣어 로그인해주세요.");
+    } catch {
+      setError("오른쪽 위 메뉴에서 'Safari로 열기' 또는 'Chrome에서 열기'를 선택한 뒤 로그인해주세요.");
+    }
+  };
 
   const handleOAuthLogin = async (provider: OAuthProvider) => {
     setOauthLoading(provider);
     setError("");
+
+    if (provider === "google" && inAppBrowser) {
+      setOauthLoading(null);
+      setError("Google 보안 정책상 현재 앱 안 브라우저에서는 로그인이 막힐 수 있어요. Safari나 Chrome으로 열어 로그인해주세요.");
+      return;
+    }
 
     try {
       const supabase = createClient();
@@ -77,6 +143,44 @@ export default function SocialAuthPanel({
           {mode === "login" ? "다시 와줘서 고마워요" : "간편하게 시작해볼까요?"}
         </p>
       </div>
+
+      {inAppBrowser && (
+        <div
+          role="alert"
+          style={{
+            border: "1px solid var(--border-medium)",
+            borderRadius: "var(--radius-md)",
+            background: "var(--paper-cream)",
+            padding: "12px",
+            fontSize: "12px",
+            lineHeight: 1.6,
+            color: "var(--text-secondary)",
+          }}
+        >
+          <p style={{ margin: "0 0 8px", fontWeight: 700, color: "var(--text-primary)" }}>
+            현재 앱 안 브라우저에서 열려 있어요
+          </p>
+          <p style={{ margin: "0 0 10px" }}>
+            Google 로그인은 보안 정책 때문에 카카오톡·인스타그램 같은 앱 안 브라우저에서 막힐 수 있어요.
+            Safari나 Chrome으로 열면 정상 로그인할 수 있습니다.
+          </p>
+          <button
+            type="button"
+            onClick={openInExternalBrowser}
+            className="w-full text-center text-xs"
+            style={{
+              borderRadius: "var(--radius-full)",
+              border: "1px solid var(--border-medium)",
+              background: "white",
+              color: "var(--text-primary)",
+              padding: "9px 12px",
+              fontWeight: 700,
+            }}
+          >
+            {canUseAndroidIntent() ? "Chrome으로 열기" : copied ? "주소 복사 완료" : "주소 복사하기"}
+          </button>
+        </div>
+      )}
 
       <div className="flex flex-col gap-2.5">
         <button
