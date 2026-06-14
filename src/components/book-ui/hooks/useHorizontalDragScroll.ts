@@ -21,6 +21,15 @@ interface UseHorizontalDragScrollOptions<T extends HTMLElement> {
 }
 
 const DRAG_THRESHOLD_PX = 6;
+const INTERACTIVE_SELECTOR =
+  "button, a, input, textarea, select, option, label, [role='button'], [role='radio']";
+
+function isInteractiveTarget(eventTarget: EventTarget | null, container: HTMLElement) {
+  if (!(eventTarget instanceof Element)) return false;
+
+  const interactiveElement = eventTarget.closest(INTERACTIVE_SELECTOR);
+  return Boolean(interactiveElement && container.contains(interactiveElement));
+}
 
 export function useHorizontalDragScroll<T extends HTMLElement>({
   scrollRef,
@@ -56,6 +65,11 @@ export function useHorizontalDragScroll<T extends HTMLElement>({
       const target = scrollRef.current;
       if (!target) return;
       if (event.pointerType !== "mouse" || event.button !== 0) return;
+
+      // 표지 카드가 button(role=radio)이기 때문에, 여기서 포인터 캡처를 잡으면
+      // 브라우저에 따라 카드의 onClick이 발생하지 않아 표지 선택이 막힌다.
+      // 드래그 스크롤은 빈 선반 영역에서만 시작하고, 실제 선택 요소는 클릭을 그대로 통과시킨다.
+      if (isInteractiveTarget(event.target, target)) return;
 
       dragStateRef.current = {
         pointerId: event.pointerId,

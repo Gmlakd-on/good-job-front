@@ -192,7 +192,13 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    apiGetJson<{ quote: Quote }>(`/api/quotes?language=${language}`, { ttlMs: 60 * 60_000 })
+    // 오늘의 명언은 날짜가 바뀌면 즉시 새로 받아야 하므로
+    // 브라우저/메모리 캐시에 남은 어제 응답을 재사용하지 않는다.
+    apiGetJson<{ quote: Quote }>(`/api/quotes?language=${language}`, {
+      ttlMs: 0,
+      forceRefresh: true,
+      cache: "no-store",
+    })
       .then((data) => setQuote(data.quote))
       .catch(() =>
         setQuote({
