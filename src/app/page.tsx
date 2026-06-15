@@ -71,8 +71,6 @@ const AFFIRMATION_SUGGESTIONS = [
 const getRandomAffirmationSuggestion = () =>
   AFFIRMATION_SUGGESTIONS[Math.floor(Math.random() * AFFIRMATION_SUGGESTIONS.length)];
 
-const DASHBOARD_QUOTE_TEXT = "지금 이 순간이\n당신이 가진 전부입니다.";
-const DASHBOARD_QUOTE_AUTHOR = "에크하르트 톨레";
 
 const LANGUAGE_OPTIONS: { value: LanguageOption; label: string }[] = [
   { value: "ko", label: "KO" },
@@ -508,6 +506,7 @@ export default function HomePage() {
 
   const quoteText = `“${localizedQuote.text}”`;
   const quoteAuthor = localizedQuote.author;
+  const dashboardQuoteLines = quoteText.split(/\r?\n/);
   const adsenseClientId = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT_ID ?? "";
   const adsenseHomeSlot = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_HOME_SLOT ?? "";
   const canRenderAdsenseSlot = Boolean(adsenseClientId && adsenseHomeSlot);
@@ -552,11 +551,11 @@ export default function HomePage() {
                 <span aria-hidden="true">❞</span>
               </div>
               <blockquote className="chami-note-card__quote">
-                {DASHBOARD_QUOTE_TEXT.split("\n").map((line) => (
-                  <span key={line}>{line}</span>
+                {dashboardQuoteLines.map((line, index) => (
+                  <span key={`${line}-${index}`}>{line}</span>
                 ))}
               </blockquote>
-              <p className="chami-note-card__author">- {DASHBOARD_QUOTE_AUTHOR}</p>
+              <p className="chami-note-card__author">- {quoteAuthor}</p>
 
               <div className={`chami-affirmation-box ${affirmationEditing ? "chami-affirmation-box--editing" : ""}`}>
                 <span className="chami-affirmation-box__heart" aria-hidden="true">💗</span>
@@ -666,6 +665,8 @@ export default function HomePage() {
               </div>
             </article>
           </section>
+
+          <HomeLegalNotice />
 
         </main>
 
@@ -866,6 +867,8 @@ export default function HomePage() {
             />
           </div>
         </section>
+
+        <HomeLegalNotice />
       </main>
       <AuthModal
         open={authModalOpen}
@@ -875,6 +878,37 @@ export default function HomePage() {
         onModeChange={setAuthModalMode}
       />
     </div>
+  );
+}
+
+function HomeLegalNotice() {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
+  const privacyUrl = siteUrl ? `${siteUrl}/privacy` : "/privacy";
+  const termsUrl = siteUrl ? `${siteUrl}/terms` : "/terms";
+
+  return (
+    <section className="home-legal-section" aria-labelledby="home-legal-title">
+      <div className="home-legal-card">
+        <div className="home-legal-card__copy">
+          <p className="home-legal-card__eyebrow">서비스 안내</p>
+          <h2 id="home-legal-title">참 잘했어요는 어떤 서비스인가요?</h2>
+          <p>
+            참 잘했어요는 사용자가 일기와 감정을 기록하고, 개인 책장·감정 리포트·교환일기·AI 답글 같은 개인화 기능으로
+            꾸준한 자기 기록을 이어갈 수 있도록 돕는 서비스입니다.
+          </p>
+        </div>
+        <div className="home-legal-card__links" aria-label="정책 및 약관 링크">
+          <Link href="/privacy">
+            <span>개인정보처리방침</span>
+            <strong>{privacyUrl}</strong>
+          </Link>
+          <Link href="/terms">
+            <span>서비스 이용약관</span>
+            <strong>{termsUrl}</strong>
+          </Link>
+        </div>
+      </div>
+    </section>
   );
 }
 
