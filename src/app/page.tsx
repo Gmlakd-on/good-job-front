@@ -45,6 +45,19 @@ interface DailyAffirmation {
   createdAt: string | null;
 }
 
+type ExchangeSessionStatus = "active_7day" | "extension_pending" | "extended" | "ended" | "terminated";
+
+interface ExchangeSessionSummary {
+  id: string;
+  status: ExchangeSessionStatus | string;
+  started_at: string;
+  partner_display_name?: string | null;
+}
+
+interface ExchangeSessionsResponse {
+  sessions?: ExchangeSessionSummary[];
+}
+
 const AFFIRMATION_SUGGESTIONS = [
   "나는 내 모습 그대로 충분히 가치 있는 사람이다.",
   "나는 내 인생을 스스로 선택하고 책임질 힘이 있다.",
@@ -71,6 +84,17 @@ const AFFIRMATION_SUGGESTIONS = [
 const getRandomAffirmationSuggestion = () =>
   AFFIRMATION_SUGGESTIONS[Math.floor(Math.random() * AFFIRMATION_SUGGESTIONS.length)];
 
+const ACTIVE_EXCHANGE_STATUSES = new Set<string>(["active_7day", "extension_pending", "extended"]);
+
+const getExchangeDayIndex = (startedAt: string) => {
+  const startedAtMs = new Date(startedAt).getTime();
+
+  if (!Number.isFinite(startedAtMs)) {
+    return 1;
+  }
+
+  return Math.max(Math.floor((Date.now() - startedAtMs) / 86400000) + 1, 1);
+};
 
 const LANGUAGE_OPTIONS: { value: LanguageOption; label: string }[] = [
   { value: "ko", label: "KO" },
@@ -127,7 +151,6 @@ export default function HomePage() {
   const [navHidden, setNavHidden] = useState(false);
   const [showScrollCue, setShowScrollCue] = useState(true);
   const [authNext, setAuthNext] = useState("/");
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
   const [nicknameInput, setNicknameInput] = useState("");
   const [nicknameError, setNicknameError] = useState("");
@@ -140,6 +163,7 @@ export default function HomePage() {
   const [affirmationSaving, setAffirmationSaving] = useState(false);
   const [affirmationError, setAffirmationError] = useState("");
   const [feedStarted, setFeedStarted] = useState(false);
+  const [activeExchangeSession, setActiveExchangeSession] = useState<ExchangeSessionSummary | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -267,22 +291,25 @@ export default function HomePage() {
     };
   }, [language, quote, t]);
 
-  const displayNickname = useMemo(() => {
-    const nickname = profile?.nickname?.trim();
-    return nickname || null;
-  }, [profile?.nickname]);
-
   const loadDashboardData = useCallback(async () => {
     if (!user) return;
 
     try {
-      const [profileResponse, affirmationResponse] = await Promise.all([
+      const [profileResponse, affirmationResponse, exchangeResponse] = await Promise.all([
         apiGetJson<{ profile?: Profile }>("/api/profile", { ttlMs: 30_000 }),
         apiGetJson<{ dailyAffirmation?: DailyAffirmation; streakCount?: number }>("/api/daily-affirmation", { ttlMs: 10_000 }),
+        fetch("/api/exchange/sessions", { cache: "no-store" })
+          .then(async (response): Promise<ExchangeSessionsResponse> => {
+            if (!response.ok) {
+              return { sessions: [] };
+            }
+
+            return response.json();
+          })
+          .catch(() => ({ sessions: [] })),
       ]);
 
       const nextProfile = profileResponse.profile ?? { nickname: null };
-      setProfile(nextProfile);
       const nickname = nextProfile.nickname?.trim() ?? "";
       if (!nickname) {
         setNicknameInput("");
@@ -295,6 +322,9 @@ export default function HomePage() {
         setFeedStarted(Boolean(affirmationResponse.dailyAffirmation.feedStartedAt && !affirmationResponse.dailyAffirmation.completed));
       }
       setStreakCount(affirmationResponse.streakCount ?? 0);
+      setActiveExchangeSession(
+        exchangeResponse.sessions?.find((session) => ACTIVE_EXCHANGE_STATUSES.has(session.status)) ?? null,
+      );
     } catch {
       setAffirmationError("홈 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
     }
@@ -304,10 +334,10 @@ export default function HomePage() {
     if (!authChecked) return;
 
     if (!user) {
-      setProfile(null);
       setDailyAffirmation(null);
       setStreakCount(0);
       setFeedStarted(false);
+      setActiveExchangeSession(null);
       setAffirmationEditing(false);
       setNicknameModalOpen(false);
       return;
@@ -493,7 +523,6 @@ export default function HomePage() {
         }
 
         invalidateApiCache("/api/profile");
-        setProfile((prev) => ({ ...(prev ?? {}), ...(data.profile ?? {}), nickname }));
         setNicknameModalOpen(false);
       } catch {
         setNicknameError("네트워크가 불안정해요. 잠시 후 다시 시도해주세요.");
@@ -510,6 +539,14 @@ export default function HomePage() {
   const adsenseClientId = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT_ID ?? "";
   const adsenseHomeSlot = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_HOME_SLOT ?? "";
   const canRenderAdsenseSlot = Boolean(adsenseClientId && adsenseHomeSlot);
+  const activeExchangePartnerName = activeExchangeSession?.partner_display_name?.trim() || "상대";
+  const exchangeMiniTitle = activeExchangeSession
+    ? `${activeExchangePartnerName}님과 ${getExchangeDayIndex(activeExchangeSession.started_at)}일째`
+    : "아직 교환일기를 시작하지 않았어요";
+  const exchangeMiniDescription = activeExchangeSession
+    ? "매일의 기록이 모여, 우리가 서로에게 가장 다정한 세계가 됩니다."
+    : "친구 초대나 랜덤 교환으로 새로운 연결을 만들어보세요.";
+  const exchangeMiniButtonLabel = activeExchangeSession ? "교환일기 쓰기" : "교환일기 시작하기";
 
   const renderAffirmationEditor = (guideId: string, className = "chami-affirmation-editor") => (
     <div className={className}>
@@ -614,11 +651,11 @@ export default function HomePage() {
               <div className="chami-mini-card__visual" aria-hidden="true"><Image src="/home-icons/exchange.png" alt="" width={72} height={72} /></div>
               <div>
                 <h2>교환일기</h2>
-                <p className="chami-mini-card__strong">{displayNickname ?? "친구"}님과 12일째</p>
-                <p>매일의 기록이 모여, 우리가 서로에게 가장 다정한 세계가 됩니다.</p>
+                <p className="chami-mini-card__strong">{exchangeMiniTitle}</p>
+                <p>{exchangeMiniDescription}</p>
               </div>
               <button type="button" onClick={() => (guardAuth("/exchange") ? router.push("/exchange") : undefined)}>
-                교환일기 쓰기 <span aria-hidden="true">›</span>
+                {exchangeMiniButtonLabel} <span aria-hidden="true">›</span>
               </button>
             </article>
 
@@ -665,7 +702,6 @@ export default function HomePage() {
               </div>
             </article>
           </section>
-
 
         </main>
 
