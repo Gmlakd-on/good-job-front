@@ -666,7 +666,6 @@ export default function HomePage() {
             </article>
           </section>
 
-          <HomeLegalNotice />
 
         </main>
 
@@ -867,8 +866,6 @@ export default function HomePage() {
             />
           </div>
         </section>
-
-        <HomeLegalNotice />
       </main>
       <AuthModal
         open={authModalOpen}
@@ -878,37 +875,6 @@ export default function HomePage() {
         onModeChange={setAuthModalMode}
       />
     </div>
-  );
-}
-
-function HomeLegalNotice() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
-  const privacyUrl = siteUrl ? `${siteUrl}/privacy` : "/privacy";
-  const termsUrl = siteUrl ? `${siteUrl}/terms` : "/terms";
-
-  return (
-    <section className="home-legal-section" aria-labelledby="home-legal-title">
-      <div className="home-legal-card">
-        <div className="home-legal-card__copy">
-          <p className="home-legal-card__eyebrow">서비스 안내</p>
-          <h2 id="home-legal-title">참 잘했어요는 어떤 서비스인가요?</h2>
-          <p>
-            참 잘했어요는 사용자가 일기와 감정을 기록하고, 개인 책장·감정 리포트·교환일기·AI 답글 같은 개인화 기능으로
-            꾸준한 자기 기록을 이어갈 수 있도록 돕는 서비스입니다.
-          </p>
-        </div>
-        <div className="home-legal-card__links" aria-label="정책 및 약관 링크">
-          <Link href="/privacy">
-            <span>개인정보처리방침</span>
-            <strong>{privacyUrl}</strong>
-          </Link>
-          <Link href="/terms">
-            <span>서비스 이용약관</span>
-            <strong>{termsUrl}</strong>
-          </Link>
-        </div>
-      </div>
-    </section>
   );
 }
 

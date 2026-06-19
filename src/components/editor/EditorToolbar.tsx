@@ -1,6 +1,7 @@
 "use client";
 
 import type { EditorTool, ToolType } from "@/lib/editor/editorTypes";
+import BgmPlayer from "./BgmPlayer";
 import { getKitschStickers } from "./worlds/pop-kitsch/stickerSystem";
 
 interface EditorToolbarProps {
@@ -11,8 +12,6 @@ interface EditorToolbarProps {
   onRedo: () => void;
   canUndo: boolean;
   canRedo: boolean;
-  soundEnabled: boolean;
-  onToggleSound: () => void;
   worldId: string;
   selectedStickerId?: string;
   onSelectSticker?: (stickerId: string) => void;
@@ -26,8 +25,6 @@ export default function EditorToolbar({
   onRedo,
   canUndo,
   canRedo,
-  soundEnabled,
-  onToggleSound,
   worldId,
   selectedStickerId = "heart",
   onSelectSticker,
@@ -82,15 +79,7 @@ export default function EditorToolbar({
 
           <div className="editor-toolbar__divider" />
 
-          <button
-            type="button"
-            className="editor-toolbar__action-btn"
-            onClick={onToggleSound}
-            aria-label={soundEnabled ? "소리 끄기" : "소리 켜기"}
-            title={soundEnabled ? "소리 끄기" : "소리 켜기"}
-          >
-            {soundEnabled ? "🔊" : "🔇"}
-          </button>
+          <BgmPlayer />
         </div>
       </div>
 

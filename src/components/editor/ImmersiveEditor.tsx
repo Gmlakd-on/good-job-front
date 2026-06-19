@@ -15,7 +15,6 @@ import type {
   WorldComponentHandle,
 } from "@/lib/editor/worldInterface";
 import { useEditorStore } from "@/lib/editor/editorStore";
-import { playSound, setMuted } from "@/lib/editor/audioEngine";
 import { createSavePayload, restoreFromPayload, type EditorSavePayload } from "@/lib/editor/serializer";
 import { useDrawingPointer } from "./useDrawingPointer";
 import EditorHeader from "./EditorHeader";
@@ -169,9 +168,6 @@ export default function ImmersiveEditor({
     onEditorStateChange?.(createSavePayload(value, state.strokes));
   }, [onEditorStateChange, state.strokes, value]);
 
-  // ── Sound mute sync ──
-  useEffect(() => { setMuted(!state.soundEnabled); }, [state.soundEnabled]);
-
   // ── Re-render strokes on undo/redo ──
   useEffect(() => {
     worldRef.current?.renderer?.renderAll(state.strokes);
@@ -245,9 +241,8 @@ export default function ImmersiveEditor({
       const text = e.target.value;
       actions.setText(text);
       onChange(text);
-      playSound(coverStyle, "type");
     },
-    [actions, onChange, coverStyle],
+    [actions, onChange],
   );
 
   return (
@@ -312,8 +307,6 @@ export default function ImmersiveEditor({
         onRedo={actions.redo}
         canUndo={actions.canUndo}
         canRedo={actions.canRedo}
-        soundEnabled={state.soundEnabled}
-        onToggleSound={actions.toggleSound}
         worldId={coverStyle}
         selectedStickerId={selectedStickerId}
         onSelectSticker={handleSelectSticker}

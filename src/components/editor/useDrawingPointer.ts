@@ -6,7 +6,6 @@ import type {
   StrokeData,
 } from "@/lib/editor/worldInterface";
 import type { EditorStoreState } from "@/lib/editor/editorStore";
-import { resumeAudio, playSound } from "@/lib/editor/audioEngine";
 import { triggerHaptic } from "@/lib/editor/hapticEngine";
 
 // EditorActions의 필요한 메서드만 인터페이스로 정의 (ISP)
@@ -67,8 +66,6 @@ export function useDrawingPointer(
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
       if (state.editorMode !== "draw") return;
-      resumeAudio();
-
       const renderer = worldRef.current?.renderer;
       if (!renderer) return;
 
@@ -82,7 +79,6 @@ export function useDrawingPointer(
         if (hitStroke) {
           renderer.eraseStroke(hitStroke.id, ERASE_STYLES[coverStyle]);
           actions.eraseStroke(hitStroke.id);
-          playSound(coverStyle, "erase");
           triggerHaptic(coverStyle, "erase");
         }
         isDrawing.current = false;
@@ -90,14 +86,12 @@ export function useDrawingPointer(
       }
 
       renderer.beginStroke(pt, state.selectedTool);
-      playSound(coverStyle, "stroke");
       triggerHaptic(coverStyle, "stroke");
 
       if (state.selectedTool.id === "sticker_stamp") {
         const stroke = renderer.endStroke();
         if (stroke) {
           actions.addStroke(stroke);
-          playSound(coverStyle, "sticker_place");
           triggerHaptic(coverStyle, "sticker_place");
         }
         isDrawing.current = false;
@@ -127,10 +121,9 @@ export function useDrawingPointer(
       const stroke = renderer.endStroke();
       if (stroke) {
         actions.addStroke(stroke);
-        playSound(coverStyle, "stroke_end");
       }
     },
-    [coverStyle, actions, worldRef],
+    [actions, worldRef],
   );
 
   return { handlePointerDown, handlePointerMove, handlePointerUp };

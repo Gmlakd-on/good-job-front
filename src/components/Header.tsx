@@ -202,9 +202,6 @@ export default function Header() {
                   <>
                     <div className="chami-profile-menu__backdrop" onClick={() => setMenuOpen(false)} />
                     <div className="chami-profile-menu__panel">
-                      <Link href="/notifications" onClick={() => setMenuOpen(false)}>
-                        {t("nav.notifications")}{unreadCount > 0 ? ` (${unreadCount > 9 ? "9+" : unreadCount})` : ""}
-                      </Link>
                       <Link href="/settings" onClick={() => setMenuOpen(false)}>
                         {t("nav.settings")}
                       </Link>
