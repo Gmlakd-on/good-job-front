@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 type AdminTab = "dashboard" | "quotes" | "owner-comments" | "inquiries" | "users" | "reports" | "ai-health";
 
@@ -10,6 +10,8 @@ interface OwnerReq { id: string; status: string; source?: string; request_messag
 interface Inquiry { id: string; category: string; title: string; content: string; status: string; admin_reply?: string; created_at: string; profiles?: { nickname?: string } }
 interface RecentItem { id: string; created_at: string; [key: string]: unknown }
 interface AiHealth { ok: boolean; status?: number; workingModel?: string | null; hint?: string; env?: Record<string, unknown>; checks?: unknown[]; reason?: string }
+
+const ADMIN_REFRESH_INTERVAL_MS = 10000;
 
 export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -27,40 +29,84 @@ export default function AdminPage() {
   const [commentDraft, setCommentDraft] = useState<Record<string, string>>({});
   const [replyDraft, setReplyDraft] = useState<Record<string, string>>({});
 
-  const fetchAll = useCallback(async () => {
-    setLoading(true); setError("");
+  const fetchAll = useCallback(async (options?: { silent?: boolean }) => {
+    const silent = options?.silent === true;
+    if (!silent) {
+      setLoading(true);
+      setError("");
+    }
+
     try {
+      const noStore: RequestInit = { cache: "no-store" };
       const [statsRes, quotesRes, ownerRes, inqRes, usersRes] = await Promise.all([
-        fetch("/api/admin/stats"), fetch("/api/admin/quotes"),
-        fetch("/api/admin/owner-comments"), fetch("/api/admin/inquiries"), fetch("/api/admin/users"),
+        fetch("/api/admin/stats", noStore),
+        fetch("/api/admin/quotes", noStore),
+        fetch("/api/admin/owner-comments", noStore),
+        fetch("/api/admin/inquiries", noStore),
+        fetch("/api/admin/users", noStore),
       ]);
-      if (!statsRes.ok) { setError("관리자 권한이 필요해요. 관리자 이메일로 로그인해주세요."); setLoading(false); return; }
+
+      if (!statsRes.ok) {
+        if (!silent) setError("관리자 권한이 필요해요. 관리자 이메일로 로그인해주세요.");
+        return;
+      }
+
       const sd = await statsRes.json();
-      setStats(sd.stats); setRecentReports(sd.recentReports || []);
-      if (quotesRes.ok) { const d = await quotesRes.json(); setQuoteSubs(d.submissions || []); }
-      if (ownerRes.ok) { const d = await ownerRes.json(); setOwnerReqs(d.requests || []); }
-      if (inqRes.ok) { const d = await inqRes.json(); setInquiries(d.inquiries || []); }
-      if (usersRes.ok) { const d = await usersRes.json(); setUsers(d.users || []); }
+      setStats(sd.stats);
+      setRecentReports(sd.recentReports || []);
+
+      if (quotesRes.ok) {
+        const d = await quotesRes.json();
+        setQuoteSubs(d.submissions || []);
+      }
+      if (ownerRes.ok) {
+        const d = await ownerRes.json();
+        setOwnerReqs(d.requests || []);
+      } else if (!silent) {
+        const d = await ownerRes.json().catch(() => ({}));
+        setError(d.error || "참이 답글 요청 조회에 실패했어요.");
+      }
+      if (inqRes.ok) {
+        const d = await inqRes.json();
+        setInquiries(d.inquiries || []);
+      }
+      if (usersRes.ok) {
+        const d = await usersRes.json();
+        setUsers(d.users || []);
+      }
       setAuthenticated(true);
-    } catch { setError("서버 오류가 발생했어요."); }
-    setLoading(false);
+    } catch {
+      if (!silent) setError("서버 오류가 발생했어요.");
+    } finally {
+      if (!silent) setLoading(false);
+    }
   }, []);
 
   const patchQuote = async (id: string, status: string) => {
     await fetch("/api/admin/quotes", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status, reject_reason: rejectReason[id] }) });
     setQuoteSubs((p) => p.map((q) => q.id === id ? { ...q, status } : q));
   };
+
   const patchOwner = async (id: string, status: string, comment?: string) => {
     setError("");
-    const res = await fetch("/api/admin/owner-comments", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status, admin_comment: comment }) });
+    const res = await fetch("/api/admin/owner-comments", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+      body: JSON.stringify({ id, status, admin_comment: comment }),
+    });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) { setError(data.error || "처리에 실패했어요."); return; }
     setOwnerReqs((p) => p.map((r) => r.id === id ? { ...r, status, admin_comment: comment ?? r.admin_comment, completed_reply_id: data.completedReplyId ?? r.completed_reply_id } : r));
+    setCommentDraft((p) => ({ ...p, [id]: "" }));
+    void fetchAll({ silent: true });
   };
+
   const patchInquiry = async (id: string, status: string) => {
     await fetch("/api/admin/inquiries", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status, admin_reply: replyDraft[id] }) });
     setInquiries((p) => p.map((i) => i.id === id ? { ...i, status, admin_reply: replyDraft[id] } : i));
   };
+
   const fetchAiHealth = async () => {
     setLoading(true);
     const res = await fetch("/api/admin/ai-health");
@@ -69,6 +115,16 @@ export default function AdminPage() {
     if (!res.ok) setError(data.error || "AI 점검에 실패했어요.");
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (!authenticated) return;
+
+    const timer = window.setInterval(() => {
+      void fetchAll({ silent: true });
+    }, ADMIN_REFRESH_INTERVAL_MS);
+
+    return () => window.clearInterval(timer);
+  }, [authenticated, fetchAll]);
 
   const fmt = (d: string) => new Date(d).toLocaleDateString("ko-KR", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
@@ -97,7 +153,7 @@ export default function AdminPage() {
         <div style={cardS}>
           <p style={{ fontSize: "14px", color: "var(--text-secondary)", textAlign: "center", marginBottom: "12px" }}>관리자 이메일로 로그인 후 접근하세요.</p>
           <a href="/auth" style={{ display: "block", textAlign: "center", fontSize: "13px", color: "var(--cloth-indigo)", marginBottom: "16px" }}>로그인하러 가기</a>
-          <button onClick={fetchAll} disabled={loading} style={{ width: "100%", padding: "15px", borderRadius: "12px", background: "var(--stamp-vermilion)", color: "white", fontWeight: 600, fontSize: "15px", opacity: loading ? 0.6 : 1, minHeight: "52px", cursor: "pointer" }}>
+          <button onClick={() => void fetchAll()} disabled={loading} style={{ width: "100%", padding: "15px", borderRadius: "12px", background: "var(--stamp-vermilion)", color: "white", fontWeight: 600, fontSize: "15px", opacity: loading ? 0.6 : 1, minHeight: "52px", cursor: "pointer" }}>
             {loading ? "확인 중…" : "관리자 인증"}
           </button>
           {error && <p style={{ fontSize: "13px", marginTop: "12px", color: "var(--stamp-vermilion)", textAlign: "center" }}>{error}</p>}
@@ -108,15 +164,13 @@ export default function AdminPage() {
 
   return (
     <div style={{ background: "var(--paper-cream)", minHeight: "100dvh", paddingBottom: "80px" }}>
-      {/* 상단 헤더 */}
       <div style={{ padding: "16px 16px 0", display: "flex", alignItems: "center", justifyContent: "space-between", maxWidth: "800px", margin: "0 auto" }}>
         <h1 style={{ fontFamily: "Noto Serif KR, serif", fontWeight: 700, fontSize: "18px", color: "var(--ink-dark)" }}>관리자</h1>
-        <button onClick={fetchAll} disabled={loading} style={{ fontSize: "12px", color: "var(--text-secondary)", padding: "8px 12px", borderRadius: "8px", background: "var(--paper-aged)", minHeight: "36px" }}>
+        <button onClick={() => void fetchAll()} disabled={loading} style={{ fontSize: "12px", color: "var(--text-secondary)", padding: "8px 12px", borderRadius: "8px", background: "var(--paper-aged)", minHeight: "36px" }}>
           {loading ? "갱신 중…" : "🔄 새로고침"}
         </button>
       </div>
 
-      {/* 탭 - 가로 스크롤 */}
       <div
         style={{
           overflowX: "auto",
@@ -161,7 +215,6 @@ export default function AdminPage() {
       <div style={{ maxWidth: "800px", margin: "0 auto", padding: "0 16px" }}>
         {error && <p style={{ fontSize: "13px", marginBottom: "12px", color: "var(--stamp-vermilion)", textAlign: "center" }}>{error}</p>}
 
-        {/* 대시보드 */}
         {tab === "dashboard" && stats && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px" }}>
             {[
@@ -182,7 +235,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 명언 관리 */}
         {tab === "quotes" && (
           <>
             {quoteSubs.length === 0 && <p style={{ textAlign: "center", fontSize: "14px", color: "var(--text-secondary)", padding: "40px 0" }}>명언 요청이 없어요.</p>}
@@ -208,7 +260,6 @@ export default function AdminPage() {
           </>
         )}
 
-        {/* 주인장 코멘트 */}
         {tab === "owner-comments" && (
           <>
             {ownerReqs.length === 0 && <p style={{ textAlign: "center", fontSize: "14px", color: "var(--text-secondary)", padding: "40px 0" }}>참이 답글 요청이 없어요.</p>}
@@ -245,7 +296,6 @@ export default function AdminPage() {
           </>
         )}
 
-        {/* 문의 관리 */}
         {tab === "inquiries" && (
           <>
             {inquiries.length === 0 && <p style={{ textAlign: "center", fontSize: "14px", color: "var(--text-secondary)", padding: "40px 0" }}>문의가 없어요.</p>}
@@ -272,7 +322,6 @@ export default function AdminPage() {
           </>
         )}
 
-        {/* 사용자 목록 */}
         {tab === "users" && (
           <>
             {users.map((u) => (
@@ -287,7 +336,6 @@ export default function AdminPage() {
           </>
         )}
 
-        {/* 신고 관리 */}
         {tab === "reports" && (
           <>
             {recentReports.length === 0 && <p style={{ textAlign: "center", fontSize: "14px", color: "var(--text-secondary)", padding: "40px 0" }}>신고가 없어요.</p>}
@@ -303,7 +351,6 @@ export default function AdminPage() {
           </>
         )}
 
-        {/* AI 점검 */}
         {tab === "ai-health" && (
           <div style={cardS}>
             <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--ink-dark)", marginBottom: "6px" }}>Gemini 답글 연결 점검</p>

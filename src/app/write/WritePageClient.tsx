@@ -29,6 +29,30 @@ import SelectedTags from "./_components/SelectedTags";
 
 type Step = "emotion" | "persona" | "write" | "loading" | "reply" | "crisis";
 
+const OWNER_PERSONA_CODE = "operator_voice";
+const OWNER_REPLY_POLL_INTERVAL_MS = 5000;
+
+interface DiaryReplyFromApi {
+  id?: string;
+  content?: string;
+  persona?: string;
+}
+
+interface OwnerRequestFromApi {
+  id?: string;
+  status?: string;
+  source?: string | null;
+  reply_due_at?: string | null;
+}
+
+interface DiaryDetailFromApi {
+  diary?: {
+    replies?: DiaryReplyFromApi[];
+    owner_comment_requests?: OwnerRequestFromApi[];
+    ai_insight?: AiInsight | null;
+  };
+}
+
 export default function WritePage() {
   const router = useRouter();
   const { t } = useI18n();
@@ -148,6 +172,53 @@ export default function WritePage() {
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [diaryContent, step]);
+
+  // ── 참이 답글 대기 중: 운영자 전송이 완료되면 화면에 바로 반영 ──
+  useEffect(() => {
+    if (!ownerReplyPending || !diaryId || replyContent) return;
+
+    let cancelled = false;
+
+    async function checkOwnerReply() {
+      try {
+        const res = await fetch(`/api/diaries/${diaryId}`, { cache: "no-store" });
+        const data = (await res.json().catch(() => ({}))) as DiaryDetailFromApi;
+        if (!res.ok || cancelled) return;
+
+        const replies = data.diary?.replies ?? [];
+        const ownerReply = replies.find((reply) => reply.persona === OWNER_PERSONA_CODE) ?? replies[0];
+
+        if (ownerReply?.content) {
+          setReplyContent(ownerReply.content);
+          setReplyId(ownerReply.id ?? "");
+          setSelectedPersona(ownerReply.persona || OWNER_PERSONA_CODE);
+          setOwnerReplyPending(false);
+          setOwnerReplyDueAt("");
+          setOwnerReplyError("");
+          setAiInsight(null);
+          window.dispatchEvent(new CustomEvent("notifications:changed"));
+          return;
+        }
+
+        const pendingRequest = data.diary?.owner_comment_requests?.find(
+          (request) => request.source === "persona_chami" && request.status !== "completed"
+        );
+        if (pendingRequest?.reply_due_at) {
+          setOwnerReplyDueAt(pendingRequest.reply_due_at);
+        }
+      } catch {
+        // 대기 화면에서는 일시적인 조회 실패를 조용히 무시하고 다음 폴링에서 다시 확인합니다.
+      }
+    }
+
+    void checkOwnerReply();
+    const timer = window.setInterval(checkOwnerReply, OWNER_REPLY_POLL_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [diaryId, ownerReplyPending, replyContent]);
 
   // ── Submit handler ──
   async function handleSubmit() {
