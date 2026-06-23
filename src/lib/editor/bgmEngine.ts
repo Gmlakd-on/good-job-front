@@ -10,30 +10,74 @@ export type BgmSnapshot = {
   isPlaying: boolean;
 };
 
-const BGM_BASE = "/sounds/editor/bgm";
+const BGM_BASE = "/sounds/editor";
 const STORAGE_KEY = "good-job-editor-bgm-track";
 const DEFAULT_VOLUME = 0.24;
 
+const soundUrl = (...segments: string[]) =>
+  `${BGM_BASE}/${segments.map(encodeURIComponent).join("/")}`;
+
 export const BGM_TRACKS: BgmTrack[] = [
   {
-    id: "quiet-desk",
-    title: "조용한 책상 위의 밤",
-    url: `${BGM_BASE}/quiet-desk.mp3`,
+    id: "archive-tea",
+    title: "A Cup of Tea",
+    url: soundUrl("archive", "A cup of tea.mp3"),
   },
   {
-    id: "rainy-window",
-    title: "창가에 머무는 빗소리",
-    url: `${BGM_BASE}/rainy-window.mp3`,
+    id: "classic-josephine",
+    title: "Come On Josephine",
+    url: soundUrl("classic", "Come On Josephine In My Flying Machine_[cut_188sec].mp3"),
   },
   {
-    id: "library-night",
-    title: "늦은 밤 도서관",
-    url: `${BGM_BASE}/library-night.mp3`,
+    id: "classic-mother",
+    title: "O matko moja",
+    url: soundUrl(
+      "classic",
+      "Adamo DIDUR-O matko moja, Oh mother - G&T 22717 Mx. 1809 B Warsaw XI. 1901-13.mp3",
+    ),
   },
   {
-    id: "warm-room",
-    title: "따뜻한 방의 작은 숨",
-    url: `${BGM_BASE}/warm-room.mp3`,
+    id: "classic-life",
+    title: "What Is Our Life",
+    url: soundUrl(
+      "classic",
+      "Alexander DAVYDOV - 22515, Mx. 256 G (June 1901) - What is our life (Tchaikovsky, Queen of Spades)-01.mp3",
+    ),
+  },
+  {
+    id: "classic-marietta",
+    title: "Marietta",
+    url: soundUrl("classic", "Marietta (Romilli) - Giuseppe DE LUCA.mp3"),
+  },
+  {
+    id: "kitsch-bartender",
+    title: "Bartender",
+    url: soundUrl("kitsch", "Bartender.mp3"),
+  },
+  {
+    id: "kitsch-oceanside",
+    title: "Oceanside",
+    url: soundUrl("kitsch", "Oceanside.mp3"),
+  },
+  {
+    id: "pop-countryside",
+    title: "Countryside",
+    url: soundUrl("pop", "Countryside.mp3"),
+  },
+  {
+    id: "pop-morning-rain",
+    title: "Morning Rain",
+    url: soundUrl("pop", "Morning rain.mp3"),
+  },
+  {
+    id: "sketch-lofi",
+    title: "Lofi Hiphop",
+    url: soundUrl("sketch", "lofihiphop.ogg"),
+  },
+  {
+    id: "stone-chill-lofi",
+    title: "Chill Lofi",
+    url: soundUrl("stone", "ChillLofiR.mp3"),
   },
 ];
 
