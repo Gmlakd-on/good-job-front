@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-page-custom-font */
 import type { Metadata, Viewport } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -54,20 +53,6 @@ export default function RootLayout({
     <html lang="ko">
       <head>
         <meta name="google-site-verification" content="rBHuSGZx9ban_d2wBQs5KkahAg8WMAvwndqcqQ28bak" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
-        <link
-          rel="preload"
-          as="font"
-          type="font/woff2"
-          href="https://cdn.jsdelivr.net/gh/projectnoonnu/2507-1@1.0/KyoboHandwriting2024psw.woff2"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap"
-          rel="stylesheet"
-        />
         <link rel="icon" href="/favicon.ico?v=2" sizes="any" />
         <link rel="icon" href="/icons/icon-192.png?v=2" type="image/png" sizes="192x192" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png?v=2" />

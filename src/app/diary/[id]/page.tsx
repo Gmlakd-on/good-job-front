@@ -147,7 +147,8 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
     <div className="diary-detail-reader pt-2">
       <button
         onClick={() => router.push("/diaries")}
-        className="text-sm opacity-40 mb-6 hover:opacity-70"
+        className="text-sm mb-6 transition-opacity hover:opacity-80"
+        style={{ color: "var(--ink-body)" }}
       >
         ← {t("common.toBook")}
       </button>
@@ -178,7 +179,7 @@ export default function DiaryDetailPage({ params }: { params: Promise<{ id: stri
           return (
             <span
               className="inline-flex items-center gap-1.5 text-sm px-3 py-1 rounded-full"
-              style={{ background: "var(--warm-blue)", color: "white" }}
+              style={{ background: "var(--cloth-indigo)", color: "white" }}
             >
               {replyPersona?.imageSrc && (
                 <Image

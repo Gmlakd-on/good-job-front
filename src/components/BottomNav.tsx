@@ -17,7 +17,7 @@ const NAV_ITEMS: {
     labelKey: "nav.home",
     href: "/",
     icon: (active: boolean) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "var(--ink-dark)" : "var(--ink-ghost)"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "var(--ink-dark)" : "var(--ink-body)"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" />
         <path d="M9 21V12h6v9" />
       </svg>
@@ -27,7 +27,7 @@ const NAV_ITEMS: {
     labelKey: "nav.bookshelfShort",
     href: "/books",
     icon: (active: boolean) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "var(--ink-dark)" : "var(--ink-ghost)"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "var(--ink-dark)" : "var(--ink-body)"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
         <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
       </svg>
@@ -47,7 +47,7 @@ const NAV_ITEMS: {
     labelKey: "nav.exchange",
     href: "/exchange",
     icon: (active: boolean) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "var(--ink-dark)" : "var(--ink-ghost)"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "var(--ink-dark)" : "var(--ink-body)"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M21 6h-4a4 4 0 00-8 0H5a2 2 0 00-2 2v11a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2z" opacity="0" />
         <path d="M4 7h13l-2.5-2.5M20 17H7l2.5 2.5" />
         <rect x="3" y="10" width="8" height="7" rx="1.5" />
@@ -59,7 +59,7 @@ const NAV_ITEMS: {
     labelKey: "nav.dex",
     href: "/dex",
     icon: (active: boolean) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "var(--ink-dark)" : "var(--ink-ghost)"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "var(--ink-dark)" : "var(--ink-body)"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 4l2.1 4.3 4.7.7-3.4 3.3.8 4.7L12 14.8 7.8 17l.8-4.7-3.4-3.3 4.7-.7L12 4z" />
       </svg>
     ),
@@ -134,7 +134,7 @@ export default function BottomNav() {
               </div>
               <span
                 className="text-[10px] mt-1 font-medium"
-                style={{ color: "var(--text-muted)" }}
+                style={{ color: "var(--ink-body)" }}
               >
                 {t(item.labelKey)}
               </span>
@@ -146,12 +146,13 @@ export default function BottomNav() {
           <Link
             key={item.href}
             href={item.href}
+            prefetch={false}
             className="flex flex-col items-center justify-center gap-0.5 py-1 transition-colors"
           >
             {item.icon(isActive)}
             <span
               className="text-[10px] font-medium"
-              style={{ color: isActive ? "var(--ink-dark)" : "var(--text-muted)" }}
+              style={{ color: isActive ? "var(--ink-dark)" : "var(--ink-body)" }}
             >
               {t(item.labelKey)}
             </span>

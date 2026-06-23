@@ -96,7 +96,7 @@ export default function ReplyCard({
             </p>
             <p
               className="mt-1 inline-flex items-center gap-1.5 text-xs"
-              style={{ color: `${theme.replyInk}70` }}
+              style={{ color: theme.replyInk }}
             >
               <Image
                 src={personaData.imageSrc}
@@ -116,7 +116,7 @@ export default function ReplyCard({
               onClick={handleCopy}
               className="text-xs px-2 py-1 transition-opacity"
               style={{
-                color: `${theme.replyInk}60`,
+                color: theme.replyInk,
                 background: "transparent",
                 border: "none",
                 cursor: "pointer",
@@ -148,7 +148,7 @@ export default function ReplyCard({
         {typingDone && (
           <DoodleRenderer
             types={doodleTypes}
-            color={theme.doodleColor}
+            color={theme.replyInk}
             intensity={doodleIntensity}
             text={doodleText}
           />

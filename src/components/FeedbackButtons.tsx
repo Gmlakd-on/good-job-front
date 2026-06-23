@@ -49,7 +49,7 @@ export default function FeedbackButtons({ replyId, onSubmit }: FeedbackButtonsPr
           style={{
             padding: "10px 20px",
             borderRadius: "var(--radius-xs)",
-            background: "var(--cloth-sage)",
+            background: "var(--leather-brown)",
             color: "white",
             border: "none",
             cursor: loading ? "not-allowed" : "pointer",

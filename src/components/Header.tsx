@@ -147,7 +147,7 @@ export default function Header() {
   return (
     <header className="chami-home-nav chami-global-nav" aria-label="상단 메뉴">
       <div className="chami-home-nav__inner">
-        <Link href="/" className="chami-home-nav__logo" aria-label={t("nav.toHome")}>
+        <Link href="/" className="chami-home-nav__logo" prefetch={false}>
           참 잘했어요
         </Link>
 
@@ -157,6 +157,7 @@ export default function Header() {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={false}
                 aria-current={isNavActive(pathname, item.href) ? "page" : undefined}
                 className={`chami-home-nav__link ${isNavActive(pathname, item.href) ? "chami-home-nav__link--active" : ""}`}
               >
@@ -172,6 +173,7 @@ export default function Header() {
             <>
               <Link
                 href="/notifications"
+                prefetch={false}
                 className="chami-home-nav__icon chami-home-nav__icon--notifications"
                 style={{ position: "relative" }}
                 aria-label={unreadCount > 0 ? t("nav.unread", { n: unreadCount }) : t("nav.notifications")}
@@ -179,7 +181,7 @@ export default function Header() {
                 <BellIcon />
                 {unreadCount > 0 && <span className="chami-home-nav__badge">{unreadCount > 9 ? "9+" : unreadCount}</span>}
               </Link>
-              <Link href="/support" className="chami-home-nav__icon chami-home-nav__icon--support" aria-label="도움말">
+              <Link href="/support" prefetch={false} className="chami-home-nav__icon chami-home-nav__icon--support" aria-label="도움말">
                 <HelpIcon />
               </Link>
 
@@ -202,7 +204,7 @@ export default function Header() {
                   <>
                     <div className="chami-profile-menu__backdrop" onClick={() => setMenuOpen(false)} />
                     <div className="chami-profile-menu__panel">
-                      <Link href="/settings" onClick={() => setMenuOpen(false)}>
+                      <Link href="/settings" prefetch={false} onClick={() => setMenuOpen(false)}>
                         {t("nav.settings")}
                       </Link>
                       <button type="button" onClick={handleLogout}>

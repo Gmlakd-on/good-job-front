@@ -21,6 +21,7 @@ export default function GoodJobStamp({
         viewBox="0 0 100 100"
         xmlns="http://www.w3.org/2000/svg"
         role="img"
+        aria-label={caption}
       >
         {/* Outer ring — vermilion seal style */}
         <circle cx="50" cy="50" r="44" fill="none" stroke="var(--stamp-vermilion)" strokeWidth="2.5" opacity="0.85" />

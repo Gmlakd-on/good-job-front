@@ -1,14 +1,5 @@
 @import "tailwindcss";
 
-@font-face {
-  font-family: "KyoboHandwriting2024";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2507-1@1.0/KyoboHandwriting2024psw.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-
 /* ═══════════════════════════════════════════════
    참 잘했어요 — Design System v3
    "기록장이라는 물건" 세계관

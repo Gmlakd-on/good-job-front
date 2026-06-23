@@ -56,10 +56,10 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               // Next.js 및 Supabase SDK
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-              // 스타일 (Google Fonts CDN, jsdelivr)
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
+              // 스타일
+              "style-src 'self' 'unsafe-inline'",
               // 폰트
-              "font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net",
+              "font-src 'self' data:",
               // 이미지 (Supabase storage, kakao profile)
               "img-src 'self' data: blob: https://*.supabase.co https://k.kakaocdn.net https://lh3.googleusercontent.com",
               // API 연결
