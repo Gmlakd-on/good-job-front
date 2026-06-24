@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { buildGoogleOAuthStartUrl, getAuthRedirectOrigin } from "@/lib/auth/redirect";
+import { createClient } from "@/lib/supabase/client";
+import { buildAuthCallbackUrl, getAuthRedirectOrigin } from "@/lib/auth/redirect";
 
 interface AuthGateProps {
   open: boolean;
@@ -20,7 +21,18 @@ export default function AuthGate({ open, onClose, onSuccess }: AuthGateProps) {
     setError("");
 
     try {
-      window.location.href = buildGoogleOAuthStartUrl(getAuthRedirectOrigin(), "/");
+      const supabase = createClient();
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: buildAuthCallbackUrl(getAuthRedirectOrigin(), "/"),
+        },
+      });
+
+      if (oauthError) {
+        setError(oauthError.message);
+        setOauthLoading(null);
+      }
     } catch {
       setError("서버에 연결할 수 없습니다.");
       setOauthLoading(null);

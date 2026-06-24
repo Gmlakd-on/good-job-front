@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   buildAuthCallbackUrl,
-  buildDirectOAuthStartUrl,
   getAuthRedirectOrigin,
   getSafeNextPath,
 } from "@/lib/auth/redirect";
@@ -103,11 +102,6 @@ export default function SocialAuthPanel({
     try {
       const redirectOrigin = getAuthRedirectOrigin();
       const nextPath = getSafeNextPath(next);
-
-      if (provider === "google" || provider === "kakao") {
-        window.location.href = buildDirectOAuthStartUrl(provider, redirectOrigin, nextPath);
-        return;
-      }
 
       const supabase = createClient();
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
