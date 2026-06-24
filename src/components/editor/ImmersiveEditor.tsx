@@ -89,7 +89,7 @@ export default function ImmersiveEditor({
   const { state, actions } = useEditorStore(
     coverStyle,
     defaultTool,
-    world.canvasEnabled ? "draw" : "text",
+    "text",
     diaryId,
   );
 

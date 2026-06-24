@@ -212,8 +212,8 @@ export default function ExchangeRandomPage() {
   }
 
   return (
-    <div className="pt-2 pb-8">
-      <div className="flex items-center justify-between mb-6">
+    <main className="xch-random-page pt-2 pb-8">
+      <div className="xch-random-header flex items-center justify-between mb-6">
         <button onClick={() => router.push("/exchange")} className="text-sm opacity-40 hover:opacity-70">
           ← {t("xch.back.exchange")}
         </button>
@@ -332,8 +332,8 @@ export default function ExchangeRandomPage() {
         </section>
       ) : (
         /* ── 3. 제출 폼: 일기 고르기 → 미리보기 다듬기 → 제출 ── */
-        <>
-          <div className="diary-card p-5 mb-4">
+        <div className="xch-random-compose">
+          <div className="diary-card xch-step-card xch-step-card--pick p-5 mb-4">
             <p className="text-sm font-medium mb-1" style={{ color: "var(--deep-gray)" }}>
               {t("xch.rd.step1")}
             </p>
@@ -361,13 +361,18 @@ export default function ExchangeRandomPage() {
                       onClick={() => pickDiary(d)}
                       className={`xch-pick__item ${isPicked ? "xch-pick__item--active" : ""}`}
                     >
-                      <span className="xch-pick__date">
-                        {date.getMonth() + 1}/{date.getDate()}
-                        {d.diary_emotions?.slice(0, 3).map((e) => (
-                          <span key={e.emotion_code}> {emojiFor(e.emotion_code)}</span>
-                        ))}
+                      <span className="xch-pick__topline">
+                        <span className="xch-pick__date">{date.getMonth() + 1}/{date.getDate()}</span>
+                        <span className="xch-pick__check" aria-hidden="true">✓</span>
                       </span>
-                      <span className="xch-pick__excerpt">{d.content.slice(0, 60)}</span>
+                      {d.diary_emotions && d.diary_emotions.length > 0 && (
+                        <span className="xch-pick__emotions" aria-label="감정">
+                          {d.diary_emotions.slice(0, 4).map((e) => (
+                            <span key={e.emotion_code}>{emojiFor(e.emotion_code)}</span>
+                          ))}
+                        </span>
+                      )}
+                      <span className="xch-pick__excerpt">{d.content.slice(0, 120)}</span>
                     </button>
                   );
                 })}
@@ -376,7 +381,7 @@ export default function ExchangeRandomPage() {
           </div>
 
           {pickedDiary && (
-            <div className="diary-card p-5 mb-4">
+            <div className="diary-card xch-step-card xch-step-card--preview p-5 mb-4">
               <p className="text-sm font-medium mb-1" style={{ color: "var(--deep-gray)" }}>
                 {t("xch.rd.step2")}
               </p>
@@ -406,8 +411,8 @@ export default function ExchangeRandomPage() {
               </button>
             </div>
           )}
-        </>
+        </div>
       )}
-    </div>
+    </main>
   );
 }

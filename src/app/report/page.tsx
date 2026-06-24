@@ -454,7 +454,7 @@ export default function ReportPage() {
           {copy.back}
         </button>
         <div className="report-reference-header__center">
-          <h1>{copy.title}</h1>
+          <h1 className="sr-only">{copy.title}</h1>
           <div className="report-period" role="tablist" aria-label="감정 리포트 기간 선택">
             {(["7d", "30d", "all"] as const).map((key) => (
               <button

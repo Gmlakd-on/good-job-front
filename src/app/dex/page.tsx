@@ -262,7 +262,7 @@ export default function DexPage() {
         <button type="button" onClick={() => router.push("/")} className="dex-reference-header__back">
           {copy.back}
         </button>
-        <h1>{copy.title}</h1>
+        <h1 className="sr-only">{copy.title}</h1>
         <div aria-hidden="true" />
       </header>
 

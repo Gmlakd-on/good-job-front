@@ -293,7 +293,7 @@ export default function ExchangeHubPage() {
         <button type="button" onClick={() => router.push("/")} className="exchange-reference-header__back">
           {copy.back}
         </button>
-        <h1>{copy.title}</h1>
+        <h1 className="sr-only">{copy.title}</h1>
         <button type="button" onClick={openFriendModal} className="exchange-reference-header__add">
           {copy.addFriend}
         </button>

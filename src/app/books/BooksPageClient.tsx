@@ -69,7 +69,7 @@ export default function BooksPage() {
     <div className="books-page">
       <div className="books-page__topbar">
         <Link href="/" className="books-page__back">← 홈으로</Link>
-        <h1>내 일기장</h1>
+        <h1 className="sr-only">내 일기장</h1>
         <Link href="/books/new" className="books-page__new-book">
           <span aria-hidden="true">＋</span> 새 책
         </Link>
