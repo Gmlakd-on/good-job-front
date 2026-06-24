@@ -7,7 +7,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { apiGetJson, invalidateApiCache } from "@/lib/apiCache";
-import { loadDraft, clearDraft, startDraftTimer } from "@/lib/draftStorage";
+import { loadDraft, clearDraft, clearExpiredDrafts, startDraftTimer } from "@/lib/draftStorage";
 import { saveLastBookId, clearLastBookId } from "@/lib/lastBook";
 import EmotionSelector from "@/components/EmotionSelector";
 import WeatherSelector from "@/components/WeatherSelector";
@@ -93,6 +93,11 @@ export default function WritePage() {
 
   const handleEditorStateChange = useCallback((editorState: EditorSavePayload) => {
     editorStateRef.current = editorState;
+  }, []);
+
+  // ── Drop stale local drafts before restoring the current one ──
+  useEffect(() => {
+    clearExpiredDrafts();
   }, []);
 
   // ── Auth check ──

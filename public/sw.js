@@ -1,4 +1,4 @@
-const CACHE_NAME = "welldone-v1.2.0";
+const CACHE_NAME = "good-job-v1.3.0";
 const STATIC_ASSETS = ["/", "/onboarding"];
 
 // 캐시하면 안 되는 민감 경로
@@ -8,6 +8,7 @@ const NO_CACHE_PATHS = [
   "/settings",
   "/admin",
   "/auth",
+  "/oauth",
   "/write",
   "/books/",
   "/report",

@@ -11,6 +11,7 @@
 
 const PREFIX = "diary_draft:";
 const SAVE_INTERVAL = 3000; // 3초마다 저장
+const DRAFT_TTL_MS = 24 * 60 * 60 * 1000;
 
 function hasSavedEditorState(editorState: unknown): boolean {
   if (!editorState || typeof editorState !== "object") return false;
@@ -43,7 +44,7 @@ export function loadDraft(bookId: string): DraftData | null {
     if (!raw) return null;
     const data = JSON.parse(raw) as DraftData;
     // 24시간 이상 지난 초안은 무시
-    if (Date.now() - data.updatedAt > 24 * 60 * 60 * 1000) {
+    if (Date.now() - data.updatedAt > DRAFT_TTL_MS) {
       localStorage.removeItem(PREFIX + bookId);
       return null;
     }
@@ -89,6 +90,33 @@ export function startDraftTimer(
   }, SAVE_INTERVAL);
 
   return () => clearInterval(timer);
+}
+
+/** 만료된 임시저장만 정리 */
+export function clearExpiredDrafts() {
+  try {
+    const keysToRemove: string[] = [];
+    const now = Date.now();
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key?.startsWith(PREFIX)) continue;
+
+      try {
+        const raw = localStorage.getItem(key);
+        const data = raw ? (JSON.parse(raw) as { updatedAt?: unknown }) : null;
+        if (typeof data?.updatedAt !== "number" || now - data.updatedAt > DRAFT_TTL_MS) {
+          keysToRemove.push(key);
+        }
+      } catch {
+        keysToRemove.push(key);
+      }
+    }
+
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
+  } catch {
+    // silent
+  }
 }
 
 /** 모든 임시저장 삭제 (로그아웃 시 호출) */

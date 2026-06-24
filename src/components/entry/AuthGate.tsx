@@ -1,18 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-
-function getAuthRedirectOrigin() {
-  // OAuth redirect는 현재 접속 중인 도메인을 우선한다.
-  // NEXT_PUBLIC_SITE_URL이 삭제된 Vercel preview/deployment URL로 남아 있으면
-  // 로그인 후 DEPLOYMENT_NOT_FOUND가 날 수 있다.
-  if (typeof window !== "undefined" && window.location.origin) {
-    return window.location.origin;
-  }
-
-  return process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "") || "";
-}
+import { buildGoogleOAuthStartUrl, getAuthRedirectOrigin } from "@/lib/auth/redirect";
 
 interface AuthGateProps {
   open: boolean;
@@ -31,18 +20,7 @@ export default function AuthGate({ open, onClose, onSuccess }: AuthGateProps) {
     setError("");
 
     try {
-      const supabase = createClient();
-      const { error: err } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${getAuthRedirectOrigin()}/auth/callback?next=/`,
-        },
-      });
-
-      if (err) {
-        setError(err.message);
-        setOauthLoading(null);
-      }
+      window.location.href = buildGoogleOAuthStartUrl(getAuthRedirectOrigin(), "/");
     } catch {
       setError("서버에 연결할 수 없습니다.");
       setOauthLoading(null);

@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import {
+  buildAuthCallbackUrl,
+  buildDirectOAuthStartUrl,
+  getAuthRedirectOrigin,
+  getSafeNextPath,
+} from "@/lib/auth/redirect";
 
 type AuthMode = "login" | "signup";
 type OAuthProvider = "google" | "kakao" | `custom:${string}`;
@@ -20,22 +26,6 @@ const IN_APP_BROWSER_PATTERNS = [
   /MicroMessenger/i,
   /; wv\)/i,
 ];
-
-function getAuthRedirectOrigin() {
-  // OAuth redirect는 사용자가 지금 접속한 도메인으로 돌려보내는 게 가장 안전하다.
-  // NEXT_PUBLIC_SITE_URL이 예전 Vercel preview/deployment URL로 남아 있으면
-  // 로그인 후 DEPLOYMENT_NOT_FOUND가 발생할 수 있으므로 브라우저 origin을 우선한다.
-  if (typeof window !== "undefined" && window.location.origin) {
-    return window.location.origin;
-  }
-
-  return process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "") || "";
-}
-
-function getSafeNextPath(value: string) {
-  if (!value.startsWith("/") || value.startsWith("//")) return "/";
-  return value;
-}
 
 function isInAppBrowser() {
   if (typeof navigator === "undefined") return false;
@@ -111,14 +101,19 @@ export default function SocialAuthPanel({
     }
 
     try {
-      const supabase = createClient();
       const redirectOrigin = getAuthRedirectOrigin();
       const nextPath = getSafeNextPath(next);
 
+      if (provider === "google" || provider === "kakao") {
+        window.location.href = buildDirectOAuthStartUrl(provider, redirectOrigin, nextPath);
+        return;
+      }
+
+      const supabase = createClient();
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${redirectOrigin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
+          redirectTo: buildAuthCallbackUrl(redirectOrigin, nextPath),
         },
       });
 

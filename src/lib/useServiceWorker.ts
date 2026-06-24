@@ -8,7 +8,7 @@ export function useServiceWorker() {
 
     const register = () => {
       navigator.serviceWorker
-        .register("/sw.js")
+        .register("/sw.js", { updateViaCache: "none" })
         .catch((err) => console.info("SW registration failed:", err));
     };
 
