@@ -436,7 +436,28 @@ export default function HomePage() {
     });
   }, [homeDiaries]);
 
-  const trendPolyline = emotionTrend.map((point) => `${point.x},${point.y}`).join(" ");
+  const trendSegments = useMemo(() => {
+    const segments: string[][] = [];
+    let currentSegment: string[] = [];
+
+    emotionTrend.forEach((point) => {
+      if (!point.hasData) {
+        if (currentSegment.length > 1) {
+          segments.push(currentSegment);
+        }
+        currentSegment = [];
+        return;
+      }
+
+      currentSegment.push(`${point.x},${point.y}`);
+    });
+
+    if (currentSegment.length > 1) {
+      segments.push(currentSegment);
+    }
+
+    return segments.map((segment) => segment.join(" "));
+  }, [emotionTrend]);
   const latestEmotion = recentDiaries[0]?.diary_emotions?.[0]?.emotion_code;
   const latestEmotionMeta = getEmotionMeta(latestEmotion);
   const latestTrendMessage = homeDiaries.length
@@ -546,7 +567,9 @@ export default function HomePage() {
                         <stop offset="100%" stopColor="#ffb15e" />
                       </linearGradient>
                     </defs>
-                    <polyline points={trendPolyline} fill="none" stroke="url(#chamiTrendGradient)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                    {trendSegments.map((points, index) => (
+                      <polyline key={`trend-segment-${index}`} points={points} fill="none" stroke="url(#chamiTrendGradient)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                    ))}
                     {emotionTrend.map((point) => (
                       <circle key={point.key} cx={point.x} cy={point.y} r={point.hasData ? 3.2 : 2.4} className={point.hasData ? "is-filled" : ""} />
                     ))}

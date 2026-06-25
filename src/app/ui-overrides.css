@@ -6487,3 +6487,114 @@ html[lang="en"] .home-shell .home-quote-card__text.hero-quote {
     border-radius: 26px !important;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Chami dashboard viewport fit
+   - The right care widget must be visible as a complete one-screen panel.
+   - The emotion chart remains user-data driven; this block only adjusts layout.
+   -------------------------------------------------------------------------- */
+@media (min-width: 1200px) {
+  .chami-dashboard-layout {
+    width: min(100% - 76px, 1720px) !important;
+    padding: 24px 0 32px !important;
+    grid-template-columns: minmax(0, 1fr) 640px !important;
+    gap: 28px !important;
+    align-items: start !important;
+  }
+
+  .chami-pet-widget {
+    position: sticky !important;
+    top: 104px !important;
+    width: 100% !important;
+    height: clamp(610px, calc(100vh - 128px), 760px) !important;
+    min-height: 0 !important;
+    max-height: 760px !important;
+    overflow: hidden !important;
+  }
+
+  .chami-pet-widget iframe.chami-care-widget-frame,
+  .chami-pet-widget .chami-care-widget-frame,
+  .chami-pet-widget__frame {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    aspect-ratio: auto !important;
+    border-radius: 30px !important;
+  }
+
+  .chami-hero-card {
+    min-height: clamp(420px, calc(100vh - 350px), 520px) !important;
+    padding: clamp(34px, 3.2vw, 52px) 56px 28px !important;
+  }
+
+  .chami-home-bottom-grid {
+    margin-top: 20px !important;
+  }
+
+  .chami-dashboard-card {
+    min-height: clamp(260px, calc(100vh - 520px), 360px) !important;
+  }
+}
+
+@media (min-width: 1200px) and (max-height: 760px) {
+  .chami-dashboard-layout {
+    padding-top: 18px !important;
+    padding-bottom: 24px !important;
+  }
+
+  .chami-pet-widget {
+    top: 94px !important;
+    height: calc(100vh - 112px) !important;
+    max-height: none !important;
+  }
+
+  .chami-hero-card {
+    min-height: 390px !important;
+    padding-top: 32px !important;
+  }
+
+  .chami-hero-title {
+    margin-top: 18px !important;
+  }
+
+  .chami-hero-buttons {
+    margin-top: 26px !important;
+  }
+
+  .chami-quote-card {
+    margin-top: 24px !important;
+    min-height: 142px !important;
+    padding: 22px 30px !important;
+  }
+
+  .chami-quote-card blockquote {
+    font-size: clamp(23px, 1.9vw, 30px) !important;
+  }
+
+  .chami-dashboard-card {
+    min-height: 250px !important;
+  }
+}
+
+@media (max-width: 1199px) {
+  .chami-pet-widget {
+    height: min(760px, 100dvh) !important;
+    min-height: 680px !important;
+    overflow: hidden !important;
+  }
+
+  .chami-pet-widget iframe.chami-care-widget-frame,
+  .chami-pet-widget .chami-care-widget-frame,
+  .chami-pet-widget__frame {
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .chami-pet-widget {
+    height: min(780px, calc(100dvh - 24px)) !important;
+    min-height: 620px !important;
+  }
+}
