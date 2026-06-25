@@ -71,6 +71,31 @@ const nextConfig: NextConfig = {
         ],
       },
 
+      // ─ 위젯 HTML: 홈 화면 내부 iframe에서 같은 도메인 위젯을 표시할 수 있게 허용
+      // 전체 사이트의 frame 차단 정책은 유지하고, /widgets/* 정적 위젯만 예외 처리한다.
+      {
+        source: "/widgets/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self' blob: data:",
+              "script-src 'self' blob: 'unsafe-inline' 'unsafe-eval'",
+              "style-src 'self' 'unsafe-inline'",
+              "font-src 'self' data: blob:",
+              "img-src 'self' data: blob:",
+              "connect-src 'self' blob: data:",
+              "frame-ancestors 'self'",
+            ].join("; "),
+          },
+          { key: "Cache-Control", value: "public, max-age=3600, must-revalidate" },
+        ],
+      },
+
       // ─ 정적 자산: 1년 캐시 (immutable)
       {
         source: "/mascot/:path*",
