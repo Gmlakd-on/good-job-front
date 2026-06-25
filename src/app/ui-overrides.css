@@ -5301,3 +5301,125 @@ html[lang="en"] .home-shell .home-quote-card__text.hero-quote {
     height: 34px;
   }
 }
+
+/* Chami care game widget embed on the home dashboard */
+.chami-mascot-stage--widget {
+  width: 100%;
+  min-height: clamp(420px, 48vw, 560px);
+  margin: 8px 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+.chami-mascot-stage--widget::before {
+  display: none;
+}
+
+.chami-care-widget-frame {
+  position: relative;
+  z-index: 2;
+  width: min(100%, 380px);
+  height: clamp(420px, 48vw, 560px);
+  border: 0;
+  border-radius: 24px;
+  background: #faf9f5;
+  box-shadow: 0 20px 42px rgba(124, 83, 38, 0.16);
+}
+
+@media (max-width: 760px) {
+  .chami-mascot-stage--widget {
+    min-height: min(520px, 78vh);
+  }
+
+  .chami-care-widget-frame {
+    width: min(100%, 380px);
+    height: min(520px, 78vh);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Home dashboard: use the standalone Chami care game as the only care surface
+   -------------------------------------------------------------------------- */
+.chami-mascot-card--widget-only {
+  grid-template-rows: auto auto minmax(0, 1fr);
+  align-content: start;
+  justify-content: center;
+  row-gap: clamp(12px, 2vw, 18px);
+  min-height: clamp(720px, 76vh, 940px);
+}
+
+.chami-mascot-card--widget-only::after {
+  content: "";
+  position: absolute;
+  inset: 22% 10% 7%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 219, 112, 0.34), transparent 64%);
+  filter: blur(24px);
+  pointer-events: none;
+}
+
+.chami-mascot-card--widget-only .chami-mascot-card__copy {
+  position: relative;
+  z-index: 3;
+}
+
+.chami-mascot-card--widget-only .chami-mascot-card__copy p {
+  margin-bottom: 10px;
+  font-size: clamp(28px, 2.15vw, 38px);
+  line-height: 1.2;
+}
+
+.chami-mascot-card--widget-only .chami-mascot-card__helper {
+  width: min(100%, 500px);
+  margin: 0 auto;
+  color: #7a6f66;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
+.chami-mascot-card--widget-only .chami-mascot-stage--widget {
+  align-self: stretch;
+  min-height: clamp(620px, 68vh, 880px);
+  margin: 0;
+  overflow: hidden;
+}
+
+.chami-mascot-card--widget-only .chami-care-widget-frame {
+  width: min(100%, 420px);
+  height: clamp(620px, 68vh, 880px);
+  border-radius: 28px;
+  box-shadow: 0 20px 42px rgba(124, 83, 38, 0.16);
+}
+
+@media (max-width: 1180px) {
+  .chami-mascot-card--widget-only {
+    min-height: auto;
+  }
+
+  .chami-mascot-card--widget-only .chami-mascot-stage--widget,
+  .chami-mascot-card--widget-only .chami-care-widget-frame {
+    min-height: min(820px, 84vh);
+    height: min(820px, 84vh);
+  }
+}
+
+@media (max-width: 760px) {
+  .chami-mascot-card--widget-only {
+    padding: 24px 16px 18px;
+  }
+
+  .chami-mascot-card--widget-only .chami-mascot-card__helper {
+    font-size: 14px;
+  }
+
+  .chami-mascot-card--widget-only .chami-mascot-stage--widget,
+  .chami-mascot-card--widget-only .chami-care-widget-frame {
+    width: 100%;
+    min-height: min(780px, 86vh);
+    height: min(780px, 86vh);
+  }
+}

@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { apiGetJson, invalidateApiCache } from "@/lib/apiCache";
 import MascotHero from "@/components/home/MascotHero";
+import ChamiCareWidgetFrame from "@/components/character/ChamiCareWidgetFrame";
 import TryItDemo from "@/components/home/TryItDemo";
 import AuthModal from "@/components/auth/AuthModal";
 import type { User } from "@supabase/supabase-js";
@@ -27,22 +28,10 @@ type AuthMode = "login" | "signup";
 
 type LanguageOption = "ko" | "en";
 
-type MascotState = "idle" | "happy" | "sad";
-
 interface Profile {
   email?: string | null;
   nickname: string | null;
   profileImage?: string | null;
-}
-
-interface DailyAffirmation {
-  id: string | null;
-  userId: string;
-  date: string;
-  text: string;
-  completed: boolean;
-  feedStartedAt: string | null;
-  createdAt: string | null;
 }
 
 type ExchangeSessionStatus = "active_7day" | "extension_pending" | "extended" | "ended" | "terminated";
@@ -57,32 +46,6 @@ interface ExchangeSessionSummary {
 interface ExchangeSessionsResponse {
   sessions?: ExchangeSessionSummary[];
 }
-
-const AFFIRMATION_SUGGESTIONS = [
-  "나는 내 모습 그대로 충분히 가치 있는 사람이다.",
-  "나는 내 인생을 스스로 선택하고 책임질 힘이 있다.",
-  "오늘의 나는 어제보다 더 성장하고 단단해졌다.",
-  "나는 나를 사랑하며, 나에게 친절하게 대한다.",
-  "나의 잠재력은 무한하며, 나는 무엇이든 해낼 수 있다.",
-  "나는 떨리지만, 도전을 즐긴다",
-  "나의 노력은 매일 조금씩 긍정적 결실을 맺고 있다.",
-  "나는 집중하고 몰입하며, 내가 원하는 목표에 다가가고 있다.",
-  "나는 문제를 해결할 충분한 지혜와 능력을 갖추고 있다.",
-  "나는 나만의 속도로 묵묵히 나의 길을 걷고 있다.",
-  "나는 지금 이 순간, 충분히 평온하고 안전하다.",
-  "나는 부정적인 생각을 흘려보내고 긍정적인 에너지로 나를 채운다.",
-  "오늘 하루 내게 일어나는 모든 일은 나를 좋은 방향으로 이끈다.",
-  "나는 내 감정을 소중히 여기며, 그것을 건강하게 표현한다.",
-  "마음의 짐을 내려놓고, 가벼운 마음으로 오늘을 맞이한다.",
-  "나는 내 삶에 이미 존재하는 수많은 감사함에 집중한다.",
-  "나는 사랑스러운 존재이다.",
-  "좋은 일들이 자연스럽게 내 삶 속으로 흘러들어온다.",
-  "나는 매일 새로운 가능성을 마주하는 행운을 누린다.",
-  "나는 나의 현재와 미래를 깊이 신뢰한다.",
-] as const;
-
-const getRandomAffirmationSuggestion = () =>
-  AFFIRMATION_SUGGESTIONS[Math.floor(Math.random() * AFFIRMATION_SUGGESTIONS.length)];
 
 const ACTIVE_EXCHANGE_STATUSES = new Set<string>(["active_7day", "extension_pending", "extended"]);
 
@@ -155,14 +118,6 @@ export default function HomePage() {
   const [nicknameInput, setNicknameInput] = useState("");
   const [nicknameError, setNicknameError] = useState("");
   const [nicknameSaving, setNicknameSaving] = useState(false);
-  const [dailyAffirmation, setDailyAffirmation] = useState<DailyAffirmation | null>(null);
-  const [streakCount, setStreakCount] = useState(0);
-  const [affirmationDraft, setAffirmationDraft] = useState("");
-  const [affirmationSuggestion, setAffirmationSuggestion] = useState<string>(AFFIRMATION_SUGGESTIONS[0]);
-  const [affirmationEditing, setAffirmationEditing] = useState(false);
-  const [affirmationSaving, setAffirmationSaving] = useState(false);
-  const [affirmationError, setAffirmationError] = useState("");
-  const [feedStarted, setFeedStarted] = useState(false);
   const [activeExchangeSession, setActiveExchangeSession] = useState<ExchangeSessionSummary | null>(null);
 
   useEffect(() => {
@@ -181,10 +136,6 @@ export default function HomePage() {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    setAffirmationSuggestion(getRandomAffirmationSuggestion());
   }, []);
 
   useEffect(() => {
@@ -295,9 +246,8 @@ export default function HomePage() {
     if (!user) return;
 
     try {
-      const [profileResponse, affirmationResponse, exchangeResponse] = await Promise.all([
+      const [profileResponse, exchangeResponse] = await Promise.all([
         apiGetJson<{ profile?: Profile }>("/api/profile", { ttlMs: 30_000 }),
-        apiGetJson<{ dailyAffirmation?: DailyAffirmation; streakCount?: number }>("/api/daily-affirmation", { ttlMs: 10_000 }),
         fetch("/api/exchange/sessions", { cache: "no-store" })
           .then(async (response): Promise<ExchangeSessionsResponse> => {
             if (!response.ok) {
@@ -316,17 +266,11 @@ export default function HomePage() {
         setNicknameModalOpen(true);
       }
 
-      if (affirmationResponse.dailyAffirmation) {
-        setDailyAffirmation(affirmationResponse.dailyAffirmation);
-        setAffirmationDraft(affirmationResponse.dailyAffirmation.completed ? affirmationResponse.dailyAffirmation.text : "");
-        setFeedStarted(Boolean(affirmationResponse.dailyAffirmation.feedStartedAt && !affirmationResponse.dailyAffirmation.completed));
-      }
-      setStreakCount(affirmationResponse.streakCount ?? 0);
       setActiveExchangeSession(
         exchangeResponse.sessions?.find((session) => ACTIVE_EXCHANGE_STATUSES.has(session.status)) ?? null,
       );
     } catch {
-      setAffirmationError("홈 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
+      setActiveExchangeSession(null);
     }
   }, [user]);
 
@@ -334,58 +278,13 @@ export default function HomePage() {
     if (!authChecked) return;
 
     if (!user) {
-      setDailyAffirmation(null);
-      setStreakCount(0);
-      setFeedStarted(false);
       setActiveExchangeSession(null);
-      setAffirmationEditing(false);
       setNicknameModalOpen(false);
       return;
     }
 
     void loadDashboardData();
   }, [authChecked, loadDashboardData, user]);
-
-  const isAffirmationCompleted = Boolean(dailyAffirmation?.completed);
-  const hasStartedButNotCompleted = !isAffirmationCompleted && (feedStarted || Boolean(dailyAffirmation?.feedStartedAt));
-
-  const mascotState: MascotState = isAffirmationCompleted
-    ? "happy"
-    : hasStartedButNotCompleted
-      ? "sad"
-      : "idle";
-
-  const mascotImage =
-    mascotState === "happy"
-      ? "/mascot/mascot-happy.png"
-      : mascotState === "sad"
-        ? "/mascot/mascot-sad.png"
-        : "/mascot/mascot-idle.png";
-
-  const mascotMessage = isAffirmationCompleted
-    ? "참이가 긍정을 먹었어요!"
-    : "참이는 오늘의 긍정 확언을 기다리고 있어요.";
-
-  const affirmationStreakLabel =
-    streakCount >= 3
-      ? `🔥 연속 ${streakCount}일째`
-      : streakCount > 0
-        ? `🔥 ${streakCount}일째`
-        : "🔥 오늘 시작";
-
-  const currentAffirmationText = isAffirmationCompleted ? dailyAffirmation?.text?.trim() ?? "" : "";
-
-  useEffect(() => {
-    if (!affirmationEditing || isAffirmationCompleted) return;
-    if (!window.matchMedia("(max-width: 760px)").matches) return;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [affirmationEditing, isAffirmationCompleted]);
 
   const guardAuth = useCallback(
     (next: string, mode: AuthMode = "login") => {
@@ -407,86 +306,6 @@ export default function HomePage() {
     if (!guardAuth("/books")) return;
     router.push("/books");
   }, [guardAuth, router]);
-
-  const startAffirmationFeed = useCallback(async () => {
-    if (!guardAuth("/")) return;
-    if (isAffirmationCompleted) return;
-
-    setAffirmationError("");
-    setFeedStarted(true);
-    setAffirmationEditing(true);
-    setAffirmationSuggestion(getRandomAffirmationSuggestion());
-    setAffirmationDraft("");
-
-    try {
-      const response = await fetch("/api/daily-affirmation", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "start" }),
-      });
-
-      if (response.ok) {
-        invalidateApiCache("/api/daily-affirmation");
-        const data = (await response.json()) as {
-          dailyAffirmation?: DailyAffirmation;
-          streakCount?: number;
-        };
-        if (data.dailyAffirmation) setDailyAffirmation(data.dailyAffirmation);
-        if (typeof data.streakCount === "number") setStreakCount(data.streakCount);
-      }
-    } catch {
-      setAffirmationError("입력 모드는 열었지만 서버 준비에 실패했어요. 다시 시도해주세요.");
-    }
-  }, [guardAuth, isAffirmationCompleted]);
-
-  const completeAffirmationFeed = useCallback(async () => {
-    if (!guardAuth("/")) return;
-
-    const text = affirmationDraft.trim();
-    if (!text) {
-      setAffirmationError("확언을 한 문장 이상 입력해주세요.");
-      return;
-    }
-
-    setAffirmationSaving(true);
-    setAffirmationError("");
-
-    try {
-      const response = await fetch("/api/daily-affirmation", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "complete", text }),
-      });
-      const data = (await response.json().catch(() => ({}))) as {
-        dailyAffirmation?: DailyAffirmation;
-        streakCount?: number;
-        error?: string;
-      };
-
-      if (!response.ok) {
-        setAffirmationError(data.error || "오늘의 확언 저장에 실패했어요.");
-        return;
-      }
-
-      invalidateApiCache("/api/daily-affirmation");
-      if (data.dailyAffirmation) {
-        setDailyAffirmation(data.dailyAffirmation);
-        setAffirmationDraft(data.dailyAffirmation.text);
-      }
-      if (typeof data.streakCount === "number") setStreakCount(data.streakCount);
-      setAffirmationEditing(false);
-      setFeedStarted(false);
-    } catch {
-      setAffirmationError("네트워크가 불안정해요. 잠시 후 다시 시도해주세요.");
-    } finally {
-      setAffirmationSaving(false);
-    }
-  }, [affirmationDraft, guardAuth]);
-
-  const closeAffirmationEditor = useCallback(() => {
-    setAffirmationEditing(false);
-    setAffirmationError("");
-  }, []);
 
   const saveNickname = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
@@ -548,34 +367,6 @@ export default function HomePage() {
     : "친구 초대나 랜덤 교환으로 새로운 연결을 만들어보세요.";
   const exchangeMiniButtonLabel = activeExchangeSession ? "교환일기 쓰기" : "교환일기 시작하기";
 
-  const renderAffirmationEditor = (guideId: string, className = "chami-affirmation-editor") => (
-    <div className={className}>
-      <div className="chami-affirmation-editor__field">
-        <p id={guideId} className="chami-affirmation-editor__guide">
-          <span>따라 적어봐요</span>
-          {affirmationSuggestion}
-        </p>
-        <textarea
-          value={affirmationDraft}
-          onChange={(event) => setAffirmationDraft(event.target.value)}
-          placeholder="위 문장을 천천히 따라 적거나, 나만의 확언을 적어보세요."
-          maxLength={120}
-          aria-label="오늘의 확언 입력"
-          aria-describedby={guideId}
-        />
-      </div>
-      <button
-        type="button"
-        className="chami-spoon-button"
-        onClick={completeAffirmationFeed}
-        disabled={affirmationSaving}
-      >
-        <span aria-hidden="true">🥄</span>
-        {affirmationSaving ? "먹이는 중" : "참이에게 주기"}
-      </button>
-    </div>
-  );
-
   if (authChecked && user) {
     return (
       <div className="chami-home">
@@ -594,24 +385,6 @@ export default function HomePage() {
               </blockquote>
               <p className="chami-note-card__author">- {quoteAuthor}</p>
 
-              <div className={`chami-affirmation-box ${affirmationEditing ? "chami-affirmation-box--editing" : ""}`}>
-                <span className="chami-affirmation-box__heart" aria-hidden="true">💗</span>
-                <div className="chami-affirmation-box__content">
-                  <p className="chami-affirmation-box__eyebrow">오늘의 확언</p>
-                  {affirmationEditing && !isAffirmationCompleted ? (
-                    renderAffirmationEditor("affirmation-copy-guide")
-                  ) : isAffirmationCompleted ? (
-                    <p className="chami-affirmation-box__text">{currentAffirmationText}</p>
-                  ) : (
-                    <div className="chami-affirmation-box__empty">
-                      <p>확언 먹이 주기를 누르고, 오늘의 긍정확언을 직접 적어주세요.</p>
-                      <span>입력창에는 랜덤 예시가 힌트로 보여요.</span>
-                    </div>
-                  )}
-                  {affirmationError && <p className="chami-form-error">{affirmationError}</p>}
-                </div>
-              </div>
-
               <div className="chami-note-card__buttons">
                 <button type="button" className="chami-button chami-button--coral" onClick={goWrite}>
                   <span aria-hidden="true">✎</span>
@@ -624,25 +397,17 @@ export default function HomePage() {
               </div>
             </article>
 
-            <article className={`chami-mascot-card chami-card chami-mascot-card--${mascotState}`}>
+            <article className="chami-mascot-card chami-mascot-card--widget-only chami-card" aria-label="참이 돌봄 게임 위젯">
               <div className="chami-mascot-card__copy">
-                <p>{mascotMessage}</p>
-                <span className="chami-streak-pill">{affirmationStreakLabel}</span>
+                <p>참이 돌봄 위젯</p>
+                <span className="chami-streak-pill">돌봄 게임</span>
               </div>
-              <div className="chami-mascot-stage" aria-hidden="true">
-                <span className="chami-sparkle chami-sparkle--left">✦</span>
-                <span className="chami-sparkle chami-sparkle--right">✧</span>
-                <Image src={mascotImage} alt="" width={360} height={360} className="chami-mascot-stage__image" priority />
+              <p className="chami-mascot-card__helper">
+                먹이 주기, 놀아주기, 씻기기, 재우기, 미니게임까지 이 화면에서 바로 사용할 수 있어요.
+              </p>
+              <div className="chami-mascot-stage chami-mascot-stage--widget">
+                <ChamiCareWidgetFrame />
               </div>
-              <button
-                type="button"
-                className="chami-feed-button"
-                onClick={startAffirmationFeed}
-                disabled={isAffirmationCompleted}
-              >
-                <span aria-hidden="true">🍃</span>
-                {isAffirmationCompleted ? "오늘 확언 완료" : "확언 먹이 주기"}
-              </button>
             </article>
           </section>
 
@@ -729,31 +494,6 @@ export default function HomePage() {
                 {nicknameSaving ? "저장 중" : "시작하기"}
               </button>
             </form>
-          </div>
-        )}
-
-        {affirmationEditing && !isAffirmationCompleted && (
-          <div className="chami-affirmation-modal" role="dialog" aria-modal="true" aria-labelledby="affirmation-modal-title">
-            <div className="chami-affirmation-modal__card">
-              <button
-                type="button"
-                className="chami-affirmation-modal__close"
-                onClick={closeAffirmationEditor}
-                aria-label="확언 입력 닫기"
-              >
-                ×
-              </button>
-              <div className="chami-affirmation-modal__mascot" aria-hidden="true">
-                <Image src="/mascot/mascot-idle.png" alt="" width={82} height={82} />
-              </div>
-              <p className="chami-affirmation-modal__eyebrow">참이에게 긍정 확언 먹이 주기</p>
-              <h2 id="affirmation-modal-title">오늘 나에게 들려줄 한 문장</h2>
-              <p className="chami-affirmation-modal__description">
-                아래 문장을 따라 적거나, 지금 필요한 말을 직접 적어주세요.
-              </p>
-              {renderAffirmationEditor("affirmation-modal-copy-guide", "chami-affirmation-editor chami-affirmation-editor--modal")}
-              {affirmationError && <p className="chami-form-error">{affirmationError}</p>}
-            </div>
           </div>
         )}
 
