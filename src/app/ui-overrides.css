@@ -5425,7 +5425,7 @@ html[lang="en"] .home-shell .home-quote-card__text.hero-quote {
 }
 
 
-/* Standalone care widget: no description copy, just the playable iframe */
+/* Chami care widget: show only the playable iframe, no description copy. */
 .chami-mascot-card--widget-only {
   grid-template-rows: minmax(0, 1fr);
   place-items: center;

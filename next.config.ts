@@ -71,8 +71,7 @@ const nextConfig: NextConfig = {
         ],
       },
 
-      // ─ 위젯 HTML: 홈 화면 내부 iframe에서 같은 도메인 위젯을 표시할 수 있게 허용
-      // 전체 사이트의 frame 차단 정책은 유지하고, /widgets/* 정적 위젯만 예외 처리한다.
+      // ─ 위젯 HTML: 외부 CDN/React 런타임 없이 standalone HTML만 실행한다.
       {
         source: "/widgets/:path*",
         headers: [
@@ -83,14 +82,14 @@ const nextConfig: NextConfig = {
           {
             key: "Content-Security-Policy",
             value: [
-              "default-src 'self' blob: data:",
-              // standalone 위젯은 외부 CDN/React 런타임 없이 같은 출처 자산과 inline script만 사용한다.
+              "default-src 'self' data: blob:",
               "script-src 'self' 'unsafe-inline'",
-              "script-src-elem 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
-              "font-src 'self' data: blob:",
+              "font-src 'self' data:",
               "img-src 'self' data: blob:",
-              "connect-src 'self'",
+              "connect-src 'self' data: blob:",
+              "base-uri 'none'",
+              "form-action 'none'",
               "frame-ancestors 'self'",
             ].join("; "),
           },

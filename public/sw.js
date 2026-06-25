@@ -1,4 +1,4 @@
-const CACHE_NAME = "good-job-v1.3.1";
+const CACHE_NAME = "good-job-v1.3.1-no-bundler-widget";
 const STATIC_ASSETS = ["/", "/onboarding"];
 
 // 캐시하면 안 되는 민감 경로
@@ -15,7 +15,6 @@ const NO_CACHE_PATHS = [
   "/notifications",
   "/exchange",
   "/api/",
-  "/widgets/",
 ];
 
 const STATIC_ASSET_PREFIXES = [
@@ -83,6 +82,9 @@ self.addEventListener("fetch", (event) => {
 
   if (request.method !== "GET") return;
   if (NO_CACHE_PATHS.some((path) => url.pathname.startsWith(path))) return;
+
+  // Always fetch the care widget from the network so an old bundled HTML is not kept alive.
+  if (url.pathname.startsWith("/widgets/")) return;
 
   if (isStaticAsset(url)) {
     event.respondWith(cacheFirst(request));
