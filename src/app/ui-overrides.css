@@ -5434,3 +5434,51 @@ html[lang="en"] .home-shell .home-quote-card__text.hero-quote {
 .chami-mascot-card--widget-only .chami-mascot-stage--widget {
   width: 100%;
 }
+
+
+/* Chami widget size correction: keep the care widget compact and phone-like. */
+.chami-mascot-card--widget-only {
+  min-height: auto;
+  grid-template-rows: minmax(0, auto);
+  place-items: center;
+  padding-top: clamp(22px, 3vw, 34px);
+  padding-bottom: clamp(22px, 3vw, 34px);
+}
+
+.chami-mascot-card--widget-only .chami-mascot-stage--widget {
+  width: 100%;
+  min-height: 0;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+}
+
+.chami-mascot-card--widget-only .chami-care-widget-frame {
+  width: min(100%, 390px);
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  aspect-ratio: 390 / 650;
+  border-radius: 28px;
+}
+
+@media (max-width: 1180px) {
+  .chami-mascot-card--widget-only .chami-mascot-stage--widget,
+  .chami-mascot-card--widget-only .chami-care-widget-frame {
+    height: auto;
+    min-height: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .chami-mascot-card--widget-only .chami-care-widget-frame {
+    width: min(100%, 390px);
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 390 / 650;
+  }
+}
+
+.chami-home-grid {
+  align-items: start;
+}

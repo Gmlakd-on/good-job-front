@@ -4,7 +4,7 @@ interface ChamiCareWidgetFrameProps {
   className?: string;
 }
 
-const CHAMI_WIDGET_SRC = "/widgets/chami-widget.html?v=20260626-no-bundler";
+const CHAMI_WIDGET_SRC = "/widgets/chami-widget.html?v=20260626-affirm-window";
 
 export default function ChamiCareWidgetFrame({ className = "" }: ChamiCareWidgetFrameProps) {
   return (
