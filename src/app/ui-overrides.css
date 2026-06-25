@@ -5485,65 +5485,61 @@ html[lang="en"] .home-shell .home-quote-card__text.hero-quote {
 
 
 /* --------------------------------------------------------------------------
-   Chami home balance v3: desktop 15cm-class care widget, lighter quote card
+   Chami home balance v2: wider care widget, calmer quote card
    -------------------------------------------------------------------------- */
 @media (min-width: 1181px) {
-  .chami-home-main {
-    width: min(100% - 48px, 1480px) !important;
-  }
-
   .chami-home-grid {
-    grid-template-columns: minmax(380px, 0.72fr) minmax(680px, 1.28fr) !important;
-    gap: clamp(24px, 2vw, 32px) !important;
+    grid-template-columns: minmax(420px, 0.82fr) minmax(560px, 1.18fr) !important;
+    gap: clamp(24px, 2.4vw, 34px) !important;
     align-items: start !important;
   }
 
   .chami-note-card {
-    min-height: clamp(320px, 40vh, 440px) !important;
-    padding: clamp(22px, 2.4vw, 34px) clamp(22px, 2.6vw, 46px) 26px !important;
+    min-height: clamp(340px, 43vh, 470px) !important;
+    padding: clamp(24px, 2.6vw, 38px) clamp(24px, 3vw, 54px) 28px !important;
   }
 
   .chami-note-card__label {
-    font-size: clamp(18px, 1.15vw, 22px) !important;
+    font-size: clamp(20px, 1.35vw, 24px) !important;
   }
 
   .chami-note-card__label span {
-    font-size: clamp(28px, 1.8vw, 34px) !important;
+    font-size: clamp(30px, 2.1vw, 38px) !important;
   }
 
   .chami-note-card__quote {
-    max-width: 600px !important;
-    margin: 20px auto 12px !important;
-    font-size: clamp(34px, 2.65vw, 48px) !important;
-    line-height: 1.14 !important;
-    letter-spacing: -0.048em !important;
+    max-width: 680px !important;
+    margin: 22px auto 14px !important;
+    font-size: clamp(36px, 3.15vw, 54px) !important;
+    line-height: 1.12 !important;
+    letter-spacing: -0.05em !important;
   }
 
   .chami-note-card__author {
-    margin-bottom: 18px !important;
-    font-size: clamp(18px, 1.45vw, 23px) !important;
+    margin-bottom: 20px !important;
+    font-size: clamp(20px, 1.7vw, 25px) !important;
   }
 
   .chami-note-card__buttons {
-    max-width: 620px !important;
+    max-width: 660px !important;
     margin-left: auto !important;
     margin-right: auto !important;
   }
 
   .chami-mascot-card--widget-only {
-    padding: clamp(20px, 2.2vw, 32px) clamp(28px, 3.2vw, 50px) !important;
+    padding: clamp(20px, 2.4vw, 34px) clamp(24px, 3vw, 44px) !important;
   }
 
   .chami-mascot-card--widget-only .chami-care-widget-frame {
-    width: min(100%, 600px) !important;
-    aspect-ratio: 600 / 650 !important;
+    width: min(100%, 520px) !important;
+    aspect-ratio: 520 / 650 !important;
   }
 }
 
 @media (min-width: 761px) and (max-width: 1180px) {
   .chami-mascot-card--widget-only .chami-care-widget-frame {
-    width: min(100%, 540px) !important;
-    aspect-ratio: 540 / 660 !important;
+    width: min(100%, 500px) !important;
+    aspect-ratio: 500 / 650 !important;
   }
 
   .chami-note-card__quote {
@@ -5559,5 +5555,156 @@ html[lang="en"] .home-shell .home-quote-card__text.hero-quote {
 
   .chami-note-card__quote {
     font-size: clamp(32px, 9vw, 48px) !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Chami home balance v3: desktop 15cm-class care widget
+   - CSS 기준 15cm ≈ 567px, 실제 웹 UI에서는 반올림해 600px을 데스크톱 목표 폭으로 사용
+   - 명언 카드는 더 작게, 오른쪽 돌봄 위젯 영역은 더 넓게 배치
+   -------------------------------------------------------------------------- */
+@media (min-width: 1181px) {
+  .chami-home-main {
+    width: min(100% - 48px, 1480px) !important;
+  }
+
+  .chami-home-grid {
+    grid-template-columns: minmax(420px, 0.72fr) minmax(680px, 1.28fr) !important;
+    gap: clamp(26px, 2.6vw, 42px) !important;
+    align-items: start !important;
+  }
+
+  .chami-note-card {
+    min-height: clamp(320px, 39vh, 440px) !important;
+    padding: clamp(22px, 2.4vw, 34px) clamp(22px, 2.7vw, 46px) 26px !important;
+  }
+
+  .chami-note-card::after {
+    right: 28px !important;
+    top: 18px !important;
+    font-size: 46px !important;
+  }
+
+  .chami-note-card__label {
+    font-size: clamp(19px, 1.2vw, 22px) !important;
+  }
+
+  .chami-note-card__label span {
+    font-size: clamp(28px, 1.8vw, 34px) !important;
+  }
+
+  .chami-note-card__quote {
+    max-width: 620px !important;
+    margin: 20px auto 12px !important;
+    font-size: clamp(34px, 2.75vw, 48px) !important;
+    line-height: 1.12 !important;
+    letter-spacing: -0.052em !important;
+  }
+
+  .chami-note-card__author {
+    margin-bottom: 18px !important;
+    font-size: clamp(19px, 1.45vw, 23px) !important;
+  }
+
+  .chami-note-card__buttons {
+    max-width: 600px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .chami-mascot-card--widget-only {
+    min-height: auto !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: clamp(20px, 2.2vw, 36px) clamp(30px, 3.2vw, 54px) !important;
+  }
+
+  .chami-mascot-card--widget-only .chami-mascot-stage--widget {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: visible !important;
+  }
+
+  .chami-mascot-card--widget-only .chami-care-widget-frame {
+    width: min(100%, 600px) !important;
+    max-width: 600px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    aspect-ratio: 600 / 720 !important;
+    border-radius: 30px !important;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1180px) {
+  .chami-mascot-card--widget-only .chami-care-widget-frame {
+    width: min(100%, 540px) !important;
+    max-width: 540px !important;
+    aspect-ratio: 540 / 690 !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .chami-mascot-card--widget-only .chami-care-widget-frame {
+    width: min(100%, 440px) !important;
+    max-width: 440px !important;
+    aspect-ratio: 440 / 680 !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Chami widget actual frame width fix
+   - This targets the iframe itself, not the surrounding dashboard panel.
+   -------------------------------------------------------------------------- */
+@media (min-width: 1181px) {
+  .chami-mascot-card--widget-only .chami-mascot-stage--widget {
+    width: 100% !important;
+    min-height: clamp(650px, calc(100vh - 190px), 710px) !important;
+    height: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: visible !important;
+  }
+
+  .chami-mascot-card--widget-only iframe.chami-care-widget-frame,
+  .chami-mascot-card--widget-only .chami-care-widget-frame {
+    width: min(720px, calc(100% - 32px)) !important;
+    max-width: 720px !important;
+    height: clamp(650px, calc(100vh - 190px), 710px) !important;
+    min-height: 650px !important;
+    max-height: 710px !important;
+    aspect-ratio: auto !important;
+    flex: 0 0 auto !important;
+    border-radius: 32px !important;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1180px) {
+  .chami-mascot-card--widget-only .chami-mascot-stage--widget {
+    min-height: 680px !important;
+    height: auto !important;
+  }
+
+  .chami-mascot-card--widget-only iframe.chami-care-widget-frame,
+  .chami-mascot-card--widget-only .chami-care-widget-frame {
+    width: min(100%, 600px) !important;
+    max-width: 600px !important;
+    height: 680px !important;
+    min-height: 680px !important;
+    aspect-ratio: auto !important;
+    flex: 0 0 auto !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .chami-mascot-card--widget-only iframe.chami-care-widget-frame,
+  .chami-mascot-card--widget-only .chami-care-widget-frame {
+    width: 100% !important;
+    max-width: 460px !important;
+    height: min(690px, 86vh) !important;
+    min-height: 620px !important;
+    aspect-ratio: auto !important;
   }
 }
