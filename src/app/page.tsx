@@ -10,6 +10,7 @@ import { apiGetJson, invalidateApiCache } from "@/lib/apiCache";
 import MascotHero from "@/components/home/MascotHero";
 import ChamiCareWidgetFrame from "@/components/character/ChamiCareWidgetFrame";
 import TryItDemo from "@/components/home/TryItDemo";
+import HomeNewsPopup from "@/components/home/HomeNewsPopup";
 import AuthModal from "@/components/auth/AuthModal";
 import type { User } from "@supabase/supabase-js";
 
@@ -469,6 +470,8 @@ export default function HomePage() {
           </section>
 
         </main>
+
+        <HomeNewsPopup />
 
         {nicknameModalOpen && (
           <div className="nickname-modal" role="dialog" aria-modal="true" aria-labelledby="nickname-modal-title">

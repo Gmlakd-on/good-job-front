@@ -41,13 +41,9 @@ const nextConfig: NextConfig = {
   // ── 보안 & 캐시 헤더 ───────────────────────────
   async headers() {
     return [
-      // ─ 보안 헤더 (전체 페이지 — /widgets/* 제외)
-      // /widgets/* 는 아래 별도 규칙에서 처리한다.
-      // 두 규칙이 같은 경로에 매칭되면 CSP 헤더가 2개 내려가고,
-      // 브라우저는 "더 제한적인 쪽"(frame-ancestors 'none')을 따르기 때문에
-      // iframe 내 위젯이 차단된다.
+      // ─ 보안 헤더 (전체 페이지)
       {
-        source: "/((?!widgets/).*)",
+        source: "/(.*)",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "DENY" },
@@ -69,7 +65,6 @@ const nextConfig: NextConfig = {
               // API 연결
               "connect-src 'self' https://*.supabase.co https://supabase.io",
               // frame
-              "frame-src 'self'",
               "frame-ancestors 'none'",
             ].join("; "),
           },
@@ -89,11 +84,14 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self' blob: data:",
-              "script-src 'self' blob: 'unsafe-inline' 'unsafe-eval'",
+              // chami-widget.html 안의 dc-runtime이 React/ReactDOM UMD를 unpkg에서 동적 로드한다.
+              // script-src-elem을 명시해 브라우저가 script-src fallback으로 CDN을 차단하지 않게 한다.
+              "script-src 'self' blob: https://unpkg.com 'unsafe-inline' 'unsafe-eval'",
+              "script-src-elem 'self' blob: https://unpkg.com 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
               "font-src 'self' data: blob:",
               "img-src 'self' data: blob:",
-              "connect-src 'self' blob: data:",
+              "connect-src 'self' blob: data: https://unpkg.com",
               "frame-ancestors 'self'",
             ].join("; "),
           },
