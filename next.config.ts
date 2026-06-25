@@ -41,9 +41,13 @@ const nextConfig: NextConfig = {
   // ── 보안 & 캐시 헤더 ───────────────────────────
   async headers() {
     return [
-      // ─ 보안 헤더 (전체 페이지)
+      // ─ 보안 헤더 (전체 페이지 — /widgets/* 제외)
+      // /widgets/* 는 아래 별도 규칙에서 처리한다.
+      // 두 규칙이 같은 경로에 매칭되면 CSP 헤더가 2개 내려가고,
+      // 브라우저는 "더 제한적인 쪽"(frame-ancestors 'none')을 따르기 때문에
+      // iframe 내 위젯이 차단된다.
       {
-        source: "/(.*)",
+        source: "/((?!widgets/).*)",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "DENY" },
@@ -65,6 +69,7 @@ const nextConfig: NextConfig = {
               // API 연결
               "connect-src 'self' https://*.supabase.co https://supabase.io",
               // frame
+              "frame-src 'self'",
               "frame-ancestors 'none'",
             ].join("; "),
           },
