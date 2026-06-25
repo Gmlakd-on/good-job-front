@@ -10,7 +10,6 @@ import { apiGetJson, invalidateApiCache } from "@/lib/apiCache";
 import MascotHero from "@/components/home/MascotHero";
 import ChamiCareWidgetFrame from "@/components/character/ChamiCareWidgetFrame";
 import TryItDemo from "@/components/home/TryItDemo";
-import HomeNewsPopup from "@/components/home/HomeNewsPopup";
 import AuthModal from "@/components/auth/AuthModal";
 import type { User } from "@supabase/supabase-js";
 
@@ -399,13 +398,6 @@ export default function HomePage() {
             </article>
 
             <article className="chami-mascot-card chami-mascot-card--widget-only chami-card" aria-label="참이 돌봄 게임 위젯">
-              <div className="chami-mascot-card__copy">
-                <p>참이 돌봄 위젯</p>
-                <span className="chami-streak-pill">돌봄 게임</span>
-              </div>
-              <p className="chami-mascot-card__helper">
-                먹이 주기, 놀아주기, 씻기기, 재우기, 미니게임까지 이 화면에서 바로 사용할 수 있어요.
-              </p>
               <div className="chami-mascot-stage chami-mascot-stage--widget">
                 <ChamiCareWidgetFrame />
               </div>
@@ -470,8 +462,6 @@ export default function HomePage() {
           </section>
 
         </main>
-
-        <HomeNewsPopup />
 
         {nicknameModalOpen && (
           <div className="nickname-modal" role="dialog" aria-modal="true" aria-labelledby="nickname-modal-title">

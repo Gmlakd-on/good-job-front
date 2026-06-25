@@ -84,18 +84,17 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self' blob: data:",
-              // chami-widget.html 안의 dc-runtime이 React/ReactDOM UMD를 unpkg에서 동적 로드한다.
-              // script-src-elem을 명시해 브라우저가 script-src fallback으로 CDN을 차단하지 않게 한다.
-              "script-src 'self' blob: https://unpkg.com 'unsafe-inline' 'unsafe-eval'",
-              "script-src-elem 'self' blob: https://unpkg.com 'unsafe-inline'",
+              // standalone 위젯은 외부 CDN/React 런타임 없이 같은 출처 자산과 inline script만 사용한다.
+              "script-src 'self' 'unsafe-inline'",
+              "script-src-elem 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
               "font-src 'self' data: blob:",
               "img-src 'self' data: blob:",
-              "connect-src 'self' blob: data: https://unpkg.com",
+              "connect-src 'self'",
               "frame-ancestors 'self'",
             ].join("; "),
           },
-          { key: "Cache-Control", value: "public, max-age=3600, must-revalidate" },
+          { key: "Cache-Control", value: "no-store, max-age=0" },
         ],
       },
 
