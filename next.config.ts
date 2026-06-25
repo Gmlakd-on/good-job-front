@@ -71,7 +71,8 @@ const nextConfig: NextConfig = {
         ],
       },
 
-      // ─ 위젯 HTML: 외부 CDN/React 런타임 없이 standalone HTML만 실행한다.
+      // ─ 위젯 HTML: 홈 화면 내부 iframe에서 같은 도메인 위젯을 표시할 수 있게 허용
+      // 전체 사이트의 frame 차단 정책은 유지하고, /widgets/* 정적 위젯만 예외 처리한다.
       {
         source: "/widgets/:path*",
         headers: [
@@ -82,18 +83,18 @@ const nextConfig: NextConfig = {
           {
             key: "Content-Security-Policy",
             value: [
-              "default-src 'self' data: blob:",
-              "script-src 'self' 'unsafe-inline'",
+              "default-src 'self' blob: data:",
+              "script-src 'self' blob: 'unsafe-inline' 'unsafe-eval'",
               "style-src 'self' 'unsafe-inline'",
-              "font-src 'self' data:",
+              "font-src 'self' data: blob:",
               "img-src 'self' data: blob:",
-              "connect-src 'self' data: blob:",
-              "base-uri 'none'",
-              "form-action 'none'",
+              "connect-src 'self' blob: data:",
               "frame-ancestors 'self'",
             ].join("; "),
           },
-          { key: "Cache-Control", value: "no-store, max-age=0" },
+          { key: "Cache-Control", value: "no-store, max-age=0, must-revalidate" },
+          { key: "CDN-Cache-Control", value: "no-store" },
+          { key: "Vercel-CDN-Cache-Control", value: "no-store" },
         ],
       },
 
@@ -129,6 +130,15 @@ const nextConfig: NextConfig = {
         headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
       },
 
+      // ─ cache cleanup marker: 이전 브라우저/Service Worker 캐시를 한 번 정리한다.
+      {
+        source: "/cache-cleanup.txt",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, max-age=0, must-revalidate" },
+          { key: "Clear-Site-Data", value: '"cache"' },
+        ],
+      },
+
       // ─ manifest & service worker: 재검증 필요
       {
         source: "/manifest.json",
@@ -136,7 +146,11 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/sw.js",
-        headers: [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }],
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, max-age=0, must-revalidate" },
+          { key: "Pragma", value: "no-cache" },
+          { key: "Expires", value: "0" },
+        ],
       },
     ];
   },

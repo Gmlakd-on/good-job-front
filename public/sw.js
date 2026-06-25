@@ -1,4 +1,5 @@
-const CACHE_NAME = "good-job-v1.3.1-no-bundler-widget";
+const CACHE_VERSION = "v1.3.1";
+const CACHE_NAME = `good-job-${CACHE_VERSION}`;
 const STATIC_ASSETS = ["/", "/onboarding"];
 
 // 캐시하면 안 되는 민감 경로
@@ -17,6 +18,26 @@ const NO_CACHE_PATHS = [
   "/api/",
 ];
 
+// 위젯은 HTML/이미지/스크립트 모두 네트워크에서 최신 파일을 받는다.
+// 이전 Canvas.dc/support.js 번들 캐시가 남아 있으면 React CDN 에러가 재발할 수 있어서
+// Service Worker Cache Storage에는 절대 보관하지 않는다.
+const WIDGET_PATH_PREFIXES = ["/widgets/", "/widget/"];
+const STALE_WIDGET_CACHE_PATTERNS = [
+  "/widgets/chami-widget.html",
+  "/widgets/chami-widget-standalone.html",
+  "/widgets/support.js",
+  "/widgets/Canvas.dc.html",
+  "/widget/chami-widget.html",
+  "/support.js",
+  "/Canvas.dc.html",
+  "unpkg.com/react",
+  "unpkg.com/react-dom",
+  "react.production.min.js",
+  "react-dom.production.min.js",
+  "[bundle]",
+  "__bundler",
+];
+
 const STATIC_ASSET_PREFIXES = [
   "/covers/",
   "/icons/",
@@ -25,10 +46,64 @@ const STATIC_ASSET_PREFIXES = [
   "/personas/",
 ];
 
+function isWidgetPath(url) {
+  return url.origin === self.location.origin && WIDGET_PATH_PREFIXES.some((prefix) => url.pathname.startsWith(prefix));
+}
+
+function isNoCachePath(url) {
+  return NO_CACHE_PATHS.some((path) => url.pathname.startsWith(path)) || isWidgetPath(url);
+}
+
 function isStaticAsset(url) {
+  if (isWidgetPath(url)) return false;
+
   return (
     /\.(png|jpg|jpeg|svg|webp|woff2?|css|js|ico)$/i.test(url.pathname) ||
     STATIC_ASSET_PREFIXES.some((prefix) => url.pathname.startsWith(prefix))
+  );
+}
+
+function isStaleWidgetRequest(request) {
+  const url = new URL(request.url);
+  const normalized = `${url.origin}${url.pathname}${url.search}`;
+
+  return (
+    isWidgetPath(url) ||
+    STALE_WIDGET_CACHE_PATTERNS.some((pattern) => normalized.includes(pattern) || request.url.includes(pattern))
+  );
+}
+
+async function deleteMatchingRequests(cacheName, predicate) {
+  const cache = await caches.open(cacheName);
+  const requests = await cache.keys();
+
+  await Promise.all(
+    requests
+      .filter((request) => {
+        try {
+          return predicate(request);
+        } catch {
+          return false;
+        }
+      })
+      .map((request) => cache.delete(request)),
+  );
+}
+
+async function cleanupUnusedCaches() {
+  const keys = await caches.keys();
+
+  await Promise.all(
+    keys.map(async (key) => {
+      // good-job의 이전 버전 캐시는 통째로 제거한다.
+      if (key !== CACHE_NAME) {
+        await caches.delete(key);
+        return;
+      }
+
+      // 현재 캐시 안에 남아 있는 위젯/번들러 관련 요청만 제거한다.
+      await deleteMatchingRequests(key, isStaleWidgetRequest);
+    }),
   );
 }
 
@@ -68,12 +143,13 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))),
-    ),
-  );
-  self.clients.claim();
+  event.waitUntil(cleanupUnusedCaches().then(() => self.clients.claim()));
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type !== "PURGE_UNUSED_CACHES") return;
+
+  event.waitUntil(cleanupUnusedCaches());
 });
 
 self.addEventListener("fetch", (event) => {
@@ -81,10 +157,10 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
 
   if (request.method !== "GET") return;
-  if (NO_CACHE_PATHS.some((path) => url.pathname.startsWith(path))) return;
+  if (url.origin !== self.location.origin) return;
 
-  // Always fetch the care widget from the network so an old bundled HTML is not kept alive.
-  if (url.pathname.startsWith("/widgets/")) return;
+  // 민감 페이지와 위젯은 Service Worker가 가로채지도, 캐시하지도 않는다.
+  if (isNoCachePath(url)) return;
 
   if (isStaticAsset(url)) {
     event.respondWith(cacheFirst(request));

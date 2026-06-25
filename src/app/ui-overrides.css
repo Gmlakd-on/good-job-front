@@ -5482,3 +5482,82 @@ html[lang="en"] .home-shell .home-quote-card__text.hero-quote {
 .chami-home-grid {
   align-items: start;
 }
+
+
+/* --------------------------------------------------------------------------
+   Chami home balance v3: desktop 15cm-class care widget, lighter quote card
+   -------------------------------------------------------------------------- */
+@media (min-width: 1181px) {
+  .chami-home-main {
+    width: min(100% - 48px, 1480px) !important;
+  }
+
+  .chami-home-grid {
+    grid-template-columns: minmax(380px, 0.72fr) minmax(680px, 1.28fr) !important;
+    gap: clamp(24px, 2vw, 32px) !important;
+    align-items: start !important;
+  }
+
+  .chami-note-card {
+    min-height: clamp(320px, 40vh, 440px) !important;
+    padding: clamp(22px, 2.4vw, 34px) clamp(22px, 2.6vw, 46px) 26px !important;
+  }
+
+  .chami-note-card__label {
+    font-size: clamp(18px, 1.15vw, 22px) !important;
+  }
+
+  .chami-note-card__label span {
+    font-size: clamp(28px, 1.8vw, 34px) !important;
+  }
+
+  .chami-note-card__quote {
+    max-width: 600px !important;
+    margin: 20px auto 12px !important;
+    font-size: clamp(34px, 2.65vw, 48px) !important;
+    line-height: 1.14 !important;
+    letter-spacing: -0.048em !important;
+  }
+
+  .chami-note-card__author {
+    margin-bottom: 18px !important;
+    font-size: clamp(18px, 1.45vw, 23px) !important;
+  }
+
+  .chami-note-card__buttons {
+    max-width: 620px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .chami-mascot-card--widget-only {
+    padding: clamp(20px, 2.2vw, 32px) clamp(28px, 3.2vw, 50px) !important;
+  }
+
+  .chami-mascot-card--widget-only .chami-care-widget-frame {
+    width: min(100%, 600px) !important;
+    aspect-ratio: 600 / 650 !important;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1180px) {
+  .chami-mascot-card--widget-only .chami-care-widget-frame {
+    width: min(100%, 540px) !important;
+    aspect-ratio: 540 / 660 !important;
+  }
+
+  .chami-note-card__quote {
+    font-size: clamp(34px, 6vw, 52px) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .chami-mascot-card--widget-only .chami-care-widget-frame {
+    width: min(100%, 440px) !important;
+    aspect-ratio: 440 / 680 !important;
+  }
+
+  .chami-note-card__quote {
+    font-size: clamp(32px, 9vw, 48px) !important;
+  }
+}
