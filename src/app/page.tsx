@@ -7,6 +7,7 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { apiGetJson, invalidateApiCache } from "@/lib/apiCache";
+import { EMOTIONS } from "@/types";
 import MascotHero from "@/components/home/MascotHero";
 import ChamiCareWidgetFrame from "@/components/character/ChamiCareWidgetFrame";
 import TryItDemo from "@/components/home/TryItDemo";
@@ -34,30 +35,63 @@ interface Profile {
   profileImage?: string | null;
 }
 
-type ExchangeSessionStatus = "active_7day" | "extension_pending" | "extended" | "ended" | "terminated";
-
-interface ExchangeSessionSummary {
+interface HomeDiaryRow {
   id: string;
-  status: ExchangeSessionStatus | string;
-  started_at: string;
-  partner_display_name?: string | null;
+  content?: string | null;
+  title?: string | null;
+  created_at: string;
+  diary_emotions?: { emotion_code?: string | null; emotion_label?: string | null }[];
 }
 
-interface ExchangeSessionsResponse {
-  sessions?: ExchangeSessionSummary[];
+interface HomeDiariesResponse {
+  diaries?: HomeDiaryRow[];
 }
 
-const ACTIVE_EXCHANGE_STATUSES = new Set<string>(["active_7day", "extension_pending", "extended"]);
+const SOFT_EMOTION_SCORES: Record<string, number> = {
+  joy: 4.6,
+  happiness: 4.8,
+  calm: 4.2,
+  gratitude: 4.4,
+  excitement: 4.5,
+  pride: 4.7,
+  hope: 4.3,
+  love: 4.8,
+  satisfaction: 4.4,
+  comfort: 4.1,
+  sadness: 2.1,
+  anxiety: 1.8,
+  loneliness: 2.0,
+  lethargy: 1.9,
+  exhaustion: 1.7,
+  anger: 2.0,
+  irritation: 2.2,
+  frustration: 2.0,
+  regret: 2.1,
+  fear: 1.8,
+};
 
-const getExchangeDayIndex = (startedAt: string) => {
-  const startedAtMs = new Date(startedAt).getTime();
+const formatShortDate = (value: string) => {
+  const date = new Date(value);
 
-  if (!Number.isFinite(startedAtMs)) {
-    return 1;
+  if (Number.isNaN(date.getTime())) {
+    return "오늘";
   }
 
-  return Math.max(Math.floor((Date.now() - startedAtMs) / 86400000) + 1, 1);
+  return `${date.getMonth() + 1}.${String(date.getDate()).padStart(2, "0")}`;
 };
+
+const getDiaryTitle = (diary: HomeDiaryRow) => {
+  const raw = (diary.title || diary.content || "").replace(/\s+/g, " ").trim();
+
+  if (!raw) {
+    return "제목 없는 하루 기록";
+  }
+
+  return raw.length > 28 ? `${raw.slice(0, 28)}…` : raw;
+};
+
+const getEmotionMeta = (code?: string | null) =>
+  EMOTIONS.find((emotion) => emotion.code === code) ?? { code: "calm", label: "평온", emoji: "🍃" };
 
 const LANGUAGE_OPTIONS: { value: LanguageOption; label: string }[] = [
   { value: "ko", label: "KO" },
@@ -118,7 +152,8 @@ export default function HomePage() {
   const [nicknameInput, setNicknameInput] = useState("");
   const [nicknameError, setNicknameError] = useState("");
   const [nicknameSaving, setNicknameSaving] = useState(false);
-  const [activeExchangeSession, setActiveExchangeSession] = useState<ExchangeSessionSummary | null>(null);
+  const [dashboardProfile, setDashboardProfile] = useState<Profile | null>(null);
+  const [homeDiaries, setHomeDiaries] = useState<HomeDiaryRow[]>([]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -246,31 +281,31 @@ export default function HomePage() {
     if (!user) return;
 
     try {
-      const [profileResponse, exchangeResponse] = await Promise.all([
+      const [profileResponse, diariesResponse] = await Promise.all([
         apiGetJson<{ profile?: Profile }>("/api/profile", { ttlMs: 30_000 }),
-        fetch("/api/exchange/sessions", { cache: "no-store" })
-          .then(async (response): Promise<ExchangeSessionsResponse> => {
+        fetch("/api/diaries", { cache: "no-store" })
+          .then(async (response): Promise<HomeDiariesResponse> => {
             if (!response.ok) {
-              return { sessions: [] };
+              return { diaries: [] };
             }
 
             return response.json();
           })
-          .catch(() => ({ sessions: [] })),
+          .catch(() => ({ diaries: [] })),
       ]);
 
       const nextProfile = profileResponse.profile ?? { nickname: null };
+      setDashboardProfile(nextProfile);
+      setHomeDiaries(diariesResponse.diaries ?? []);
       const nickname = nextProfile.nickname?.trim() ?? "";
       if (!nickname) {
         setNicknameInput("");
         setNicknameModalOpen(true);
       }
 
-      setActiveExchangeSession(
-        exchangeResponse.sessions?.find((session) => ACTIVE_EXCHANGE_STATUSES.has(session.status)) ?? null,
-      );
     } catch {
-      setActiveExchangeSession(null);
+      setDashboardProfile(null);
+      setHomeDiaries([]);
     }
   }, [user]);
 
@@ -278,7 +313,8 @@ export default function HomePage() {
     if (!authChecked) return;
 
     if (!user) {
-      setActiveExchangeSession(null);
+      setDashboardProfile(null);
+      setHomeDiaries([]);
       setNicknameModalOpen(false);
       return;
     }
@@ -342,6 +378,7 @@ export default function HomePage() {
         }
 
         invalidateApiCache("/api/profile");
+        setDashboardProfile(data.profile ?? { nickname });
         setNicknameModalOpen(false);
       } catch {
         setNicknameError("네트워크가 불안정해요. 잠시 후 다시 시도해주세요.");
@@ -355,112 +392,183 @@ export default function HomePage() {
   const quoteText = `“${localizedQuote.text}”`;
   const quoteAuthor = localizedQuote.author;
   const dashboardQuoteLines = quoteText.split(/\r?\n/);
-  const adsenseClientId = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT_ID ?? "";
-  const adsenseHomeSlot = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_HOME_SLOT ?? "";
-  const canRenderAdsenseSlot = Boolean(adsenseClientId && adsenseHomeSlot);
-  const activeExchangePartnerName = activeExchangeSession?.partner_display_name?.trim() || "상대";
-  const exchangeMiniTitle = activeExchangeSession
-    ? `${activeExchangePartnerName}님과 ${getExchangeDayIndex(activeExchangeSession.started_at)}일째`
-    : "아직 교환일기를 시작하지 않았어요";
-  const exchangeMiniDescription = activeExchangeSession
-    ? "매일의 기록이 모여, 우리가 서로에게 가장 다정한 세계가 됩니다."
-    : "친구 초대나 랜덤 교환으로 새로운 연결을 만들어보세요.";
-  const exchangeMiniButtonLabel = activeExchangeSession ? "교환일기 쓰기" : "교환일기 시작하기";
+  const displayName =
+    dashboardProfile?.nickname?.trim() ||
+    user?.user_metadata?.nickname?.trim?.() ||
+    user?.user_metadata?.name?.trim?.() ||
+    user?.email?.split("@")[0] ||
+    "seori";
+
+  const recentDiaries = useMemo(() =>
+    [...homeDiaries]
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 3),
+  [homeDiaries]);
+
+  const emotionTrend = useMemo(() => {
+    const now = new Date();
+
+    return Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(now);
+      date.setDate(now.getDate() - (6 - index));
+      const key = date.toISOString().slice(0, 10);
+      const diariesForDay = homeDiaries.filter((diary) => {
+        const diaryDate = new Date(diary.created_at);
+        return !Number.isNaN(diaryDate.getTime()) && diaryDate.toISOString().slice(0, 10) === key;
+      });
+      const codes = diariesForDay.flatMap((diary) =>
+        diary.diary_emotions?.map((emotion) => emotion.emotion_code).filter(Boolean) ?? [],
+      ) as string[];
+      const primaryCode = codes[0] ?? null;
+      const score = codes.length
+        ? codes.reduce((sum, code) => sum + (SOFT_EMOTION_SCORES[code] ?? 3), 0) / codes.length
+        : 3;
+      const y = 92 - ((score - 1) / 4) * 78;
+
+      return {
+        key,
+        label: index === 6 ? "오늘" : `${date.getMonth() + 1}/${date.getDate()}`,
+        x: 8 + index * 14,
+        y,
+        emotion: getEmotionMeta(primaryCode),
+        hasData: codes.length > 0,
+      };
+    });
+  }, [homeDiaries]);
+
+  const trendPolyline = emotionTrend.map((point) => `${point.x},${point.y}`).join(" ");
+  const latestEmotion = recentDiaries[0]?.diary_emotions?.[0]?.emotion_code;
+  const latestEmotionMeta = getEmotionMeta(latestEmotion);
+  const latestTrendMessage = homeDiaries.length
+    ? `최근 감정이 ${latestEmotionMeta.label} 쪽으로 기록되고 있어요. 🌿 지금 이 마음을 잘 기억해두어요.`
+    : "일기를 쓰면 최근 7일간의 감정 흐름이 이곳에 차분히 쌓여요.";
 
   if (authChecked && user) {
     return (
-      <div className="chami-home">
-        <main className="chami-home-main">
-          <section className="chami-home-grid" aria-label="오늘의 홈 대시보드">
-            <article className="chami-note-card chami-card">
-              <div className="chami-note-card__label">
-                <span aria-hidden="true">❝</span>
-                <strong>오늘의 명언</strong>
-                <span aria-hidden="true">❞</span>
-              </div>
-              <blockquote className="chami-note-card__quote">
-                {dashboardQuoteLines.map((line, index) => (
-                  <span key={`${line}-${index}`}>{line}</span>
-                ))}
-              </blockquote>
-              <p className="chami-note-card__author">- {quoteAuthor}</p>
+      <div className="chami-dashboard-page">
+        <main className="chami-dashboard-layout">
+          <section className="chami-dashboard-left" aria-label="홈 콘텐츠">
+            <article className="chami-hero-card">
+              <div className="chami-hero-card__copy">
+                <p className="chami-hero-greeting">
+                  안녕, <span>{displayName}</span>님! <span aria-hidden="true">👋</span>
+                </p>
+                <h1 className="chami-hero-title">오늘 하루는 어땠나요?</h1>
+                <p className="chami-hero-desc">마음속 이야기를 들려주세요.</p>
 
-              <div className="chami-note-card__buttons">
-                <button type="button" className="chami-button chami-button--coral" onClick={goWrite}>
-                  <span aria-hidden="true">✎</span>
-                  오늘 일기 쓰기
-                </button>
-                <button type="button" className="chami-button chami-button--ghost" onClick={goBooks}>
-                  <span aria-hidden="true">📖</span>
-                  내 책장 보기
-                </button>
+                <div className="chami-hero-buttons" aria-label="홈 주요 행동">
+                  <button type="button" className="chami-primary-button" onClick={goWrite}>
+                    <span aria-hidden="true">✎</span>
+                    오늘 일기 쓰기
+                  </button>
+                  <button type="button" className="chami-secondary-button" onClick={goBooks}>
+                    <span aria-hidden="true">📖</span>
+                    내 책장 보기
+                  </button>
+                </div>
               </div>
+
+              <div className="chami-hero-window" aria-hidden="true">
+                <span className="chami-hero-window__sun" />
+                <span className="chami-hero-window__curtain" />
+                <span className="chami-hero-window__plant" />
+                <span className="chami-hero-window__cup" />
+              </div>
+
+              <figure className="chami-quote-card" aria-label="오늘의 명언">
+                <figcaption className="chami-quote-card__label">
+                  <span aria-hidden="true">“</span>
+                  오늘의 명언
+                </figcaption>
+                <blockquote>
+                  {dashboardQuoteLines.map((line, index) => (
+                    <span key={`${line}-${index}`}>{line}</span>
+                  ))}
+                </blockquote>
+                <p>— {quoteAuthor}</p>
+              </figure>
             </article>
 
-            <article className="chami-mascot-card chami-mascot-card--widget-only chami-card" aria-label="참이 돌봄 게임 위젯">
-              <div className="chami-mascot-stage chami-mascot-stage--widget">
-                <ChamiCareWidgetFrame />
-              </div>
-            </article>
+            <section className="chami-home-bottom-grid" aria-label="최근 기록과 감정 흐름">
+              <article className="chami-dashboard-card chami-recent-card">
+                <div className="chami-card-heading">
+                  <h2><span aria-hidden="true">💚</span> 최근 일기</h2>
+                  <button type="button" onClick={goBooks}>전체 보기 <span aria-hidden="true">›</span></button>
+                </div>
+
+                <div className="chami-recent-list">
+                  {recentDiaries.length ? (
+                    recentDiaries.map((diary) => {
+                      const emotion = getEmotionMeta(diary.diary_emotions?.[0]?.emotion_code);
+
+                      return (
+                        <button
+                          type="button"
+                          key={diary.id}
+                          className="chami-recent-item"
+                          onClick={() => router.push(`/diary/${diary.id}`)}
+                        >
+                          <span className="chami-recent-item__emoji" aria-hidden="true">{emotion.emoji}</span>
+                          <span className="chami-recent-item__copy">
+                            <strong>{getDiaryTitle(diary)}</strong>
+                            <small>{formatShortDate(diary.created_at)}</small>
+                          </span>
+                          <span className="chami-recent-item__arrow" aria-hidden="true">›</span>
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <div className="chami-empty-card">
+                      <span aria-hidden="true">🌱</span>
+                      <p>아직 작성한 일기가 없어요.</p>
+                      <button type="button" onClick={goWrite}>첫 일기 쓰기</button>
+                    </div>
+                  )}
+                </div>
+              </article>
+
+              <article className="chami-dashboard-card chami-emotion-card">
+                <div className="chami-card-heading">
+                  <h2><span aria-hidden="true">🪄</span> 감정 흐름</h2>
+                  <button type="button" onClick={() => router.push("/report")}>더보기 <span aria-hidden="true">›</span></button>
+                </div>
+
+                <div className="chami-emotion-chart" aria-label="최근 7일간의 감정 추이 그래프">
+                  <div className="chami-emotion-chart__axis" aria-hidden="true">
+                    <span>😊</span>
+                    <span>🙂</span>
+                    <span>🥲</span>
+                  </div>
+                  <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="최근 7일 감정 흐름">
+                    <defs>
+                      <linearGradient id="chamiTrendGradient" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#ff7c67" />
+                        <stop offset="100%" stopColor="#ffb15e" />
+                      </linearGradient>
+                    </defs>
+                    <polyline points={trendPolyline} fill="none" stroke="url(#chamiTrendGradient)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                    {emotionTrend.map((point) => (
+                      <circle key={point.key} cx={point.x} cy={point.y} r={point.hasData ? 3.2 : 2.4} className={point.hasData ? "is-filled" : ""} />
+                    ))}
+                  </svg>
+                  <div className="chami-emotion-chart__labels" aria-hidden="true">
+                    {emotionTrend.map((point) => (
+                      <span key={point.key}>{point.label}</span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="chami-emotion-feedback">
+                  <span aria-hidden="true">🌸</span>
+                  <p>{latestTrendMessage}</p>
+                </div>
+              </article>
+            </section>
           </section>
 
-          <section className="chami-lower-grid" aria-label="홈 하단 바로가기">
-            <article className="chami-mini-card chami-card chami-mini-card--exchange">
-              <div className="chami-mini-card__visual" aria-hidden="true"><Image src="/home-icons/exchange.png" alt="" width={72} height={72} /></div>
-              <div>
-                <h2>교환일기</h2>
-                <p className="chami-mini-card__strong">{exchangeMiniTitle}</p>
-                <p>{exchangeMiniDescription}</p>
-              </div>
-              <button type="button" onClick={() => (guardAuth("/exchange") ? router.push("/exchange") : undefined)}>
-                {exchangeMiniButtonLabel} <span aria-hidden="true">›</span>
-              </button>
-            </article>
-
-            <article className="chami-mini-card chami-card chami-mini-card--refresh">
-              <div className="chami-mini-card__visual" aria-hidden="true"><Image src="/home-icons/refresh-card.png" alt="" width={72} height={72} /></div>
-              <div>
-                <h2>환기 카드</h2>
-                <p>오늘의 감정에 맞는 작은 추천이 도착했어요.</p>
-              </div>
-              <button type="button" onClick={() => (guardAuth("/report") ? router.push("/report") : undefined)}>
-                열어보기 <span aria-hidden="true">›</span>
-              </button>
-            </article>
-
-            <article className="chami-mini-card chami-card chami-mini-card--report">
-              <div className="chami-mini-card__visual" aria-hidden="true"><Image src="/home-icons/report.png" alt="" width={72} height={72} /></div>
-              <div>
-                <h2>감정 리포트</h2>
-                <p>이번 주 마음의 흐름을 조용히 돌아봐요.</p>
-              </div>
-              <button type="button" onClick={() => (guardAuth("/report") ? router.push("/report") : undefined)}>
-                보러가기 <span aria-hidden="true">›</span>
-              </button>
-            </article>
-
-            <article className="chami-ad-card chami-ad-card--placeholder chami-card" aria-label="광고 영역">
-              <div className="chami-ad-card__label">
-                <span>광고 영역</span>
-                <em>Google AdSense</em>
-              </div>
-              <div className="chami-ad-placeholder chami-ad-placeholder--adsense">
-                {canRenderAdsenseSlot ? (
-                  <ins
-                    className="adsbygoogle chami-adsense-slot"
-                    style={{ display: "block" }}
-                    data-ad-client={adsenseClientId}
-                    data-ad-slot={adsenseHomeSlot}
-                    data-ad-format="auto"
-                    data-full-width-responsive="true"
-                  />
-                ) : (
-                  <div className="chami-ad-placeholder__fallback" aria-hidden="true" />
-                )}
-              </div>
-            </article>
-          </section>
-
+          <aside className="chami-pet-widget" aria-label="참이 케어 위젯">
+            <ChamiCareWidgetFrame className="chami-pet-widget__frame" />
+          </aside>
         </main>
 
         {nicknameModalOpen && (
