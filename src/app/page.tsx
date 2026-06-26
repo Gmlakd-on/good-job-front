@@ -474,8 +474,6 @@ export default function HomePage() {
                 <p className="chami-hero-greeting">
                   안녕, <span>{displayName}</span>님! <span aria-hidden="true">👋</span>
                 </p>
-                <h1 className="chami-hero-title">오늘 하루는 어땠나요?</h1>
-                <p className="chami-hero-desc">마음속 이야기를 들려주세요.</p>
 
                 <div className="chami-hero-buttons" aria-label="홈 주요 행동">
                   <button type="button" className="chami-primary-button" onClick={goWrite}>
