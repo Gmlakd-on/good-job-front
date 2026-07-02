@@ -111,7 +111,6 @@ export default function AnnouncementPopup() {
         <div className={styles.header}>
           <span className={styles.eyebrow}>참 잘했어요 소식</span>
           <h2 id="announcement-popup-title">업데이트와 준비중인 기능을 알려드려요</h2>
-          <p>로그인한 사용자에게 보여지는 안내 팝업입니다. 새 소식이 생기면 목록만 바꿔서 다시 띄울 수 있어요.</p>
         </div>
 
         <div className={styles.list}>
