@@ -1,12 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
-import { ANNOUNCEMENT_NOTICES, ANNOUNCEMENT_POPUP_VERSION } from "@/lib/announcements/notices";
+import {
+  ANNOUNCEMENT_NOTICES,
+  ANNOUNCEMENT_POPUP_VERSION,
+  type AnnouncementNoticeKind,
+} from "@/lib/announcements/notices";
+import styles from "./AnnouncementPopup.module.css";
 
 const STORAGE_PREFIX = "good-job-announcement-popup";
+
+const NOTICE_KIND_CLASS: Record<AnnouncementNoticeKind, string> = {
+  update: styles.noticeUpdate,
+  "coming-soon": styles.noticeComingSoon,
+  maintenance: styles.noticeMaintenance,
+};
 
 function buildStorageKey(userId: string) {
   return `${STORAGE_PREFIX}:${userId}:${ANNOUNCEMENT_POPUP_VERSION}`;
@@ -60,33 +71,53 @@ export default function AnnouncementPopup() {
     };
   }, []);
 
-  const closePopup = () => {
+  const closePopup = useCallback(() => {
     if (dontShowAgain && storageKey) {
       window.localStorage.setItem(storageKey, "dismissed");
     }
     setOpen(false);
-  };
+  }, [dontShowAgain, storageKey]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closePopup();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [closePopup, open]);
 
   if (!open || !user || ANNOUNCEMENT_NOTICES.length === 0) return null;
 
   return (
-    <div className="announcement-popup" role="dialog" aria-modal="true" aria-labelledby="announcement-popup-title">
-      <button type="button" className="announcement-popup__backdrop" aria-label="업데이트 소식 닫기" onClick={closePopup} />
-      <section className="announcement-popup__card">
-        <button type="button" className="announcement-popup__close" onClick={closePopup} aria-label="닫기">
+    <div className={styles.popup} role="dialog" aria-modal="true" aria-labelledby="announcement-popup-title">
+      <button type="button" className={styles.backdrop} aria-label="업데이트 소식 닫기" onClick={closePopup} />
+      <section className={styles.card}>
+        <button type="button" className={styles.close} onClick={closePopup} aria-label="닫기">
           ×
         </button>
 
-        <div className="announcement-popup__header">
-          <span className="announcement-popup__eyebrow">참 잘했어요 소식</span>
+        <div className={styles.header}>
+          <span className={styles.eyebrow}>참 잘했어요 소식</span>
           <h2 id="announcement-popup-title">업데이트와 준비중인 기능을 알려드려요</h2>
           <p>로그인한 사용자에게 보여지는 안내 팝업입니다. 새 소식이 생기면 목록만 바꿔서 다시 띄울 수 있어요.</p>
         </div>
 
-        <div className="announcement-popup__list">
+        <div className={styles.list}>
           {ANNOUNCEMENT_NOTICES.map((notice) => (
-            <article key={notice.id} className={`announcement-popup__notice announcement-popup__notice--${notice.kind}`}>
-              <div className="announcement-popup__notice-head">
+            <article key={notice.id} className={`${styles.notice} ${NOTICE_KIND_CLASS[notice.kind]}`}>
+              <div className={styles.noticeHead}>
                 {notice.badge && <span>{notice.badge}</span>}
                 <h3>{notice.title}</h3>
               </div>
@@ -99,7 +130,7 @@ export default function AnnouncementPopup() {
                 </ul>
               )}
               {notice.ctaHref && notice.ctaLabel && (
-                <Link href={notice.ctaHref} className="announcement-popup__link" onClick={closePopup} prefetch={false}>
+                <Link href={notice.ctaHref} className={styles.link} onClick={closePopup} prefetch={false}>
                   {notice.ctaLabel}
                 </Link>
               )}
@@ -107,12 +138,12 @@ export default function AnnouncementPopup() {
           ))}
         </div>
 
-        <div className="announcement-popup__footer">
-          <label className="announcement-popup__checkbox">
+        <div className={styles.footer}>
+          <label className={styles.checkbox}>
             <input type="checkbox" checked={dontShowAgain} onChange={(event) => setDontShowAgain(event.target.checked)} />
             <span>이번 소식은 다시 보지 않기</span>
           </label>
-          <button type="button" className="announcement-popup__primary" onClick={closePopup}>
+          <button type="button" className={styles.primary} onClick={closePopup}>
             확인했어요
           </button>
         </div>
