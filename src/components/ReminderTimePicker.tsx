@@ -14,7 +14,10 @@ const PRESET_HOURS = [
   { label: "일주일 후", icon: "🌱", hours: 168, preset: null },
 ];
 
-export default function ReminderTimePicker({ diaryId, onSaved }: ReminderTimePickerProps) {
+export default function ReminderTimePicker({
+  diaryId,
+  onSaved,
+}: ReminderTimePickerProps) {
   const [savingLabel, setSavingLabel] = useState("");
   const [savedLabel, setSavedLabel] = useState("");
 
@@ -22,6 +25,7 @@ export default function ReminderTimePicker({ diaryId, onSaved }: ReminderTimePic
     setSavingLabel(preset.label);
 
     const scheduledAt = new Date();
+
     if (preset.preset === "tomorrow_9") {
       scheduledAt.setDate(scheduledAt.getDate() + 1);
       scheduledAt.setHours(9, 0, 0, 0);
@@ -57,13 +61,18 @@ export default function ReminderTimePicker({ diaryId, onSaved }: ReminderTimePic
         {PRESET_HOURS.map((preset) => {
           const isSaving = savingLabel === preset.label;
           const isSaved = savedLabel === preset.label;
+
           return (
             <button
               key={preset.label}
               type="button"
               onClick={() => handleSelect(preset)}
               disabled={Boolean(savingLabel)}
-              className={isSaved ? "memory-reminder__option memory-reminder__option--saved" : "memory-reminder__option"}
+              className={
+                isSaved
+                  ? "memory-reminder__option memory-reminder__option--saved"
+                  : "memory-reminder__option"
+              }
             >
               <span aria-hidden>{preset.icon}</span>
               {isSaving ? "설정 중..." : isSaved ? "설정 완료" : preset.label}
@@ -71,7 +80,10 @@ export default function ReminderTimePicker({ diaryId, onSaved }: ReminderTimePic
           );
         })}
       </div>
-      <p className="memory-reminder__hint">💛 설정한 시간에 알림으로 답글을 다시 만나볼 수 있어요.</p>
+
+      <p className="memory-reminder__hint">
+        💛 설정한 시간에 알림으로 답글을 다시 만나볼 수 있어요.
+      </p>
     </section>
   );
 }
