@@ -53,7 +53,6 @@ export default function ReminderTimePicker({ diaryId, onSaved }: ReminderTimePic
 
   return (
     <section className="memory-reminder" aria-label="답글 다시 보기 알림 설정">
-      <h2>이 말을 언제 다시 꺼내볼까요?</h2>
       <div className="memory-reminder__grid">
         {PRESET_HOURS.map((preset) => {
           const isSaving = savingLabel === preset.label;
@@ -72,7 +71,7 @@ export default function ReminderTimePicker({ diaryId, onSaved }: ReminderTimePic
           );
         })}
       </div>
-      <p className="memory-reminder__hint">💛 설정한 시간에 알림으로 이 말을 다시 만나볼 수 있어요.</p>
+      <p className="memory-reminder__hint">💛 설정한 시간에 알림으로 답글을 다시 만나볼 수 있어요.</p>
     </section>
   );
 }

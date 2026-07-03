@@ -1,9 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import AIInsightBadge from "@/components/AIInsightBadge";
-import FeedbackButtons from "@/components/FeedbackButtons";
 import ReminderTimePicker from "@/components/ReminderTimePicker";
 import ReportButton from "@/components/ReportButton";
 import SafetyNotice from "@/components/SafetyNotice";
@@ -36,12 +36,6 @@ function clippedText(text: string, limit = 220) {
   return `${normalized.slice(0, limit).trim()}...`;
 }
 
-function leadQuote(text: string) {
-  const firstLine = text.split("\n").find((line) => line.trim())?.trim() ?? "";
-  if (!firstLine) return "너의 하루를 조심히 읽었어.";
-  return clippedText(firstLine, 38);
-}
-
 export default function MemoryReplyView({
   bookId,
   bookTitle,
@@ -62,6 +56,10 @@ export default function MemoryReplyView({
   onRetryReply,
   onFeedback,
 }: MemoryReplyViewProps) {
+  const [heartLoading, setHeartLoading] = useState(false);
+  const [hearted, setHearted] = useState(false);
+  const [heartError, setHeartError] = useState("");
+
   const personaData = PERSONAS.find((item) => item.code === persona) ?? PERSONAS[0];
   const selectedEmotionItems = selectedEmotions
     .map((code) => EMOTIONS.find((emotion) => emotion.code === code))
@@ -69,6 +67,23 @@ export default function MemoryReplyView({
   const selectedWeatherItem = selectedWeather
     ? WEATHER_OPTIONS.find((weather) => weather.code === selectedWeather)
     : null;
+
+  const handleHeartClick = async () => {
+    if (!replyId || heartLoading || hearted) return;
+
+    setHeartLoading(true);
+    setHearted(true);
+    setHeartError("");
+
+    try {
+      await onFeedback(replyId, true);
+    } catch {
+      setHearted(false);
+      setHeartError("하트를 남기지 못했어요. 잠시 후 다시 눌러주세요.");
+    } finally {
+      setHeartLoading(false);
+    }
+  };
 
   return (
     <section className="memory-reply-page animate-fade-in-scale">
@@ -142,10 +157,7 @@ export default function MemoryReplyView({
           </div>
 
           {replyContent ? (
-            <>
-              <blockquote className="memory-big-quote">{leadQuote(replyContent)}</blockquote>
-              <p className="memory-reply-body">{replyContent}</p>
-            </>
+            <p className="memory-reply-body">{replyContent}</p>
           ) : ownerReplyPending ? (
             <div className="memory-empty-reply">
               <p className="memory-empty-reply__title">참이에게 일기가 전해졌어요 💌</p>
@@ -164,7 +176,22 @@ export default function MemoryReplyView({
               </button>
             </div>
           )}
-          <span className="memory-heart" aria-hidden>♡</span>
+
+          {replyId ? (
+            <div className="memory-reply-actions">
+              <button
+                type="button"
+                className={hearted ? "memory-heart memory-heart--active" : "memory-heart"}
+                onClick={handleHeartClick}
+                disabled={heartLoading || hearted}
+                aria-pressed={hearted}
+                aria-label={hearted ? "마음에 든 답글로 표시됨" : "답글에 하트 남기기"}
+              >
+                {hearted ? "♥" : "♡"}
+              </button>
+              {heartError ? <p className="memory-heart-error">{heartError}</p> : null}
+            </div>
+          ) : null}
         </article>
       </div>
 
@@ -172,7 +199,6 @@ export default function MemoryReplyView({
 
       {replyId && (
         <div className="memory-feedback">
-          <FeedbackButtons replyId={replyId} onSubmit={onFeedback} />
           <ReportButton targetType="REPLY" targetId={replyId} />
         </div>
       )}
