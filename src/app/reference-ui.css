@@ -2058,3 +2058,384 @@
   font-weight: 800;
   opacity: 0.72;
 }
+
+/* ============================================================
+   7) 일기 작성 후 답글 화면 — 레퍼런스 이미지 스타일
+   ============================================================ */
+.memory-reply-page {
+  --memory-ink: #4a3528;
+  --memory-ink-soft: #78695d;
+  --memory-card: rgba(255, 250, 241, 0.94);
+  --memory-card-strong: #fff8ec;
+  --memory-accent: #dc6245;
+  --memory-chip: linear-gradient(180deg, #ffe6b7, #ffd992);
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 4px 0 80px;
+  color: var(--memory-ink);
+}
+
+.memory-reply-topbar {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  margin-bottom: 14px;
+}
+
+.memory-reply-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--memory-ink);
+  font-family: "Noto Serif KR", serif;
+  font-size: clamp(20px, 2.4vw, 30px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.memory-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: clamp(28px, 4vw, 52px);
+}
+
+.memory-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: var(--memory-chip);
+  border: 1px solid rgba(151, 108, 55, 0.08);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.75), 0 10px 20px rgba(105, 72, 35, 0.08);
+  color: #6a4b31;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.memory-chip--weather { background: linear-gradient(180deg, #f2f1ee, #e8e6e1); }
+.memory-chip--persona { background: linear-gradient(180deg, #8ca1ba, #748ba8); color: #fff; }
+.memory-chip__avatar { border-radius: 999px; object-fit: cover; }
+.memory-safety { max-width: 720px; margin: 0 auto 20px; }
+
+.memory-reply-spread {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 74px minmax(0, 1.04fr);
+  gap: 24px;
+  align-items: center;
+}
+
+.memory-paper {
+  position: relative;
+  min-height: 520px;
+  border-radius: 22px;
+  border: 1px solid rgba(121, 87, 54, 0.14);
+  background:
+    radial-gradient(circle at 20% 10%, rgba(224, 161, 87, 0.08), transparent 34%),
+    linear-gradient(180deg, rgba(255, 252, 245, 0.98), rgba(255, 247, 232, 0.96));
+  box-shadow: 0 18px 42px rgba(84, 55, 31, 0.14), inset 0 1px rgba(255, 255, 255, 0.86);
+  overflow: hidden;
+}
+
+.memory-paper--diary {
+  padding: 22px 34px 34px 54px;
+  background:
+    linear-gradient(90deg, rgba(199, 149, 86, 0.12) 0 18px, transparent 18px),
+    repeating-linear-gradient(180deg, transparent 0 43px, rgba(111, 85, 58, 0.13) 43px 44px),
+    linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(255, 248, 236, 0.98));
+}
+
+.memory-paper--diary::before {
+  position: absolute;
+  top: 42px;
+  bottom: 42px;
+  left: 16px;
+  width: 14px;
+  content: "";
+  background: radial-gradient(circle, rgba(121, 87, 54, 0.2) 0 4px, transparent 5px) 0 0 / 14px 38px repeat-y;
+}
+
+.memory-paper__clip {
+  position: absolute;
+  top: 40px;
+  right: -2px;
+  width: 26px;
+  height: 92px;
+  border: 4px solid rgba(134, 99, 72, 0.45);
+  border-left: 0;
+  border-radius: 0 18px 18px 0;
+  transform: rotate(7deg);
+}
+
+.memory-paper__label {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 26px;
+  padding: 9px 24px;
+  border-radius: 10px;
+  background: #ffe8bf;
+  color: #9a542d;
+  font-weight: 800;
+}
+
+.memory-diary-lines {
+  white-space: pre-line;
+  color: var(--memory-ink);
+  font-family: "Noto Serif KR", serif;
+  font-size: clamp(18px, 1.8vw, 26px);
+  line-height: 1.92;
+  word-break: keep-all;
+}
+
+.memory-paper__bottom-note {
+  position: absolute;
+  left: 50px;
+  bottom: 34px;
+  color: #b38a62;
+  font-family: "Gaegu", "Noto Sans KR", cursive;
+  font-size: 20px;
+}
+
+.memory-stamp {
+  position: absolute;
+  right: 26px;
+  bottom: 24px;
+  display: grid;
+  place-items: center;
+  width: 158px;
+  height: 158px;
+  border: 8px double rgba(196, 85, 58, 0.78);
+  border-radius: 999px;
+  color: rgba(196, 85, 58, 0.88);
+  transform: rotate(-10deg);
+  text-align: center;
+  font-family: "Noto Serif KR", serif;
+  font-weight: 900;
+  line-height: 1.1;
+  opacity: 0.92;
+}
+
+.memory-stamp span { font-size: 28px; }
+.memory-stamp small { display: block; margin-top: 8px; font-size: 11px; }
+
+.memory-read-bridge {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  color: #7a5741;
+  text-align: center;
+}
+
+.memory-read-bridge::after {
+  content: "→";
+  font-size: 46px;
+  line-height: 1;
+  color: rgba(122, 87, 65, 0.65);
+}
+
+.memory-read-bridge span { font-size: 30px; }
+.memory-read-bridge strong { font-size: 15px; font-weight: 800; word-break: keep-all; }
+
+.memory-paper--reply {
+  padding: 42px 46px 40px;
+}
+
+.memory-reply-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 54px;
+  padding: 6px 22px 6px 8px;
+  border-radius: 999px;
+  background: #ffe8c3;
+  color: #8a623d;
+  font-weight: 800;
+}
+
+.memory-reply-badge img {
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.memory-big-quote {
+  position: relative;
+  margin: 52px 0 28px;
+  color: var(--memory-ink);
+  font-family: "Noto Serif KR", serif;
+  font-size: clamp(28px, 3vw, 46px);
+  font-weight: 800;
+  line-height: 1.46;
+  letter-spacing: -0.06em;
+  word-break: keep-all;
+}
+
+.memory-big-quote::before,
+.memory-big-quote::after {
+  color: rgba(87, 61, 44, 0.55);
+  font-size: 34px;
+  line-height: 0;
+}
+
+.memory-big-quote::before { content: "“ "; }
+.memory-big-quote::after { content: " ”"; }
+
+.memory-reply-body {
+  white-space: pre-line;
+  color: var(--memory-ink);
+  font-family: "Noto Serif KR", serif;
+  font-size: clamp(17px, 1.65vw, 22px);
+  line-height: 2.05;
+  word-break: keep-all;
+}
+
+.memory-heart {
+  position: absolute;
+  right: 34px;
+  bottom: 28px;
+  color: #ce9663;
+  font-size: 34px;
+}
+
+.memory-empty-reply {
+  margin-top: 56px;
+  padding: 24px;
+  border-radius: 18px;
+  background: rgba(255, 232, 195, 0.45);
+  color: var(--memory-ink-soft);
+  line-height: 1.8;
+}
+
+.memory-empty-reply__title {
+  margin-bottom: 8px;
+  color: var(--memory-ink);
+  font-weight: 900;
+}
+
+.memory-empty-reply span,
+.memory-empty-reply b { display: block; margin-top: 6px; }
+
+.memory-retry-btn {
+  margin-top: 16px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--memory-accent);
+  color: #fff;
+  font-weight: 800;
+}
+
+.memory-feedback {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.memory-reminder {
+  margin: 64px auto 0;
+  max-width: 980px;
+  text-align: center;
+}
+
+.memory-reminder h2 {
+  margin: 0 0 24px;
+  color: var(--memory-ink);
+  font-family: "Noto Serif KR", serif;
+  font-size: clamp(24px, 3vw, 36px);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+}
+
+.memory-reminder__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 28px;
+}
+
+.memory-reminder__option {
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  min-height: 130px;
+  padding: 20px 14px;
+  border: 1px solid rgba(188, 136, 85, 0.2);
+  border-radius: 18px;
+  background: rgba(255, 252, 246, 0.84);
+  color: var(--memory-ink);
+  box-shadow: 0 10px 24px rgba(90, 61, 33, 0.06);
+  font-size: 18px;
+  font-weight: 800;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.memory-reminder__option:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(90, 61, 33, 0.1);
+}
+
+.memory-reminder__option:disabled { opacity: 0.7; }
+.memory-reminder__option--saved { background: rgba(255, 232, 195, 0.92); }
+.memory-reminder__option span { font-size: 42px; }
+
+.memory-reminder__hint {
+  margin-top: 26px;
+  padding: 18px 24px;
+  border-radius: 16px;
+  background: rgba(255, 247, 228, 0.9);
+  color: #8d7b69;
+  font-size: 16px;
+}
+
+.memory-nav-row {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 42px;
+}
+
+.memory-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 230px;
+  min-height: 74px;
+  padding: 0 34px;
+  border-radius: 999px;
+  font-size: 21px;
+  font-weight: 900;
+  box-shadow: 0 12px 24px rgba(90, 61, 33, 0.08);
+}
+
+.memory-nav-btn--outline {
+  border: 2px solid rgba(157, 105, 69, 0.62);
+  background: rgba(255, 252, 246, 0.92);
+  color: #7d553a;
+}
+
+.memory-nav-btn--primary {
+  background: linear-gradient(180deg, #ea755b, #d95742);
+  color: #fff;
+}
+
+@media (max-width: 767px) {
+  .memory-reply-page { padding: 0 16px 72px; }
+  .memory-chip-row { gap: 8px; margin-bottom: 18px; }
+  .memory-chip { min-height: 36px; padding: 6px 12px; font-size: 13px; }
+  .memory-reply-spread { grid-template-columns: 1fr; gap: 18px; }
+  .memory-paper { min-height: auto; border-radius: 18px; }
+  .memory-paper--diary { padding: 20px 22px 110px 40px; }
+  .memory-diary-lines { font-size: 17px; line-height: 1.9; }
+  .memory-paper--reply { padding: 26px 22px 64px; }
+  .memory-big-quote { margin: 32px 0 20px; font-size: 28px; }
+  .memory-reply-body { font-size: 16px; line-height: 1.9; }
+  .memory-read-bridge { display: none; }
+  .memory-stamp { width: 116px; height: 116px; border-width: 6px; }
+  .memory-stamp span { font-size: 21px; }
+  .memory-reminder { margin-top: 36px; }
+  .memory-reminder__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .memory-reminder__option { min-height: 104px; font-size: 14px; }
+  .memory-reminder__option span { font-size: 32px; }
+  .memory-nav-row { flex-direction: column; gap: 12px; }
+  .memory-nav-btn { width: 100%; min-height: 58px; font-size: 17px; }
+}

@@ -12,12 +12,7 @@ import { saveLastBookId, clearLastBookId } from "@/lib/lastBook";
 import EmotionSelector from "@/components/EmotionSelector";
 import WeatherSelector from "@/components/WeatherSelector";
 import PersonaSelector from "@/components/PersonaSelector";
-import ReplyCard from "@/components/ReplyCard";
-import FeedbackButtons from "@/components/FeedbackButtons";
 import SafetyNotice from "@/components/SafetyNotice";
-import ReportButton from "@/components/ReportButton";
-import ReminderTimePicker from "@/components/ReminderTimePicker";
-import AIInsightBadge from "@/components/AIInsightBadge";
 import AITransparencyNote from "@/components/AITransparencyNote";
 import ImmersiveEditor from "@/components/editor/ImmersiveEditor";
 import type { EditorSavePayload } from "@/lib/editor/serializer";
@@ -25,6 +20,7 @@ import BookCover from "@/components/book-ui/BookCover";
 import { canWriteBook, type DiaryBook } from "@/components/book-ui/bookTypes";
 import { EMOTIONS, WEATHER_OPTIONS, type AiInsight } from "@/types";
 import LoadingStep from "./_components/LoadingStep";
+import MemoryReplyView from "@/components/write/MemoryReplyView";
 import SelectedTags from "./_components/SelectedTags";
 
 type Step = "emotion" | "persona" | "write" | "loading" | "reply" | "crisis";
@@ -375,22 +371,24 @@ export default function WritePage() {
 
   return (
     <div className={`write-page write-page--${book.cover_style_id}`}>
-      <div className="write-page__topbar">
-        <Link href={`/books/${book.id}`} className="write-page__back">← {book.title}</Link>
-        {/* 본문 작성 전(emotion/persona)에만 일기장 전환 허용 — 작성 중 전환으로 글이 섞이는 혼란 방지 */}
-        {(step === "emotion" || step === "persona") && activeBooks.length > 1 && (
-          <select
-            className="write-book-switch"
-            value={book.id}
-            aria-label={t("w.switchBookAria")}
-            onChange={(e) => router.replace(`/write?bookId=${e.target.value}`)}
-          >
-            {activeBooks.map((b) => (
-              <option key={b.id} value={b.id}>{b.title}</option>
-            ))}
-          </select>
-        )}
-      </div>
+      {step !== "reply" && (
+        <div className="write-page__topbar">
+          <Link href={`/books/${book.id}`} className="write-page__back">← {book.title}</Link>
+          {/* 본문 작성 전(emotion/persona)에만 일기장 전환 허용 — 작성 중 전환으로 글이 섞이는 혼란 방지 */}
+          {(step === "emotion" || step === "persona") && activeBooks.length > 1 && (
+            <select
+              className="write-book-switch"
+              value={book.id}
+              aria-label={t("w.switchBookAria")}
+              onChange={(e) => router.replace(`/write?bookId=${e.target.value}`)}
+            >
+              {activeBooks.map((b) => (
+                <option key={b.id} value={b.id}>{b.title}</option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
 
       {step === "emotion" && (
         <div className="write-page__step animate-fade-in-scale">
@@ -450,69 +448,26 @@ export default function WritePage() {
       )}
 
       {step === "reply" && (
-        <div className="write-page__step animate-fade-in-scale">
-          <SelectedTags emotions={selectedEmotions} weather={selectedWeather} persona={selectedPersona} compact />
-          <div className="mb-4 p-4" style={{ borderRadius: "var(--radius-md)", background: "var(--cream-deep)", border: "1px solid var(--border-subtle)" }}>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-              {diaryContent.length > 120 ? `${diaryContent.slice(0, 120)}…` : diaryContent}
-            </p>
-          </div>
-          {safetyMessage && riskLevel === "HIGH" && <div className="mb-4"><SafetyNotice variant="high" /></div>}
-
-          {/* AI 답장 성공 */}
-          {replyContent && (
-            <ReplyCard content={replyContent} animate persona={selectedPersona} />
-          )}
-
-          {/* 참이 답글 대기 — 운영자가 직접 쓰는 답글 */}
-          {ownerReplyPending && !replyContent && (
-            <div className="mb-4 p-5 text-center" style={{ borderRadius: "var(--radius-lg)", background: "var(--cream-deep)", border: "1px solid var(--border-subtle)" }}>
-              <p className="text-sm mb-1" style={{ color: "var(--text-primary)" }}>참이에게 일기가 전해졌어요 💌</p>
-              <p className="text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                이 답글은 AI가 아니라 운영자가 직접 남겨요.
-                <span className="block mt-1">도착 예정: {formatOwnerDueAt(ownerReplyDueAt)}</span>
-                {ownerReplyError ? <span className="block mt-1" style={{ color: "var(--chami-heart)" }}>{ownerReplyError}</span> : null}
-              </p>
-            </div>
-          )}
-
-          {/* AI 답장 실패 — 재시도 UI */}
-          {!replyContent && !safetyMessage && !ownerReplyPending && (
-            <div className="mb-4 p-5 text-center" style={{ borderRadius: "var(--radius-lg)", background: "var(--cream-deep)", border: "1px solid var(--border-subtle)" }}>
-              <p className="text-sm mb-1" style={{ color: "var(--text-primary)" }}>{t("w.savedSafe")}</p>
-              <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>
-                {t("w.replyHiccup")}
-                {aiInsight?.error ? <span className="block opacity-60 mt-1">({String(aiInsight.error)})</span> : null}
-              </p>
-              <button
-                type="button"
-                onClick={handleRetryReply}
-                className="text-sm font-medium text-white px-5 py-2.5"
-                style={{ borderRadius: "var(--radius-full)", background: "var(--accent)", boxShadow: "0 4px 12px rgba(201, 123, 90, 0.3)" }}
-              >
-                {t("w.retryReply")}
-              </button>
-            </div>
-          )}
-          <AIInsightBadge insight={ownerReplyPending ? null : aiInsight} />
-          {replyId && (
-            <div className="mt-4">
-              <FeedbackButtons replyId={replyId} onSubmit={handleFeedback} />
-              <div className="mt-2"><ReportButton targetType="REPLY" targetId={replyId} /></div>
-            </div>
-          )}
-          <div className="mt-4"><ReminderTimePicker diaryId={diaryId} /></div>
-          <div className="mt-6 flex justify-center gap-3">
-            <Link href={`/books/${book.id}`} className="font-medium text-sm"
-              style={{ padding: "10px 20px", borderRadius: "var(--radius-full)", background: "var(--cream-deep)", color: "var(--text-primary)", border: "1px solid var(--border-subtle)" }}>
-              {t("common.toBook")}
-            </Link>
-            <Link href="/books" className="font-medium text-sm text-white"
-              style={{ padding: "10px 20px", borderRadius: "var(--radius-full)", background: "var(--accent)", boxShadow: "0 4px 12px rgba(201, 123, 90, 0.3)" }}>
-              {t("common.toShelf")}
-            </Link>
-          </div>
-        </div>
+        <MemoryReplyView
+          bookId={book.id}
+          bookTitle={book.title}
+          diaryContent={diaryContent}
+          replyContent={replyContent}
+          persona={selectedPersona}
+          selectedEmotions={selectedEmotions}
+          selectedWeather={selectedWeather}
+          diaryId={diaryId}
+          replyId={replyId}
+          safetyMessage={safetyMessage}
+          riskLevel={riskLevel}
+          ownerReplyPending={ownerReplyPending}
+          ownerReplyDueAt={ownerReplyDueAt}
+          ownerReplyError={ownerReplyError}
+          aiInsight={aiInsight}
+          formatOwnerDueAt={formatOwnerDueAt}
+          onRetryReply={handleRetryReply}
+          onFeedback={handleFeedback}
+        />
       )}
     </div>
   );
