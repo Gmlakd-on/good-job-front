@@ -635,7 +635,7 @@ export default function HomePage() {
       <header className={`home-nav ${navHidden ? "home-nav--hidden" : ""}`}>
         <div className="home-nav__inner main-container">
           <Link href="/" className="home-nav__logo" aria-label={t("home.logoAria")}>
-            참 잘했어요
+            {t("home.logo")}
           </Link>
 
           <div className="home-nav__right">
@@ -723,9 +723,9 @@ export default function HomePage() {
             type="button"
             className="home-scroll-cue"
             onClick={scrollToPreview}
-            aria-label="아래 콘텐츠로 스크롤"
+            aria-label={t("home.scrollCueAria")}
           >
-            <span className="home-scroll-cue__label">아래로 살짝 내려보세요</span>
+            <span className="home-scroll-cue__label">{t("home.scrollCue")}</span>
             <span className="home-scroll-cue__arrow" aria-hidden="true">↷</span>
           </button>
         )}

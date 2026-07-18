@@ -374,6 +374,7 @@ const ko = {
   "ntf.unreadDot": "읽지 않음",
 
   // ── 홈 ──
+  "home.logo": "참 잘했어요",
   "home.logoAria": "참 잘했어요 홈",
   "home.login": "로그인",
   "home.signup": "회원가입",
@@ -399,6 +400,8 @@ const ko = {
   "home.feat.report.b2": "회복",
   "home.quoteDefaultAuthor": "참 잘했어요",
   "home.languageToggle": "언어 선택",
+  "home.scrollCue": "아래로 살짝 내려보세요",
+  "home.scrollCueAria": "아래 콘텐츠로 스크롤",
 
   // ── 메인 체험 ──
   "try.aria": "가입 없이 체험해보기",
@@ -942,7 +945,8 @@ const en: Record<keyof typeof ko, string> = {
   "ntf.unreadDot": "Unread",
 
   // ── Home ──
-  "home.logoAria": "Cham Jalhaesseoyo home",
+  "home.logo": "Gold star",
+  "home.logoAria": "Gold star home",
   "home.login": "Log in",
   "home.signup": "Sign up",
   "home.myShelf": "My Bookshelf",
@@ -967,6 +971,8 @@ const en: Record<keyof typeof ko, string> = {
   "home.feat.report.b2": "Recovery",
   "home.quoteDefaultAuthor": "Cham Jalhaesseoyo",
   "home.languageToggle": "Choose language",
+  "home.scrollCue": "Scroll down",
+  "home.scrollCueAria": "Scroll down to more content",
 
   // ── Try it demo ──
   "try.aria": "Try the flow without signing up",

@@ -147,8 +147,13 @@ export default function Header() {
   return (
     <header className="chami-home-nav chami-global-nav" aria-label="상단 메뉴">
       <div className="chami-home-nav__inner">
-        <Link href="/" className="chami-home-nav__logo" prefetch={false}>
-          참 잘했어요
+        <Link
+          href="/"
+          className="chami-home-nav__logo"
+          prefetch={false}
+          aria-label={t("home.logoAria")}
+        >
+          {t("home.logo")}
         </Link>
 
         {user && (
