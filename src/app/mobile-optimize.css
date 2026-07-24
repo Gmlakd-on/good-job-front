@@ -877,3 +877,147 @@
     padding: 15px !important;
   }
 }
+
+/* ──────────────────────────────────────────
+   18. 랜딩 헤더: 로고/언어/인증 버튼 한 줄 정렬
+   ────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* 모바일에서도 언어 및 로그인 조작부가 사라지지 않도록 헤더를 고정 노출 */
+  .home-nav.home-nav--hidden {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+  }
+
+  .home-nav__inner.main-container {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: calc(64px + env(safe-area-inset-top, 0px)) !important;
+    margin: 0 !important;
+    padding:
+      calc(8px + env(safe-area-inset-top, 0px))
+      16px
+      8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+  }
+
+  .home-nav__logo {
+    display: inline-flex !important;
+    align-items: center !important;
+    align-self: center !important;
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+
+  .home-nav__logo .brand-logo,
+  .chami-global-nav .chami-home-nav__logo .brand-logo {
+    width: clamp(88px, 26vw, 112px);
+    height: 40px;
+  }
+
+  .home-nav__right {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    gap: 4px !important;
+    white-space: nowrap;
+  }
+
+  .home-nav__language,
+  .home-nav__actions {
+    display: inline-flex !important;
+    align-items: center !important;
+    flex: 0 0 auto !important;
+    gap: 3px !important;
+  }
+
+  .home-nav__language {
+    min-height: 40px !important;
+    padding: 2px !important;
+  }
+
+  .home-nav__lang-button,
+  .home-nav__button {
+    min-height: 40px !important;
+    height: 40px !important;
+    touch-action: manipulation;
+  }
+
+  .home-nav__lang-button {
+    min-width: 29px !important;
+    padding: 0 6px !important;
+    font-size: 11px !important;
+  }
+
+  .home-nav__button {
+    padding: 0 9px !important;
+    font-size: 11px !important;
+  }
+
+  /* 로그인 이후 공통 헤더 로고도 테두리에서 띄우고 수직 중앙에 맞춤 */
+  .chami-global-nav .chami-home-nav__inner {
+    box-sizing: border-box;
+    width: 100% !important;
+    margin: 0 !important;
+    padding:
+      calc(8px + env(safe-area-inset-top, 0px))
+      16px
+      8px !important;
+    align-items: center !important;
+  }
+
+  .chami-global-nav .chami-home-nav__logo {
+    display: inline-flex !important;
+    align-items: center !important;
+    align-self: center !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+}
+
+@media (max-width: 359px) {
+  .home-nav__inner.main-container {
+    padding-right: 12px !important;
+    padding-left: 12px !important;
+    gap: 6px !important;
+  }
+
+  .home-nav__logo .brand-logo {
+    width: 82px;
+    height: 38px;
+  }
+
+  .home-nav__right {
+    gap: 3px !important;
+  }
+
+  .home-nav__language,
+  .home-nav__actions {
+    gap: 2px !important;
+  }
+
+  .home-nav__language,
+  .home-nav__lang-button,
+  .home-nav__button {
+    min-height: 38px !important;
+    height: 38px !important;
+  }
+
+  .home-nav__lang-button {
+    min-width: 27px !important;
+    padding-inline: 5px !important;
+  }
+
+  .home-nav__button {
+    padding-inline: 7px !important;
+    font-size: 10.5px !important;
+  }
+}

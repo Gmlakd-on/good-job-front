@@ -12,6 +12,7 @@ import MascotHero from "@/components/home/MascotHero";
 import ChamiCareWidgetFrame from "@/components/character/ChamiCareWidgetFrame";
 import TryItDemo from "@/components/home/TryItDemo";
 import AuthModal from "@/components/auth/AuthModal";
+import BrandLogo from "@/components/BrandLogo";
 import type { User } from "@supabase/supabase-js";
 
 interface Quote {
@@ -635,7 +636,7 @@ export default function HomePage() {
       <header className={`home-nav ${navHidden ? "home-nav--hidden" : ""}`}>
         <div className="home-nav__inner main-container">
           <Link href="/" className="home-nav__logo" aria-label={t("home.logoAria")}>
-            {t("home.logo")}
+            <BrandLogo language={language} priority />
           </Link>
 
           <div className="home-nav__right">

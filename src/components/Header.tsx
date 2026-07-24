@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { apiGetJson, invalidateApiCache } from "@/lib/apiCache";
 import AuthModal from "@/components/auth/AuthModal";
+import BrandLogo from "@/components/BrandLogo";
 import type { User } from "@supabase/supabase-js";
 
 type AuthMode = "login" | "signup";
@@ -37,7 +38,7 @@ const isNavActive = (pathname: string, href: string) => {
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -153,7 +154,7 @@ export default function Header() {
           prefetch={false}
           aria-label={t("home.logoAria")}
         >
-          {t("home.logo")}
+          <BrandLogo language={language} priority />
         </Link>
 
         {user && (

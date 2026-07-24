@@ -6696,3 +6696,33 @@ html[lang="en"] .home-shell .home-quote-card__text.hero-quote {
     min-height: 130px !important;
   }
 }
+
+/* 2026-07-24: localized image logo replaces the text service name */
+.home-nav__logo,
+.chami-global-nav .chami-home-nav__logo {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  min-width: 0 !important;
+  line-height: 0 !important;
+  text-decoration: none !important;
+}
+
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: clamp(156px, 10.8vw, 184px);
+  height: 58px;
+  flex: 0 0 auto;
+  overflow: visible;
+  line-height: 0;
+}
+
+.brand-logo__image {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+  object-position: left center;
+}
