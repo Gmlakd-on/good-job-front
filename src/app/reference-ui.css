@@ -2458,3 +2458,109 @@
   .memory-nav-btn { width: 100%; min-height: 58px; font-size: 17px; }
 }
 
+
+/* ══════════════════════════════════════════════════════════════════
+   일기장 설정 — 상세 페이지 내 시트 (책장→일기장→설정 3단계 → 2단계)
+   기존 /books/[id]/settings 라우트는 폴백으로 유지.
+   ══════════════════════════════════════════════════════════════════ */
+.book-detail-topbar__settings {
+  justify-self: end;
+  color: rgba(63, 48, 39, 0.5);
+  font-size: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 140ms ease;
+}
+.book-detail-topbar__settings:hover { color: rgba(63, 48, 39, 0.85); }
+
+.book-settings-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(47, 33, 27, 0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.book-settings-sheet__panel {
+  width: min(100%, 460px);
+  max-height: min(88dvh, 720px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--paper-white, #fffdf7);
+  border: 1px solid rgba(74, 52, 40, 0.12);
+  border-radius: 24px;
+  padding: 22px 20px 24px;
+  box-shadow: 0 24px 60px rgba(47, 33, 27, 0.28);
+}
+
+.book-settings-sheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.book-settings-sheet__head h2 {
+  margin: 0;
+  font-family: "Noto Serif KR", serif;
+  font-size: 19px;
+  color: #3f3027;
+}
+
+.book-settings-sheet__close {
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: rgba(74, 52, 40, 0.06);
+  border-radius: 999px;
+  cursor: pointer;
+  color: #6b5a4d;
+  font-size: 14px;
+}
+.book-settings-sheet__close:hover { background: rgba(74, 52, 40, 0.12); }
+
+.book-settings-sheet__notice {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(126, 155, 114, 0.15);
+  border: 1px solid var(--warm-green, #7e9b72);
+  color: var(--warm-green, #5f7a54);
+  font-size: 13px;
+}
+
+.book-settings-sheet__error {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(186, 74, 59, 0.08);
+  border: 1px solid var(--warm-red, #ba4a3b);
+  color: var(--warm-red, #ba4a3b);
+  font-size: 13px;
+}
+
+@media (max-width: 767px) {
+  .book-settings-sheet {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .book-settings-sheet__panel {
+    width: 100%;
+    max-height: 90dvh;
+    border-radius: 24px 24px 0 0;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    animation: book-sheet-up 260ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  }
+}
+
+@keyframes book-sheet-up {
+  0% { transform: translateY(12%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}

@@ -1021,3 +1021,184 @@
     font-size: 10.5px !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   31. [HOTFIX] 모바일 상단 헤더 고정 해제 + 프로필 드롭다운 복구
+   ------------------------------------------------------------------
+   문제:
+   - ui-overrides.css 의 `.chami-global-nav.chami-home-nav { position:sticky
+     !important; height:92px; backdrop-filter:blur() }` 규칙이 미디어쿼리 없이
+     걸려 있어, 모바일에서 헤더를 static 으로 바꾸려는 규칙(4950행)을 이깁니다.
+   - 그 결과 (1) 갤럭시/네이버 등에서 헤더가 계속 붙어다니고,
+     (2) backdrop-filter 가 position:fixed 자식(프로필 패널)의 기준 박스를
+     만들어버려 설정/로그아웃/언어 메뉴가 엉뚱한 위치로 가거나 가려집니다.
+   이 블록은 가장 마지막에 로드되므로 같은 특이도 + !important 로 확실히 이깁니다.
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 767.98px) {
+  /* 헤더를 문서 흐름 안의 일반 요소로 되돌린다 (스크롤 시 함께 사라짐) */
+  .chami-global-nav.chami-home-nav {
+    position: static !important;
+    top: auto !important;
+    height: auto !important;
+    min-height: 56px !important;
+    z-index: auto !important;
+    /* fixed 자식 트랩을 만드는 backdrop-filter 제거 */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(255, 252, 247, 0.98) !important;
+    box-shadow: none !important;
+  }
+
+  .chami-global-nav .chami-home-nav__inner {
+    height: auto !important;
+    min-height: 56px !important;
+  }
+
+  /* 프로필 드롭다운: 화면 흐름 기준으로 아바타 바로 아래에 확실히 표시 */
+  .chami-global-nav .chami-profile-menu {
+    position: relative !important;
+  }
+
+  .chami-global-nav .chami-profile-menu__panel {
+    position: absolute !important;
+    top: calc(100% + 8px) !important;
+    right: 0 !important;
+    left: auto !important;
+    bottom: auto !important;
+    z-index: 9999 !important;
+    min-width: 190px !important;
+    max-width: calc(100vw - 24px) !important;
+    padding: 8px !important;
+    border-radius: 16px !important;
+    background: rgba(255, 252, 246, 0.99) !important;
+    border: 1px solid rgba(74, 52, 40, 0.12) !important;
+    box-shadow: 0 18px 44px rgba(74, 52, 40, 0.18) !important;
+  }
+
+  /* 바깥 탭 시 닫히는 투명 백드롭 — 패널보다 아래, 그러나 다른 UI보다 위 */
+  .chami-global-nav .chami-profile-menu__backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 9998 !important;
+    background: transparent !important;
+  }
+
+  /* 메뉴 항목 터치 타겟 확대 */
+  .chami-global-nav .chami-profile-menu__panel a,
+  .chami-global-nav .chami-profile-menu__panel > button {
+    min-height: 46px !important;
+    font-size: 14.5px !important;
+  }
+
+  /* 메뉴 안 KO/EN 토글 — 손가락에 맞게 크게 */
+  .chami-profile-menu__lang-btn {
+    min-height: 40px !important;
+    font-size: 13.5px !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   32. [UX] 모바일 기록 흐름 — CTA 하단 고정 + 스크롤 단축
+   ------------------------------------------------------------------
+   목적: 감정→페르소나→작성으로 이어지는 '다음/시작/답장' 버튼이
+   긴 목록 아래로 밀려 매번 스크롤해야 하는 흐름 끊김을 제거.
+   각 단계의 기본 CTA(.write-page__step 바로 아래 .btn-primary)를
+   화면 하단에 sticky 로 붙여 항상 엄지 위치에 둔다.
+   /write 경로에서는 BottomNav 가 숨겨지므로 충돌 없음.
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  /* 단계 컨테이너: 하단 여백을 CTA 높이만큼만 확보(과한 100px 제거) */
+  .write-page__step {
+    padding-bottom: 16px !important;
+  }
+
+  /* 단계 직속 기본 CTA — 하단 고정 */
+  .write-page__step > .btn-primary {
+    position: sticky;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    z-index: 20;
+    margin-top: 14px !important;
+    /* 위 콘텐츠가 버튼 뒤로 비쳐도 읽히도록 그림자로 분리 */
+    box-shadow: 0 6px 22px rgba(74, 52, 40, 0.22);
+  }
+
+  /* 에디터 단계: 에디터가 화면을 채우고 '답장 받기'만 하단 고정 */
+  .write-page__step--editor {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100dvh - 120px);
+  }
+  .write-page__step--editor .immersive-editor {
+    flex: 1 1 auto;
+  }
+  .write-page__step--editor > .btn-primary {
+    position: sticky;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    z-index: 20;
+    box-shadow: 0 6px 22px rgba(74, 52, 40, 0.22);
+  }
+
+  /* 세로 여백 축소로 한 화면에 더 많이 담기 */
+  .write-page__step-title {
+    margin-bottom: 14px !important;
+  }
+  .write-page__step .flex.flex-wrap {
+    gap: 6px !important;
+  }
+  .emotion-selector__grid button,
+  .write-page__step .flex.flex-wrap button {
+    min-height: 44px !important;
+    padding: 8px 12px !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   33. [UX] 에디터 툴바 — 모바일 가로 스크롤 제거 + BGM 한 줄 배치
+   ------------------------------------------------------------------
+   기존: .editor-toolbar 가 overflow-x:auto 단일 행이라 좁은 화면에서
+   뮤직 플레이어가 오른쪽으로 밀려 '가로 스크롤'해야 조작 가능했음.
+   해결: 툴바를 줄바꿈 허용하고, BGM 플레이어를 한 줄 전체로 내려
+   한 화면 안에서 이전/재생/다음/곡명을 모두 조작할 수 있게 함.
+   (BgmPlayer 컴포넌트의 인라인 <style> 를 확실히 이기기 위해 !important)
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  .editor-toolbar {
+    overflow-x: visible !important;
+    flex-wrap: wrap !important;
+    row-gap: 8px !important;
+  }
+
+  .editor-toolbar__actions {
+    flex-wrap: wrap !important;
+    width: 100% !important;
+    row-gap: 8px !important;
+  }
+
+  /* 액션 영역 안의 구분선은 줄바꿈 시 어색하므로 숨김 */
+  .editor-toolbar__actions .editor-toolbar__divider {
+    display: none !important;
+  }
+
+  /* BGM 플레이어 — 전체 폭 한 줄 */
+  .editor-toolbar__actions .bgm-player {
+    order: 3;
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 46px !important;
+    padding: 4px 12px 4px 8px !important;
+    border-radius: 16px !important;
+  }
+
+  .editor-toolbar__actions .bgm-player__title-window {
+    max-width: none !important;
+    flex: 1 1 auto !important;
+  }
+
+  .editor-toolbar__actions .bgm-player__btn {
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 15px !important;
+    opacity: 0.9 !important;
+  }
+}

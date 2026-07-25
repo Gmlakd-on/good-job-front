@@ -57,6 +57,12 @@ export default function WritePage() {
 
   const [book, setBook] = useState<DiaryBook | null>(null);
   const [step, setStep] = useState<Step>("emotion");
+  const [pageDir, setPageDir] = useState<"next" | "prev">("next");
+  // 종이책 넘기듯: 단계 이동 시 방향을 함께 지정해 페이지-넘김 애니메이션을 재생
+  const goStep = (next: Step, dir: "next" | "prev" = "next") => {
+    setPageDir(dir);
+    setStep(next);
+  };
   const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
   const [selectedWeather, setSelectedWeather] = useState<string | null>(null);
   const [selectedPersona, setSelectedPersona] = useState("warm_teacher");
@@ -390,14 +396,15 @@ export default function WritePage() {
         </div>
       )}
 
+      <div className="write-deck">
       {step === "emotion" && (
-        <div className="write-page__step animate-fade-in-scale">
+        <div className={`write-page__step write-card write-card--${pageDir}`}>
           <h2 className="font-serif text-xl mb-5 font-medium" style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
             {t("w.emotionQ")}
           </h2>
           <EmotionSelector selected={selectedEmotions} onChange={setSelectedEmotions} />
           <WeatherSelector selected={selectedWeather} onChange={setSelectedWeather} />
-          <button onClick={() => { if (selectedEmotions.length === 0) { setError(t("w.pickEmotion")); return; } setError(""); setStep("persona"); }} className="btn-primary w-full mt-5">
+          <button onClick={() => { if (selectedEmotions.length === 0) { setError(t("w.pickEmotion")); return; } setError(""); goStep("persona", "next"); }} className="btn-primary w-full mt-5">
             {t("w.toPersona")}
           </button>
           {error && <p className="mt-3 text-sm text-center" style={{ color: "var(--chami-heart)" }}>{error}</p>}
@@ -405,19 +412,19 @@ export default function WritePage() {
       )}
 
       {step === "persona" && (
-        <div className="write-page__step animate-fade-in-scale">
-          <button onClick={() => setStep("emotion")} className="btn-ghost text-sm mb-4 -ml-1">{t("w.backEmotion")}</button>
+        <div className={`write-page__step write-card write-card--${pageDir}`}>
+          <button onClick={() => goStep("emotion", "prev")} className="btn-ghost text-sm mb-4 -ml-1">{t("w.backEmotion")}</button>
           <SelectedTags emotions={selectedEmotions} weather={selectedWeather} />
           <PersonaSelector selected={selectedPersona} onChange={setSelectedPersona} />
           <div className="mt-4"><AITransparencyNote persona={selectedPersona} /></div>
-          <button onClick={() => setStep("write")} className="btn-primary w-full mt-5">{t("w.startWrite")}</button>
+          <button onClick={() => goStep("write", "next")} className="btn-primary w-full mt-5">{t("w.startWrite")}</button>
         </div>
       )}
 
       {step === "write" && (
-        <div className="write-page__step write-page__step--editor">
+        <div className={`write-page__step write-page__step--editor write-card write-card--${pageDir}`}>
           <div className="write-page__editor-top">
-            <button onClick={() => setStep("persona")} className="btn-ghost text-sm">{t("w.back")}</button>
+            <button onClick={() => goStep("persona", "prev")} className="btn-ghost text-sm">{t("w.back")}</button>
             <SelectedTags emotions={selectedEmotions} weather={selectedWeather} persona={selectedPersona} compact />
           </div>
           <ImmersiveEditor
@@ -434,6 +441,7 @@ export default function WritePage() {
           {error && <p className="mt-3 text-sm text-center" style={{ color: "var(--chami-heart)" }}>{error}</p>}
         </div>
       )}
+      </div>
 
       {step === "loading" && <LoadingStep persona={selectedPersona} />}
 

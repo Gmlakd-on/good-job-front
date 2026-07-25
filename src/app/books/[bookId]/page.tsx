@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/client";
 import BookCompleteModal from "@/components/book-ui/BookCompleteModal";
 import BookCover from "@/components/book-ui/BookCover";
 import BookReader from "@/components/book-ui/BookReader";
+import BookSettingsForm from "@/components/book-ui/BookSettingsForm";
+import type { CoverVariant } from "@/components/book-ui/bookTypes";
 import {
   canCompleteBook,
   canWriteBook,
@@ -32,6 +34,10 @@ export default function BookDetailPage({ params }: { params: Promise<{ bookId: s
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [completeOpen, setCompleteOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsSaving, setSettingsSaving] = useState(false);
+  const [settingsNotice, setSettingsNotice] = useState("");
+  const [settingsError, setSettingsError] = useState("");
 
   useEffect(() => {
     async function load() {
@@ -88,6 +94,39 @@ export default function BookDetailPage({ params }: { params: Promise<{ bookId: s
     }
   }
 
+  async function saveBookSettings(payload: {
+    title: string;
+    cover_variant: CoverVariant;
+    max_entries: 30 | 50 | 100 | 365;
+  }) {
+    if (!book) return;
+    setSettingsSaving(true);
+    setSettingsError("");
+    setSettingsNotice("");
+
+    try {
+      const res = await fetch(`/api/diary-books/${book.id}/settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "설정 저장에 실패했어요.");
+      }
+
+      const data = await res.json();
+      setBook(data.book);
+      setSettingsNotice("저장했어요.");
+      setTimeout(() => setSettingsNotice(""), 2000);
+    } catch (err) {
+      setSettingsError(err instanceof Error ? err.message : "설정 저장에 실패했어요.");
+    } finally {
+      setSettingsSaving(false);
+    }
+  }
+
   if (loading) return <p className="pt-4 font-hand text-lg opacity-45">일기장 펼치는 중…</p>;
   if (error || !book) {
     return (
@@ -106,7 +145,7 @@ export default function BookDetailPage({ params }: { params: Promise<{ bookId: s
       <div className="book-detail-topbar">
         <Link href="/books">← 책장</Link>
         <h1>일기장 상세</h1>
-        <Link href={`/books/${book.id}/settings`}>설정</Link>
+        <button type="button" className="book-detail-topbar__settings" onClick={() => setSettingsOpen(true)}>설정</button>
       </div>
 
       <div className="book-detail-grid">
@@ -149,6 +188,39 @@ export default function BookDetailPage({ params }: { params: Promise<{ bookId: s
       </div>
 
       <BookCompleteModal open={completeOpen} onClose={() => setCompleteOpen(false)} onSelect={completeBook} />
+
+      {settingsOpen && (
+        <div
+          className="book-settings-sheet"
+          role="dialog"
+          aria-modal="true"
+          aria-label="일기장 설정"
+          onClick={() => setSettingsOpen(false)}
+        >
+          <div className="book-settings-sheet__panel" onClick={(e) => e.stopPropagation()}>
+            <div className="book-settings-sheet__head">
+              <h2>일기장 설정</h2>
+              <button
+                type="button"
+                className="book-settings-sheet__close"
+                onClick={() => setSettingsOpen(false)}
+                aria-label="닫기"
+              >
+                ✕
+              </button>
+            </div>
+
+            {settingsNotice && (
+              <div className="book-settings-sheet__notice">{settingsNotice}</div>
+            )}
+            {settingsError && (
+              <div className="book-settings-sheet__error">{settingsError}</div>
+            )}
+
+            <BookSettingsForm book={book} loading={settingsSaving} onSubmit={saveBookSettings} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

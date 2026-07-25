@@ -347,7 +347,7 @@ export default function HomePage() {
   const saveNickname = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-      const nickname = nicknameInput.trim();
+      const nickname = nicknameInput.replace(/\s+/g, " ").trim();
 
       if (!nickname) {
         setNicknameError("닉네임은 필수 입력이에요.");
@@ -607,11 +607,11 @@ export default function HomePage() {
               <input
                 value={nicknameInput}
                 onChange={(event) => setNicknameInput(event.target.value)}
-                placeholder="예: 지은"
+                placeholder="예: 체리 천사"
                 maxLength={10}
                 autoFocus
               />
-              <p className="nickname-modal__hint">공백 없이 2자 이상, 10자 이내로 입력해주세요.</p>
+              <p className="nickname-modal__hint">2~10자로 입력해주세요. (예: 체리 천사)</p>
               {nicknameError && <p className="chami-form-error">{nicknameError}</p>}
               <button type="submit" disabled={nicknameSaving}>
                 {nicknameSaving ? "저장 중" : "시작하기"}

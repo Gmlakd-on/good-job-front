@@ -38,7 +38,7 @@ const isNavActive = (pathname: string, href: string) => {
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
-  const { t, language } = useI18n();
+  const { t, language, setLanguage } = useI18n();
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -210,6 +210,26 @@ export default function Header() {
                   <>
                     <div className="chami-profile-menu__backdrop" onClick={() => setMenuOpen(false)} />
                     <div className="chami-profile-menu__panel">
+                      <div className="chami-profile-menu__lang" role="group" aria-label="Language / 언어">
+                        <button
+                          type="button"
+                          className={`chami-profile-menu__lang-btn ${language === "ko" ? "is-active" : ""}`}
+                          aria-pressed={language === "ko"}
+                          lang="ko"
+                          onClick={() => void setLanguage("ko")}
+                        >
+                          한국어
+                        </button>
+                        <button
+                          type="button"
+                          className={`chami-profile-menu__lang-btn ${language === "en" ? "is-active" : ""}`}
+                          aria-pressed={language === "en"}
+                          lang="en"
+                          onClick={() => void setLanguage("en")}
+                        >
+                          EN
+                        </button>
+                      </div>
                       <Link href="/settings" prefetch={false} onClick={() => setMenuOpen(false)}>
                         {t("nav.settings")}
                       </Link>
