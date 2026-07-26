@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -9,41 +9,82 @@ import DiaryStats from "@/components/DiaryStats";
 import { DiaryListSkeleton } from "@/components/Skeletons";
 import { EMOTIONS } from "@/types";
 import Link from "next/link";
-
-interface DiaryRow {
-  id: string;
-  content: string;
-  status: string;
-  created_at: string;
-  diary_emotions: { emotion_code: string }[];
-  replies: { id: string; persona?: string; content?: string }[];
-}
+import { fetchDiaryPage, type DiaryListRow } from "@/lib/api/diaries";
 
 export default function DiariesPage() {
   const router = useRouter();
   const { t } = useI18n();
-  const [diaries, setDiaries] = useState<DiaryRow[]>([]);
+  const [diaries, setDiaries] = useState<DiaryListRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [emotionFilter, setEmotionFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [dateKeys, setDateKeys] = useState(() => getRelativeDateKeys());
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const load = async () => {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.push("/auth"); return; }
-
-      const res = await fetch("/api/diaries");
-      if (res.ok) {
-        const data = await res.json();
-        setDiaries(data.diaries || []);
+      if (!user) {
+        router.push("/auth");
+        return;
       }
-      setDateKeys(getRelativeDateKeys());
-      setLoading(false);
+
+      try {
+        const page = await fetchDiaryPage({
+          limit: 30,
+          signal: controller.signal,
+        });
+        setDiaries(page.diaries);
+        setNextCursor(page.nextCursor);
+        setHasNextPage(page.hasNextPage);
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setLoadError(
+            error instanceof Error ? error.message : "일기를 불러오지 못했어요.",
+          );
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setDateKeys(getRelativeDateKeys());
+          setLoading(false);
+        }
+      }
     };
-    load();
+
+    void load();
+    return () => controller.abort();
   }, [router]);
+
+  const loadMore = useCallback(async () => {
+    if (!nextCursor || loadingMore) return;
+
+    setLoadingMore(true);
+    setLoadError("");
+    try {
+      const page = await fetchDiaryPage({ cursor: nextCursor, limit: 30 });
+      setDiaries((current) => {
+        const knownIds = new Set(current.map((diary) => diary.id));
+        return [
+          ...current,
+          ...page.diaries.filter((diary) => !knownIds.has(diary.id)),
+        ];
+      });
+      setNextCursor(page.nextCursor);
+      setHasNextPage(page.hasNextPage);
+    } catch (error) {
+      setLoadError(
+        error instanceof Error ? error.message : "일기를 더 불러오지 못했어요.",
+      );
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, nextCursor]);
 
   if (loading) {
     return (
@@ -71,6 +112,11 @@ export default function DiariesPage() {
           +
         </Link>
       </div>
+      {loadError && (
+        <p className="mb-3 text-center text-sm text-[var(--warm-red)]">
+          {loadError}
+        </p>
+      )}
       {diaries.length > 0 && (
         <DiaryStats diaries={diaries} />
       )}
@@ -184,6 +230,23 @@ export default function DiariesPage() {
               );
             })}
           </div>
+          {hasNextPage && nextCursor && (
+            <div className="mt-5 text-center">
+              <button
+                type="button"
+                onClick={() => void loadMore()}
+                disabled={loadingMore}
+                className="min-h-11 rounded-full px-6 text-sm transition-opacity disabled:opacity-50"
+                style={{
+                  background: "var(--card-bg)",
+                  color: "var(--deep-gray)",
+                  border: "1px solid rgba(231,199,182,0.3)",
+                }}
+              >
+                {loadingMore ? "불러오는 중…" : "이전 일기 더 보기"}
+              </button>
+            </div>
+          )}
           <div className="text-center mt-6">
             <button
               onClick={() => exportDiaries(diaries)}
@@ -199,7 +262,7 @@ export default function DiariesPage() {
   );
 }
 
-function exportDiaries(diaries: DiaryRow[]) {
+function exportDiaries(diaries: DiaryListRow[]) {
   const lines = diaries.map((d) => {
     const date = new Date(d.created_at);
     const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;

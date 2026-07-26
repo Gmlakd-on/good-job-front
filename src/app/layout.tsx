@@ -10,6 +10,9 @@ import "./ui-overrides.css"; // 데스크톱 레이아웃/표지 선반/설정 2
 import "./reference-ui.css"; // 레퍼런스 UI(리포트/교환/도감/일기장/상세 리더) — ui-overrides.css 다음에 로드되어야 함
 import "./mobile-optimize.css"; // 모바일 웹 UI 최적화 — reference-ui.css 다음에 로드 (max-width: 767px만 적용)
 
+// Nonce 기반 CSP는 요청마다 새 값을 사용하므로 정적 HTML로 생성하지 않습니다.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "참 잘했어요",
   description: "꾸준한 기록을 돕는 일기장",

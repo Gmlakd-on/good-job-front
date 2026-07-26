@@ -3,18 +3,34 @@
 import { useState, useCallback, useEffect } from "react";
 
 type AdminTab = "dashboard" | "quotes" | "owner-comments" | "inquiries" | "users" | "reports" | "ai-health";
+type AdminRole = "support" | "moderator" | "operations" | "security-admin";
 
 interface Stats { totalUsers: number; totalDiaries: number; totalReplies: number; helpfulRate: number; criticalDiaries: number; pendingReports: number }
 interface QuoteSub { id: string; quote_text: string; author: string; source?: string; is_original: boolean; status: string; created_at: string; profiles?: { nickname?: string } }
 interface OwnerReq { id: string; status: string; source?: string; request_message?: string; admin_comment?: string; reply_due_at?: string; completed_reply_id?: string; created_at: string; profiles?: { nickname?: string }; diaries?: { id?: string; content?: string; risk_level?: string } }
 interface Inquiry { id: string; category: string; title: string; content: string; status: string; admin_reply?: string; created_at: string; profiles?: { nickname?: string } }
 interface RecentItem { id: string; created_at: string; [key: string]: unknown }
-interface AiHealth { ok: boolean; status?: number; workingModel?: string | null; hint?: string; env?: Record<string, unknown>; checks?: unknown[]; reason?: string }
+interface AiHealth { ok: boolean; status?: number; workingModel?: string | null; hint?: string; configuration?: Record<string, unknown>; checks?: unknown[]; reason?: string }
 
 const ADMIN_REFRESH_INTERVAL_MS = 10000;
 
+const TAB_ROLES: Record<AdminTab, readonly AdminRole[]> = {
+  dashboard: ["support", "moderator", "operations", "security-admin"],
+  quotes: ["moderator", "security-admin"],
+  "owner-comments": ["support", "security-admin"],
+  inquiries: ["support", "security-admin"],
+  users: ["security-admin"],
+  reports: ["moderator", "security-admin"],
+  "ai-health": ["operations", "security-admin"],
+};
+
+function canAccessTab(tab: AdminTab, role: AdminRole): boolean {
+  return TAB_ROLES[tab].includes(role);
+}
+
 export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
+  const [adminRole, setAdminRole] = useState<AdminRole | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [tab, setTab] = useState<AdminTab>("dashboard");
@@ -38,42 +54,70 @@ export default function AdminPage() {
 
     try {
       const noStore: RequestInit = { cache: "no-store" };
-      const [statsRes, quotesRes, ownerRes, inqRes, usersRes] = await Promise.all([
-        fetch("/api/admin/stats", noStore),
-        fetch("/api/admin/quotes", noStore),
-        fetch("/api/admin/owner-comments", noStore),
-        fetch("/api/admin/inquiries", noStore),
-        fetch("/api/admin/users", noStore),
-      ]);
+      const statsRes = await fetch("/api/admin/stats", noStore);
+      const statsData = await statsRes.json().catch(() => ({}));
 
       if (!statsRes.ok) {
-        if (!silent) setError("관리자 권한이 필요해요. 관리자 이메일로 로그인해주세요.");
+        if (!silent) {
+          setError(statsData.error || "관리자 인증이 필요해요.");
+        }
         return;
       }
 
-      const sd = await statsRes.json();
-      setStats(sd.stats);
-      setRecentReports(sd.recentReports || []);
+      const role = statsData.admin?.role as AdminRole | undefined;
+      if (!role) {
+        if (!silent) setError("관리자 역할 정보를 확인할 수 없어요.");
+        return;
+      }
 
-      if (quotesRes.ok) {
-        const d = await quotesRes.json();
-        setQuoteSubs(d.submissions || []);
+      setAdminRole(role);
+      setTab((current) => canAccessTab(current, role) ? current : "dashboard");
+      setStats(statsData.stats);
+      setRecentReports(statsData.recentReports || []);
+
+      const tasks: Promise<void>[] = [];
+
+      if (canAccessTab("quotes", role)) {
+        tasks.push(fetch("/api/admin/quotes", noStore).then(async (response) => {
+          const data = await response.json().catch(() => ({}));
+          if (response.ok) setQuoteSubs(data.submissions || []);
+          else if (!silent) setError(data.error || "명언 요청 조회에 실패했어요.");
+        }));
+      } else {
+        setQuoteSubs([]);
       }
-      if (ownerRes.ok) {
-        const d = await ownerRes.json();
-        setOwnerReqs(d.requests || []);
-      } else if (!silent) {
-        const d = await ownerRes.json().catch(() => ({}));
-        setError(d.error || "참이 답글 요청 조회에 실패했어요.");
+
+      if (canAccessTab("owner-comments", role)) {
+        tasks.push(fetch("/api/admin/owner-comments", noStore).then(async (response) => {
+          const data = await response.json().catch(() => ({}));
+          if (response.ok) setOwnerReqs(data.requests || []);
+          else if (!silent) setError(data.error || "참이 답글 요청 조회에 실패했어요.");
+        }));
+      } else {
+        setOwnerReqs([]);
       }
-      if (inqRes.ok) {
-        const d = await inqRes.json();
-        setInquiries(d.inquiries || []);
+
+      if (canAccessTab("inquiries", role)) {
+        tasks.push(fetch("/api/admin/inquiries", noStore).then(async (response) => {
+          const data = await response.json().catch(() => ({}));
+          if (response.ok) setInquiries(data.inquiries || []);
+          else if (!silent) setError(data.error || "문의 조회에 실패했어요.");
+        }));
+      } else {
+        setInquiries([]);
       }
-      if (usersRes.ok) {
-        const d = await usersRes.json();
-        setUsers(d.users || []);
+
+      if (canAccessTab("users", role)) {
+        tasks.push(fetch("/api/admin/users", noStore).then(async (response) => {
+          const data = await response.json().catch(() => ({}));
+          if (response.ok) setUsers(data.users || []);
+          else if (!silent) setError(data.error || "사용자 조회에 실패했어요.");
+        }));
+      } else {
+        setUsers([]);
       }
+
+      await Promise.all(tasks);
       setAuthenticated(true);
     } catch {
       if (!silent) setError("서버 오류가 발생했어요.");
@@ -83,8 +127,20 @@ export default function AdminPage() {
   }, []);
 
   const patchQuote = async (id: string, status: string) => {
-    await fetch("/api/admin/quotes", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status, reject_reason: rejectReason[id] }) });
-    setQuoteSubs((p) => p.map((q) => q.id === id ? { ...q, status } : q));
+    setError("");
+    const response = await fetch("/api/admin/quotes", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status, reject_reason: rejectReason[id] }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      setError(data.error || "명언 요청 처리에 실패했어요.");
+      return;
+    }
+    setQuoteSubs((current) =>
+      current.map((quote) => quote.id === id ? { ...quote, status } : quote),
+    );
   };
 
   const patchOwner = async (id: string, status: string, comment?: string) => {
@@ -103,17 +159,39 @@ export default function AdminPage() {
   };
 
   const patchInquiry = async (id: string, status: string) => {
-    await fetch("/api/admin/inquiries", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status, admin_reply: replyDraft[id] }) });
-    setInquiries((p) => p.map((i) => i.id === id ? { ...i, status, admin_reply: replyDraft[id] } : i));
+    setError("");
+    const response = await fetch("/api/admin/inquiries", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status, admin_reply: replyDraft[id] }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      setError(data.error || "문의 처리에 실패했어요.");
+      return;
+    }
+    setInquiries((current) =>
+      current.map((inquiry) =>
+        inquiry.id === id
+          ? { ...inquiry, status, admin_reply: replyDraft[id] }
+          : inquiry,
+      ),
+    );
   };
 
   const fetchAiHealth = async () => {
     setLoading(true);
-    const res = await fetch("/api/admin/ai-health");
-    const data = await res.json().catch(() => ({}));
-    setAiHealth(data);
-    if (!res.ok) setError(data.error || "AI 점검에 실패했어요.");
-    setLoading(false);
+    setError("");
+    try {
+      const response = await fetch("/api/admin/ai-health", { cache: "no-store" });
+      const data = await response.json().catch(() => ({}));
+      setAiHealth(data);
+      if (!response.ok) setError(data.error || "AI 점검에 실패했어요.");
+    } catch {
+      setError("AI 점검 요청에 실패했어요.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -132,7 +210,7 @@ export default function AdminPage() {
   const pendingO = ownerReqs.filter((r) => r.status === "pending").length;
   const openI = inquiries.filter((i) => i.status === "open").length;
 
-  const TABS: { key: AdminTab; label: string; badge?: number }[] = [
+  const ALL_TABS: { key: AdminTab; label: string; badge?: number }[] = [
     { key: "dashboard", label: "대시보드" },
     { key: "quotes", label: "명언", badge: pendingQ },
     { key: "owner-comments", label: "참이 답글", badge: pendingO },
@@ -141,6 +219,8 @@ export default function AdminPage() {
     { key: "reports", label: "신고", badge: stats?.pendingReports },
     { key: "ai-health", label: "AI 점검" },
   ];
+
+  const TABS = ALL_TABS.filter((item) => adminRole ? canAccessTab(item.key, adminRole) : item.key === "dashboard");
 
   const cardS: React.CSSProperties = { borderRadius: "16px", padding: "16px", background: "var(--paper-white)", boxShadow: "var(--shadow-card)", border: "1px solid var(--border-hairline)", marginBottom: "12px" };
   const inputS: React.CSSProperties = { width: "100%", padding: "10px 12px", borderRadius: "10px", fontSize: "14px", outline: "none", background: "var(--paper-aged)", color: "var(--ink-dark)", border: "1px solid var(--border-subtle)", boxSizing: "border-box" };
@@ -363,7 +443,7 @@ export default function AdminPage() {
                 <p style={{ fontWeight: 700, color: aiHealth.ok ? "var(--cloth-sage)" : "var(--stamp-vermilion)" }}>{aiHealth.ok ? "정상" : "점검 필요"}{aiHealth.workingModel ? ` · ${aiHealth.workingModel}` : ""}</p>
                 {aiHealth.hint && <p>{aiHealth.hint}</p>}
                 {aiHealth.reason && <p>reason: {aiHealth.reason}</p>}
-                <pre style={{ marginTop: "8px", whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: "10px", opacity: 0.75 }}>{JSON.stringify({ env: aiHealth.env, checks: aiHealth.checks }, null, 2)}</pre>
+                <pre style={{ marginTop: "8px", whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: "10px", opacity: 0.75 }}>{JSON.stringify({ configuration: aiHealth.configuration, checks: aiHealth.checks }, null, 2)}</pre>
               </div>
             )}
           </div>
