@@ -2,31 +2,16 @@
 
 /**
  * 작성 중 임시저장 관리.
- * 일기 작성 시 localStorage에 주기적으로 백업하고, 페이지 재진입 시 복구한다.
- * 서버 autosave(diaryId 기반)와는 별개로 동작한다.
  *
- * 저장 구조:
- *   diary_draft:{bookId} → { content, emotions, weather, persona, editorState, updatedAt }
+ * 민감한 일기 원문을 장기간 유지하는 localStorage 대신 현재 탭 수명에만
+ * 유지되는 sessionStorage를 사용한다. 서버 autosave가 가능한 제출 이후
+ * 편집 흐름은 서버 저장을 우선하며, 이 저장소는 새 일기 작성 중 탭 새로고침
+ * 복구만 담당한다.
  */
 
 const PREFIX = "diary_draft:";
-const SAVE_INTERVAL = 3000; // 3초마다 저장
-const DRAFT_TTL_MS = 24 * 60 * 60 * 1000;
-
-function hasSavedEditorState(editorState: unknown): boolean {
-  if (!editorState || typeof editorState !== "object") return false;
-  const strokes = (editorState as { strokes?: unknown }).strokes;
-  return Array.isArray(strokes) && strokes.length > 0;
-}
-
-function hasDraftContent(data: Omit<DraftData, "updatedAt">): boolean {
-  return (
-    data.content.trim().length > 0 ||
-    (Array.isArray(data.emotions) && data.emotions.length > 0) ||
-    Boolean(data.weather) ||
-    hasSavedEditorState(data.editorState)
-  );
-}
+const SAVE_INTERVAL = 3000;
+const DRAFT_TTL_MS = 2 * 60 * 60 * 1000;
 
 export interface DraftData {
   content: string;
@@ -37,100 +22,153 @@ export interface DraftData {
   updatedAt: number;
 }
 
-/** 임시저장 데이터 조회 */
-export function loadDraft(bookId: string): DraftData | null {
+function getStorage(): Storage | null {
+  if (typeof window === "undefined") return null;
+
   try {
-    const raw = localStorage.getItem(PREFIX + bookId);
-    if (!raw) return null;
-    const data = JSON.parse(raw) as DraftData;
-    // 24시간 이상 지난 초안은 무시
-    if (Date.now() - data.updatedAt > DRAFT_TTL_MS) {
-      localStorage.removeItem(PREFIX + bookId);
-      return null;
-    }
-    return data;
+    return window.sessionStorage;
   } catch {
     return null;
   }
 }
 
-/** 임시저장 */
-export function saveDraft(bookId: string, data: Omit<DraftData, "updatedAt">) {
+function hasSavedEditorState(editorState: unknown): boolean {
+  if (!editorState || typeof editorState !== "object") return false;
+  const strokes = (editorState as { strokes?: unknown }).strokes;
+  return Array.isArray(strokes) && strokes.length > 0;
+}
+
+function hasDraftContent(data: Omit<DraftData, "updatedAt">): boolean {
+  return (
+    data.content.trim().length > 0 ||
+    data.emotions.length > 0 ||
+    Boolean(data.weather) ||
+    hasSavedEditorState(data.editorState)
+  );
+}
+
+function removeDraft(storage: Storage, key: string): void {
   try {
-    localStorage.setItem(
+    storage.removeItem(key);
+  } catch {
+    // Storage may be blocked by the browser.
+  }
+}
+
+export function loadDraft(bookId: string): DraftData | null {
+  const storage = getStorage();
+  if (!storage) return null;
+
+  const key = PREFIX + bookId;
+
+  try {
+    const raw = storage.getItem(key);
+    if (!raw) return null;
+
+    const data = JSON.parse(raw) as DraftData;
+    if (
+      typeof data.updatedAt !== "number" ||
+      Date.now() - data.updatedAt > DRAFT_TTL_MS
+    ) {
+      removeDraft(storage, key);
+      return null;
+    }
+
+    return data;
+  } catch {
+    removeDraft(storage, key);
+    return null;
+  }
+}
+
+export function saveDraft(
+  bookId: string,
+  data: Omit<DraftData, "updatedAt">,
+): void {
+  const storage = getStorage();
+  if (!storage) return;
+
+  try {
+    storage.setItem(
       PREFIX + bookId,
-      JSON.stringify({ ...data, updatedAt: Date.now() })
+      JSON.stringify({ ...data, updatedAt: Date.now() }),
     );
   } catch {
-    // localStorage full or unavailable — silent fail
+    // Quota exceeded or storage blocked. Server autosave remains available.
   }
 }
 
-/** 임시저장 삭제 (제출 완료 후) */
-export function clearDraft(bookId: string) {
-  try {
-    localStorage.removeItem(PREFIX + bookId);
-  } catch {
-    // silent
-  }
+export function clearDraft(bookId: string): void {
+  const storage = getStorage();
+  if (!storage) return;
+  removeDraft(storage, PREFIX + bookId);
 }
 
-/** 주기적 자동저장 타이머 */
 export function startDraftTimer(
   bookId: string,
   getData: () => Omit<DraftData, "updatedAt">,
-  onSave?: (savedAt: number) => void // 저장 완료 시점을 UI(상태바)에 알린다
+  onSave?: (savedAt: number) => void,
 ): () => void {
-  const timer = setInterval(() => {
+  const timer = window.setInterval(() => {
     const data = getData();
-    if (hasDraftContent(data)) {
-      saveDraft(bookId, data);
-      onSave?.(Date.now());
-    }
+    if (!hasDraftContent(data)) return;
+
+    saveDraft(bookId, data);
+    onSave?.(Date.now());
   }, SAVE_INTERVAL);
 
-  return () => clearInterval(timer);
+  return () => window.clearInterval(timer);
 }
 
-/** 만료된 임시저장만 정리 */
-export function clearExpiredDrafts() {
-  try {
-    const keysToRemove: string[] = [];
-    const now = Date.now();
+export function clearExpiredDrafts(): void {
+  const storage = getStorage();
+  if (!storage) return;
 
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
+  const now = Date.now();
+  const keysToRemove: string[] = [];
+
+  try {
+    for (let index = 0; index < storage.length; index += 1) {
+      const key = storage.key(index);
       if (!key?.startsWith(PREFIX)) continue;
 
       try {
-        const raw = localStorage.getItem(key);
-        const data = raw ? (JSON.parse(raw) as { updatedAt?: unknown }) : null;
-        if (typeof data?.updatedAt !== "number" || now - data.updatedAt > DRAFT_TTL_MS) {
+        const raw = storage.getItem(key);
+        const parsed = raw
+          ? (JSON.parse(raw) as { updatedAt?: unknown })
+          : null;
+
+        if (
+          typeof parsed?.updatedAt !== "number" ||
+          now - parsed.updatedAt > DRAFT_TTL_MS
+        ) {
           keysToRemove.push(key);
         }
       } catch {
         keysToRemove.push(key);
       }
     }
-
-    keysToRemove.forEach((key) => localStorage.removeItem(key));
   } catch {
-    // silent
+    return;
   }
+
+  keysToRemove.forEach((key) => removeDraft(storage, key));
 }
 
-/** 모든 임시저장 삭제 (로그아웃 시 호출) */
-export function clearAllDrafts() {
+export function clearAllDrafts(): void {
+  const storage = getStorage();
+  if (!storage) return;
+
+  const keysToRemove: string[] = [];
+
   try {
-    const keysToRemove: string[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key?.startsWith(PREFIX)) {
-        keysToRemove.push(key);
-      }
+    for (let index = 0; index < storage.length; index += 1) {
+      const key = storage.key(index);
+      if (key?.startsWith(PREFIX)) keysToRemove.push(key);
     }
-    keysToRemove.forEach((key) => localStorage.removeItem(key));
   } catch {
-    // silent
+    return;
   }
+
+  keysToRemove.forEach((key) => removeDraft(storage, key));
 }
