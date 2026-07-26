@@ -2,6 +2,10 @@
 
 import { useState, useCallback } from "react";
 import { clearDraft } from "@/lib/draftStorage";
+import {
+  clearIdempotencyKey,
+  getOrCreateIdempotencyKey,
+} from "@/lib/idempotency";
 
 interface SubmitResult {
   diary?: { id: string };
@@ -26,15 +30,22 @@ export function useWriteSubmit(bookId: string | null) {
       setError("");
 
       try {
+        const payload = {
+          diary_book_id: bookId,
+          content: params.content,
+          emotions: params.emotions,
+          persona: params.persona,
+        };
+        const requestScope = `create-diary:${bookId ?? "unselected"}`;
+        const idempotencyKey = await getOrCreateIdempotencyKey(requestScope, payload);
+
         const res = await fetch("/api/diaries", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            diary_book_id: bookId,
-            content: params.content,
-            emotions: params.emotions,
-            persona: params.persona,
-          }),
+          headers: {
+            "Content-Type": "application/json",
+            "Idempotency-Key": idempotencyKey,
+          },
+          body: JSON.stringify(payload),
         });
 
         const data = await res.json();
@@ -44,7 +55,7 @@ export function useWriteSubmit(bookId: string | null) {
           return null;
         }
 
-        // Clear draft on success
+        clearIdempotencyKey(requestScope);
         if (bookId) clearDraft(bookId);
 
         return data;

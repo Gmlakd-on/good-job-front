@@ -9,6 +9,10 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { apiGetJson, invalidateApiCache } from "@/lib/apiCache";
 import { loadDraft, clearDraft, clearExpiredDrafts, startDraftTimer } from "@/lib/draftStorage";
 import { saveLastBookId, clearLastBookId } from "@/lib/lastBook";
+import {
+  clearIdempotencyKey,
+  getOrCreateIdempotencyKey,
+} from "@/lib/idempotency";
 import EmotionSelector from "@/components/EmotionSelector";
 import WeatherSelector from "@/components/WeatherSelector";
 import PersonaSelector from "@/components/PersonaSelector";
@@ -253,27 +257,36 @@ export default function WritePage() {
         ? { code: selectedWeatherOption.code, label: selectedWeatherOption.label }
         : null;
 
+      const payload = {
+        diary_book_id: book.id,
+        content: diaryContent,
+        emotions,
+        weather,
+        persona: selectedPersona,
+        editor_state: editorStateRef.current
+          ? {
+              version: editorStateRef.current.version,
+              strokes: editorStateRef.current.strokes,
+            }
+          : undefined,
+      };
+      const requestScope = `create-diary:${book.id}`;
+      const idempotencyKey = await getOrCreateIdempotencyKey(requestScope, payload);
+
       const res = await fetch("/api/diaries", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          diary_book_id: book.id,
-          content: diaryContent,
-          emotions,
-          weather,
-          persona: selectedPersona,
-          editor_state: editorStateRef.current
-            ? {
-                version: editorStateRef.current.version,
-                strokes: editorStateRef.current.strokes,
-              }
-            : undefined,
-        }),
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
 
       if (!res.ok) { setError(data.error || t("w.genericError")); setStep("write"); return; }
 
+      clearIdempotencyKey(requestScope);
+      if (bookId) clearDraft(bookId);
       invalidateApiCache("/api/diaries");
       invalidateApiCache("/api/diary-books");
       setRiskLevel(data.riskLevel);
@@ -290,9 +303,6 @@ export default function WritePage() {
       }
       if (data.ownerReplyError) setOwnerReplyError(data.ownerReplyError);
       if (data.safetyMessage) setSafetyMessage(data.safetyMessage);
-
-      // 제출 성공 → 임시저장 삭제
-      if (bookId) clearDraft(bookId);
 
       // AI 생성 실패 시에도 reply 화면으로 이동 (재시도 버튼 표시)
       if (data.aiGenerationFailed) {
