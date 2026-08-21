@@ -1,6 +1,6 @@
 # 참 잘했어요 — Frontend
 
-Next.js 16 + TypeScript + Tailwind CSS v4. **Vercel 배포.**
+Next.js 16 + TypeScript + Tailwind CSS v4. Vercel 배포
 
 ## 역할
 
