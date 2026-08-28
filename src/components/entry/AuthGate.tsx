@@ -22,10 +22,22 @@ export default function AuthGate({ open, onClose, onSuccess }: AuthGateProps) {
 
     try {
       const supabase = createClient();
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (session) {
+        await supabase.auth.signOut({ scope: "local" });
+      }
+
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: buildAuthCallbackUrl(getAuthRedirectOrigin(), "/"),
+          queryParams: {
+            prompt: "select_account",
+          },
         },
       });
 
@@ -58,7 +70,7 @@ export default function AuthGate({ open, onClose, onSuccess }: AuthGateProps) {
           onClick={() => handleOAuth("google")}
           disabled={!!oauthLoading}
         >
-          {oauthLoading === "google" ? "연결 중…" : "Google로 시작하기"}
+          {oauthLoading === "google" ? "연결 중…" : "Google로 계속하기"}
         </button>
 
         {error && <p className="auth-gate__error">{error}</p>}

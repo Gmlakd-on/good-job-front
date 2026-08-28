@@ -48,6 +48,17 @@ function buildChromeIntentUrl(currentUrl: string) {
   }
 }
 
+function buildOAuthQueryParams(provider: OAuthProvider) {
+  if (provider === "google") {
+    // Google에 이미 로그인되어 있어도 계정 선택 화면을 다시 보여준다.
+    return { prompt: "select_account" };
+  }
+
+  // Kakao의 select_account는 활성 세션이 하나뿐이면 자동 로그인될 수 있다.
+  // prompt=login을 사용하면 기존 카카오 세션이 있어도 로그인 화면을 다시 띄운다.
+  return { prompt: "login" };
+}
+
 interface SocialAuthPanelProps {
   mode: AuthMode;
   next?: string;
@@ -69,6 +80,10 @@ export default function SocialAuthPanel({
   useEffect(() => {
     setInAppBrowser(isInAppBrowser());
   }, []);
+
+  useEffect(() => {
+    setError(initialError);
+  }, [initialError]);
 
   const openInExternalBrowser = async () => {
     if (typeof window === "undefined") return;
@@ -102,12 +117,30 @@ export default function SocialAuthPanel({
     try {
       const redirectOrigin = getAuthRedirectOrigin();
       const nextPath = getSafeNextPath(next);
+      const callbackUrl = new URL(
+        buildAuthCallbackUrl(redirectOrigin, nextPath),
+      );
+
+      // 콜백에서 로그인/회원가입 의도를 구분할 수 있도록 전달한다.
+      callbackUrl.searchParams.set("mode", mode);
 
       const supabase = createClient();
+
+      // 사이트의 이전 Supabase 세션이 남아 있으면 먼저 현재 브라우저 세션만 제거한다.
+      // Google/Kakao 자체 로그인 세션은 우리 도메인에서 지울 수 없으므로 아래 prompt로 계정 전환을 강제한다.
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (session) {
+        await supabase.auth.signOut({ scope: "local" });
+      }
+
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: buildAuthCallbackUrl(redirectOrigin, nextPath),
+          redirectTo: callbackUrl.toString(),
+          queryParams: buildOAuthQueryParams(provider),
         },
       });
 
@@ -191,7 +224,11 @@ export default function SocialAuthPanel({
             <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.997 8.997 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05" />
             <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335" />
           </svg>
-          {oauthLoading === "google" ? "연결 중…" : "Google로 계속하기"}
+          {oauthLoading === "google"
+            ? "연결 중…"
+            : mode === "signup"
+              ? "Google로 회원가입"
+              : "Google로 로그인"}
         </button>
 
         <button
@@ -210,7 +247,11 @@ export default function SocialAuthPanel({
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
             <path d="M9 2.25C5.272 2.25 2.25 4.61 2.25 7.52c0 1.884 1.268 3.536 3.176 4.467l-.566 2.077a.37.37 0 0 0 .568.403l2.48-1.646c.356.04.72.062 1.092.062 3.728 0 6.75-2.36 6.75-5.363S12.728 2.25 9 2.25z" fill="#000000" />
           </svg>
-          {oauthLoading === KAKAO_AUTH_PROVIDER ? "연결 중…" : "카카오로 계속하기"}
+          {oauthLoading === KAKAO_AUTH_PROVIDER
+            ? "연결 중…"
+            : mode === "signup"
+              ? "카카오로 회원가입"
+              : "카카오로 로그인"}
         </button>
       </div>
 
