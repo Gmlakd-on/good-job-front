@@ -195,6 +195,10 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
+    void fetchAll();
+  }, [fetchAll]);
+
+  useEffect(() => {
     if (!authenticated) return;
 
     const timer = window.setInterval(() => {
@@ -232,7 +236,7 @@ export default function AdminPage() {
         <h1 style={{ fontFamily: "Noto Serif KR, serif", fontWeight: 700, fontSize: "22px", textAlign: "center", marginBottom: "20px", color: "var(--ink-dark)" }}>관리자</h1>
         <div style={cardS}>
           <p style={{ fontSize: "14px", color: "var(--text-secondary)", textAlign: "center", marginBottom: "12px" }}>관리자 이메일로 로그인 후 접근하세요.</p>
-          <a href="/auth" style={{ display: "block", textAlign: "center", fontSize: "13px", color: "var(--cloth-indigo)", marginBottom: "16px" }}>로그인하러 가기</a>
+          <a href="/auth?next=/admin" style={{ display: "block", textAlign: "center", fontSize: "13px", color: "var(--cloth-indigo)", marginBottom: "16px" }}>로그인하러 가기</a>
           <button onClick={() => void fetchAll()} disabled={loading} style={{ width: "100%", padding: "15px", borderRadius: "12px", background: "var(--stamp-vermilion)", color: "white", fontWeight: 600, fontSize: "15px", opacity: loading ? 0.6 : 1, minHeight: "52px", cursor: "pointer" }}>
             {loading ? "확인 중…" : "관리자 인증"}
           </button>
